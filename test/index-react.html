@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>AE Timelines - React</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="shortcut icon" href="chart-foundry3.ico">
+  </head>
+  <body>
+    <div id='root'>
+    </div>
+    <script src="https://fb.me/react-0.14.7.js"></script>
+    <script src="https://fb.me/react-dom-0.14.7.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src='http://graphics.rhoworld.com/src/webcharts/webcharts.v1.3.2.min.js'></script>
+    <script src="react-bundle.js"></script>
+    <script>
+      var div = '#root';
+      var settings = {};
+      var dataFile = 'aes.csv';
+      
+      // var Renderer = new bundle();
+      d3.csv(dataFile, function (data){
+        var props = {
+          id: 'id',
+          chartProperties: {}, 
+          dataMappings: {},
+          template: { chartProperties: {}, dataMappings: {}, controls: [] },
+          data: data
+        };
+        var Renderer = bundle;
+
+        ReactDOM.render(
+          React.createElement(Renderer, props),
+          document.getElementById('root')
+        );
+        
+      });
+    </script>
+  </body>
+</html>
