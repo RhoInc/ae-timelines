@@ -387,7 +387,7 @@ function outlierExplorer(element, settings$$){
 	let chart2 = webcharts.createChart(element, secondSettings).init([]);
 	chart2.wrap.style('display', 'none');
 	chart.chart2 = chart2;
-	let table = webCharts.createTable(element, {}).init([]);
+	let table = webcharts.createTable(element, {}).init([]);
 	chart.table = table;
 
 	return chart;
@@ -425,10 +425,27 @@ class ReactAETimelines extends React.Component {
 
 ReactAETimelines.defaultProps = {data: [], controlInputs: [], id: 'id'}
 
+function describeCode(){
+    const code = `//uses d3 v.${d3.version}
+//uses webcharts v.${webcharts.version}
+
+var settings = ${JSON.stringify(this.state.settings, null, 2)};
+
+var myChart = aeTimelines(dataElement, settings);
+
+d3.csv(dataPath, function(error, csv) {
+  myChart.init(data);
+});
+    `;
+    return code;
+}
+
+
 class Renderer extends React.Component {
   constructor(props) {
     super(props);
     this.binding = binding;
+    this.describeCode = describeCode.bind(this);
     this.state = {data: [], settings: {}, template: {}, loadMsg: 'Loading...'};
   }
   createSettings(props) {

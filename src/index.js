@@ -42,7 +42,7 @@ export default function outlierExplorer(element, settings){
 	let chart2 = createChart(element, secondSettings).init([]);
 	chart2.wrap.style('display', 'none');
 	chart.chart2 = chart2;
-	let table = webCharts.createTable(element, {}).init([]);
+	let table = createTable(element, {}).init([]);
 	chart.table = table;
 
 	return chart;

@@ -204,7 +204,7 @@ var aeTimelines = (function (webcharts,d3) {
    	let chart2 = webcharts.createChart(element, secondSettings).init([]);
    	chart2.wrap.style('display', 'none');
    	chart.chart2 = chart2;
-   	let table = webCharts.createTable(element, {}).init([]);
+   	let table = webcharts.createTable(element, {}).init([]);
    	chart.table = table;
 
    	return chart;
