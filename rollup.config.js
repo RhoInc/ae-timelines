@@ -5,6 +5,6 @@ module.exports = {
     webcharts: 'webCharts',
     d3: 'd3'
   },
-  dest: 'ae-timelines.js',
+  dest: 'index.js',
   moduleName: 'aeTimelines'
 }; 

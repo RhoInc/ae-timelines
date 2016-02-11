@@ -8,7 +8,7 @@ rollup.rollup({
 .then( function ( bundle ) {
 	var result = bundle.generate(config);
 	console.log('bundled!')
-	fs.writeFileSync( 'ae-timelines.js', result.code );
+	fs.writeFileSync( 'index.js', result.code );
 })
 .catch( function (error) {
 	console.log(error);
