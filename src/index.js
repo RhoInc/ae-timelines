@@ -7,6 +7,7 @@ import onLayout from './onLayout';
 import onDataTransform from './onDataTransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
+import './object-assign';
 
 export default function outlierExplorer(element, settings){
 	//merge user's settings with defaults
