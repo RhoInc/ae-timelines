@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev-watch": "cd test && node watcher.js",
     "build": "rollup -c | babel > index.js",
-    "build-renderer": "node build-cf-renderer.js"
+    "build-renderer": "rollup -c renderer.rollup.config.js | babel > cf-ae-timelines.common.js"
   },
   "author": "Rho, Inc.",
   "license": "ISC",
