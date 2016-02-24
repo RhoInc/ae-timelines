@@ -1,4 +1,4 @@
-var histogram = (function (webcharts,d3) {
+var aeTimelines = (function (webcharts,d3) {
    'use strict';
 
    const settings = {
@@ -17,27 +17,27 @@ var histogram = (function (webcharts,d3) {
            "column":'wc_value'
        },
        y:{
-           "label": '', 
+           "label": '',
            "sort":"earliest",
            "type":"ordinal",
-           "column":"USUBJID", 
+           "column":"USUBJID",
            "behavior": 'flex'
        },
       "margin": {"top": 50},
        "legend":{
-           "mark":"circle", 
+           "mark":"circle",
            "label": 'Severity'
        },
        "marks":[
            {
                "type":"line",
-               "per":["USUBJID", "AESEQ"], 
+               "per":["USUBJID", "AESEQ"],
                "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
                "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
            },
            {
                "type":"circle",
-               "per":["USUBJID", "AESEQ", "wc_value"], 
+               "per":["USUBJID", "AESEQ", "wc_value"],
                "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
            },
        ],
@@ -52,7 +52,7 @@ var histogram = (function (webcharts,d3) {
        "range_band":15,
    };
 
-   const controlInputs = [ 
+   const controlInputs = [
        {label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true},
        {label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS"},
        {label: "Subject ID", type: "subsetter", value_col: "USUBJID"},
@@ -96,7 +96,7 @@ var histogram = (function (webcharts,d3) {
 
    function onInit(){
        this.superRaw = this.raw_data;
-       this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col])  
+       this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col])
        this.raw_data.forEach(function(d){
            d.wc_value = d.wc_value == "" ? NaN : +d.wc_value;
        });
@@ -128,7 +128,6 @@ var histogram = (function (webcharts,d3) {
    }
 
    function onDraw(){
-
    }
 
    function onResize(){
@@ -153,21 +152,67 @@ var histogram = (function (webcharts,d3) {
            .tickFormat(this.xAxis.tickFormat())
            .innerTickSize(this.xAxis.innerTickSize())
            .outerTickSize(this.xAxis.outerTickSize())
-           .ticks(this.xAxis.ticks()[0]);
+           .ticks(this.xAxis.ticks()[0])
 
-       var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis time")
+       var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear")
           // .attr("transform", "translate(0,-10)");
 
-       g_x2_axis.transition().call(x2Axis);
+       g_x2_axis.call(x2Axis);
 
-       g_x2_axis.select("text.axis-title.top").transition().attr("transform","translate("+(this.raw_width/2)+",-"+this.config.margin.top+")");
-           
+       g_x2_axis.select("text.axis-title.top").attr("transform","translate("+(this.raw_width/2)+",-"+this.config.margin.top+")");
+
        g_x2_axis.select('.domain').attr({
            'fill': 'none',
            'stroke': '#ccc',
            'shape-rendering': 'crispEdges'
        });
        g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+
+      //Re-color AE severity
+        var severityChart = this;
+        severityColor(severityChart);
+
+        this.chart2.on('resize', function() {
+            var severityChart = this;
+            severityColor(severityChart);
+        });
+    }
+
+  //Consistently color AE severity in subject-level view
+    function severityColor(chart) {
+        var colors = chart.config.colors;
+        chart.svg.selectAll('.wc-data-mark').attr('stroke', function(d) {
+            var ae = d.values;
+            var severity = ae.raw ? ae.raw[0].AESEV : ae[0].values.raw[0].AESEV;
+
+                 if (severity === 'Grade 1') { return colors[0]; }
+            else if (severity === 'Grade 2') { return colors[1]; }
+            else if (severity === 'Grade 3') { return colors[2]; }
+        });
+    }
+
+   if (typeof Object.assign != 'function') {
+     (function () {
+       Object.assign = function (target) {
+         'use strict';
+         if (target === undefined || target === null) {
+           throw new TypeError('Cannot convert undefined or null to object');
+         }
+
+         var output = Object(target);
+         for (var index = 1; index < arguments.length; index++) {
+           var source = arguments[index];
+           if (source !== undefined && source !== null) {
+             for (var nextKey in source) {
+               if (source.hasOwnProperty(nextKey)) {
+                 output[nextKey] = source[nextKey];
+               }
+             }
+           }
+         }
+         return output;
+       };
+     })();
    }
 
    function outlierExplorer(element, settings$$){
@@ -189,7 +234,6 @@ var histogram = (function (webcharts,d3) {
    	secondSettings.marks[0].per[0] = mergedSettings.seq_col;
    	secondSettings.marks[1].per[0] = mergedSettings.seq_col;
    	secondSettings.color_by = mergedSettings.sev_col;
-   	
    	//create controls now
    	let controls = webcharts.createControls(element, {location: 'top', inputs: controlInputs});
    	//create chart
@@ -204,7 +248,7 @@ var histogram = (function (webcharts,d3) {
    	let chart2 = webcharts.createChart(element, secondSettings).init([]);
    	chart2.wrap.style('display', 'none');
    	chart.chart2 = chart2;
-   	let table = webCharts.createTable(element, {}).init([]);
+   	let table = webcharts.createTable(element, {}).init([]);
    	chart.table = table;
 
    	return chart;

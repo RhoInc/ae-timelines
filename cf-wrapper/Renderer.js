@@ -2,7 +2,7 @@ import React from 'react';
 import stringAccessor from './string-accessor';
 import binding from './binding';
 import ReactAETimelines from './ReactAETimelines';
-import { version  as d3_version } from 'd3';
+import { version as d3_version } from 'd3';
 import { version as wc_version } from 'webcharts';
 
 function describeCode(props){
@@ -31,7 +31,7 @@ export default class Renderer extends React.Component {
   }
   createSettings(props) {
     const shell = {};
-    
+
     binding.dataMappings.forEach(e => {
       let chartVal = stringAccessor(props.dataMappings, e.source);
       if(chartVal ){
@@ -49,7 +49,7 @@ export default class Renderer extends React.Component {
         else{
           stringAccessor(shell, e.target, null);
         }
-      } 
+      }
     });
     binding.chartProperties.forEach(e => {
       let chartVal = stringAccessor(props.chartProperties, e.source);
@@ -59,7 +59,7 @@ export default class Renderer extends React.Component {
       else{
         let defaultVal = stringAccessor(props.template.chartProperties, e.source+'.default');
         stringAccessor(shell, e.target, defaultVal);
-      } 
+      }
     });
 
     return shell;
@@ -76,7 +76,7 @@ export default class Renderer extends React.Component {
     return (
       React.createElement(ReactAETimelines, {
         id: this.props.id,
-        settings: this.state.settings, 
+        settings: this.state.settings,
         controlInputs: this.props.template.controls,
         data: this.props.data
       })

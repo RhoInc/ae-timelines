@@ -1,4 +1,5 @@
 import { select, svg } from 'd3';
+import severityColor from './severityColor';
 
 export default function onResize(){
     this.chart2.x_dom = this.x_dom;
@@ -27,14 +28,23 @@ export default function onResize(){
     var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis time")
        // .attr("transform", "translate(0,-10)");
 
-    g_x2_axis.transition().call(x2Axis);
+    g_x2_axis.call(x2Axis);
 
-    g_x2_axis.select("text.axis-title.top").transition().attr("transform","translate("+(this.raw_width/2)+",-"+this.config.margin.top+")");
-        
+    g_x2_axis.select("text.axis-title.top").attr("transform","translate("+(this.raw_width/2)+",-"+this.config.margin.top+")");
+
     g_x2_axis.select('.domain').attr({
         'fill': 'none',
         'stroke': '#ccc',
         'shape-rendering': 'crispEdges'
     });
     g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+
+  //Re-color AE severity
+    var severityChart = this;
+    severityColor(severityChart);
+
+    this.chart2.on('resize', function() {
+        var severityChart = this;
+        severityColor(severityChart);
+    });
 }

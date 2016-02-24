@@ -28,7 +28,7 @@ export default function outlierExplorer(element, settings){
 	secondSettings.marks[0].per[0] = mergedSettings.seq_col;
 	secondSettings.marks[1].per[0] = mergedSettings.seq_col;
 	secondSettings.color_by = mergedSettings.sev_col;
-	
+
 	//create controls now
 	let controls = createControls(element, {location: 'top', inputs: controlInputs});
 	//create chart

@@ -113,6 +113,22 @@ var aeTimelines = (function (webcharts, d3) {
 
     function onDraw() {}
 
+    function severityColor(chart) {
+        var colors = chart.config.colors;
+        chart.svg.selectAll('.wc-data-mark').attr('stroke', function (d) {
+            var ae = d.values;
+            var severity = ae.raw ? ae.raw[0].AESEV : ae[0].values.raw[0].AESEV;
+
+            if (severity === 'Grade 1') {
+                return colors[0];
+            } else if (severity === 'Grade 2') {
+                return colors[1];
+            } else if (severity === 'Grade 3') {
+                return colors[2];
+            }
+        });
+    }
+
     function onResize() {
         var _this2 = this;
 
@@ -138,9 +154,9 @@ var aeTimelines = (function (webcharts, d3) {
         var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis time");
         // .attr("transform", "translate(0,-10)");
 
-        g_x2_axis.transition().call(x2Axis);
+        g_x2_axis.call(x2Axis);
 
-        g_x2_axis.select("text.axis-title.top").transition().attr("transform", "translate(" + this.raw_width / 2 + ",-" + this.config.margin.top + ")");
+        g_x2_axis.select("text.axis-title.top").attr("transform", "translate(" + this.raw_width / 2 + ",-" + this.config.margin.top + ")");
 
         g_x2_axis.select('.domain').attr({
             'fill': 'none',
@@ -148,6 +164,15 @@ var aeTimelines = (function (webcharts, d3) {
             'shape-rendering': 'crispEdges'
         });
         g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+
+        //Re-color AE severity
+        var severityChart = this;
+        severityColor(severityChart);
+
+        this.chart2.on('resize', function () {
+            var severityChart = this;
+            severityColor(severityChart);
+        });
     }
 
     if (typeof Object.assign != 'function') {

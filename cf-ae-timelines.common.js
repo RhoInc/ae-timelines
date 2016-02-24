@@ -2,7 +2,7 @@
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -262,6 +262,22 @@ function onDataTransform() {}
 
 function onDraw() {}
 
+function severityColor(chart) {
+  var colors = chart.config.colors;
+  chart.svg.selectAll('.wc-data-mark').attr('stroke', function (d) {
+    var ae = d.values;
+    var severity = ae.raw ? ae.raw[0].AESEV : ae[0].values.raw[0].AESEV;
+
+    if (severity === 'Grade 1') {
+      return colors[0];
+    } else if (severity === 'Grade 2') {
+      return colors[1];
+    } else if (severity === 'Grade 3') {
+      return colors[2];
+    }
+  });
+}
+
 function onResize() {
   var _this2 = this;
 
@@ -287,9 +303,9 @@ function onResize() {
   var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis time");
   // .attr("transform", "translate(0,-10)");
 
-  g_x2_axis.transition().call(x2Axis);
+  g_x2_axis.call(x2Axis);
 
-  g_x2_axis.select("text.axis-title.top").transition().attr("transform", "translate(" + this.raw_width / 2 + ",-" + this.config.margin.top + ")");
+  g_x2_axis.select("text.axis-title.top").attr("transform", "translate(" + this.raw_width / 2 + ",-" + this.config.margin.top + ")");
 
   g_x2_axis.select('.domain').attr({
     'fill': 'none',
@@ -297,6 +313,15 @@ function onResize() {
     'shape-rendering': 'crispEdges'
   });
   g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+
+  //Re-color AE severity
+  var severityChart = this;
+  severityColor(severityChart);
+
+  this.chart2.on('resize', function () {
+    var severityChart = this;
+    severityColor(severityChart);
+  });
 }
 
 if (typeof Object.assign != 'function') {
@@ -409,7 +434,7 @@ ReactAETimelines.defaultProps = { data: [], controlInputs: [], id: 'id' };
 
 function describeCode(props) {
   var settings = this.createSettings(props);
-  var code = '//uses d3 v.' + d3.version + '\n//uses webcharts v.' + webcharts.version + '\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(data);\n});\n  ';
+  var code = '//uses d3 v.' + d3.version + '\n//uses webcharts v.' + webcharts.version + '\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n  ';
   return code;
 }
 
