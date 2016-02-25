@@ -105,7 +105,7 @@ var aeTimelines = (function (webcharts, d3) {
 
     function onLayout() {
 
-        var x2 = this.svg.append("g").attr("class", "x2 axis time");
+        var x2 = this.svg.append("g").attr("class", "x2 axis linear");
         x2.append("text").attr("class", "axis-title top").attr("dy", "2em").attr("text-anchor", "middle").text(this.config.x_label);
     }
 
@@ -151,7 +151,7 @@ var aeTimelines = (function (webcharts, d3) {
 
         var x2Axis = d3.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
 
-        var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis time");
+        var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
         // .attr("transform", "translate(0,-10)");
 
         g_x2_axis.call(x2Axis);

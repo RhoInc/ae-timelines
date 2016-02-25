@@ -25,7 +25,7 @@ export default function onResize(){
         .outerTickSize(this.xAxis.outerTickSize())
         .ticks(this.xAxis.ticks()[0]);
 
-    var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis time")
+    var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear")
        // .attr("transform", "translate(0,-10)");
 
     g_x2_axis.call(x2Axis);
