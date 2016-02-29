@@ -10,6 +10,7 @@ var aeTimelines = (function (webcharts,d3) {
        stdy_col: 'ASTDY',
        endy_col: 'AENDY',
        sev_col: 'AESEV',
+       rel_col: 'AEREL',
        //Standard webcharts settings
        x:{
            "label":null,
@@ -17,32 +18,32 @@ var aeTimelines = (function (webcharts,d3) {
            "column":'wc_value'
        },
        y:{
-           "label": '',
+           "label": '', 
            "sort":"earliest",
            "type":"ordinal",
-           "column":"USUBJID",
+           "column":"USUBJID", 
            "behavior": 'flex'
        },
       "margin": {"top": 50},
        "legend":{
-           "mark":"circle",
+           "mark":"circle", 
            "label": 'Severity'
        },
        "marks":[
            {
                "type":"line",
-               "per":["USUBJID", "AESEQ"],
+               "per":["USUBJID", "AESEQ"], 
                "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
                "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
            },
            {
                "type":"circle",
-               "per":["USUBJID", "AESEQ", "wc_value"],
+               "per":["USUBJID", "AESEQ", "wc_value"], 
                "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
-           },
+           }
        ],
        "color_by": "AESEV",
-       "colors": ['#66bd63', '#fdae61', '#d73027'],
+       "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
        "date_format":"%m/%d/%y",
        "resizable":true,
        "max_width":1000,
@@ -52,25 +53,30 @@ var aeTimelines = (function (webcharts,d3) {
        "range_band":15,
    };
 
-   const controlInputs = [
+   const controlInputs = [ 
        {label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true},
        {label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS"},
        {label: "Subject ID", type: "subsetter", value_col: "USUBJID"},
+       {label: "Related to Treatment", type: "subsetter", value_col: "AEREL"},
        {label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true}
    ];
 
    const secondSettings = {
        "x":{label:'', "type":"linear","column":"wc_value"},
        "y":{label: '', "sort":"alphabetical-descending","type":"ordinal","column":"AESEQ"},
-       "legend":{"mark":"circle", label: 'Severity'},
        "marks":[
            {"type":"line","per":["AESEQ"], attributes:{'stroke-width': 5, 'stroke-opacity': .8 }},
            {"type":"circle","per":[ "AESEQ", "wc_value"]}
         ],
        color_by: "AESEV",
-       colors: ['#66bd63', '#fdae61', '#d73027'],
+       colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+       "legend":{
+           "mark":"circle", 
+           "label": 'Severity'
+       },
        "date_format":"%d%b%Y:%X",
        // "resizable":false,
+       transitions: false,
        "max_width":1000,
        // point_size: 3,
        "gridlines":"y",
@@ -96,7 +102,7 @@ var aeTimelines = (function (webcharts,d3) {
 
    function onInit(){
        this.superRaw = this.raw_data;
-       this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col])
+       this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col])  
        this.raw_data.forEach(function(d){
            d.wc_value = d.wc_value == "" ? NaN : +d.wc_value;
        });
@@ -115,7 +121,7 @@ var aeTimelines = (function (webcharts,d3) {
 
    function onLayout(){
 
-     var x2 = this.svg.append("g").attr("class", "x2 axis time");
+     var x2 = this.svg.append("g").attr("class", "x2 axis linear");
      x2.append("text").attr("class","axis-title top")
        .attr("dy","2em")
        .attr("text-anchor","middle")
@@ -128,9 +134,15 @@ var aeTimelines = (function (webcharts,d3) {
    }
 
    function onDraw(){
+
    }
 
    function onResize(){
+       var chart = this;
+       this.chart2.on('datatransform', function(){
+           //make sure color scales stay consistent
+           this.config.color_dom = chart.colorScale.domain();
+       });
        this.chart2.x_dom = this.x_dom;
        this.svg.select('.y.axis').selectAll('.tick')
        .style('cursor', 'pointer')
@@ -139,8 +151,12 @@ var aeTimelines = (function (webcharts,d3) {
            this.chart2.wrap.style('display', 'block');
            this.chart2.draw(csv2);
            this.chart2.wrap.insert('h4', 'svg').attr('class', 'id-title').text(d);
+           //force legend to be drawn
+           this.chart2.makeLegend(this.colorScale);
 
            var tableData = this.superRaw.filter(f => f[this.config.id_col] === d);
+           //set cols for table, otherwise can get mismatched
+           this.table.config.cols = Object.keys(tableData[0]);
            this.table.draw(tableData)
            this.wrap.style('display', 'none');
            this.controls.wrap.style('display', 'none');
@@ -152,10 +168,9 @@ var aeTimelines = (function (webcharts,d3) {
            .tickFormat(this.xAxis.tickFormat())
            .innerTickSize(this.xAxis.innerTickSize())
            .outerTickSize(this.xAxis.outerTickSize())
-           .ticks(this.xAxis.ticks()[0])
+           .ticks(this.xAxis.ticks()[0]);
 
-       var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear")
-          // .attr("transform", "translate(0,-10)");
+       var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
 
        g_x2_axis.call(x2Axis);
 
@@ -167,29 +182,7 @@ var aeTimelines = (function (webcharts,d3) {
            'shape-rendering': 'crispEdges'
        });
        g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
-
-      //Re-color AE severity
-        var severityChart = this;
-        severityColor(severityChart);
-
-        this.chart2.on('resize', function() {
-            var severityChart = this;
-            severityColor(severityChart);
-        });
-    }
-
-  //Consistently color AE severity in subject-level view
-    function severityColor(chart) {
-        var colors = chart.config.colors;
-        chart.svg.selectAll('.wc-data-mark').attr('stroke', function(d) {
-            var ae = d.values;
-            var severity = ae.raw ? ae.raw[0].AESEV : ae[0].values.raw[0].AESEV;
-
-                 if (severity === 'Grade 1') { return colors[0]; }
-            else if (severity === 'Grade 2') { return colors[1]; }
-            else if (severity === 'Grade 3') { return colors[2]; }
-        });
-    }
+   }
 
    if (typeof Object.assign != 'function') {
      (function () {
@@ -229,11 +222,16 @@ var aeTimelines = (function (webcharts,d3) {
    	controlInputs[0].value_col = mergedSettings.sev_col;
    	controlInputs[1].value_col = mergedSettings.soc_col;
    	controlInputs[2].value_col = mergedSettings.id_col;
+   	controlInputs[3].value_col = mergedSettings.rel_col;
+   	
    	//keep settings for secondary chart in sync
-   	secondSettings.y.column = mergedSettings.seq_col;
-   	secondSettings.marks[0].per[0] = mergedSettings.seq_col;
-   	secondSettings.marks[1].per[0] = mergedSettings.seq_col;
-   	secondSettings.color_by = mergedSettings.sev_col;
+   	let mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
+   	mergedSecondSettings.y.column = mergedSettings.seq_col;
+   	mergedSecondSettings.marks[0].per[0] = mergedSettings.seq_col;
+   	mergedSecondSettings.marks[1].per[0] = mergedSettings.seq_col;
+   	mergedSecondSettings.color_by = mergedSettings.sev_col;
+   	mergedSecondSettings.color_dom = mergedSettings.legend ? mergedSecondSettings.legend.order : null;
+
    	//create controls now
    	let controls = webcharts.createControls(element, {location: 'top', inputs: controlInputs});
    	//create chart
@@ -245,7 +243,7 @@ var aeTimelines = (function (webcharts,d3) {
    	chart.on('resize', onResize);
 
    	//set up secondary chart and table
-   	let chart2 = webcharts.createChart(element, secondSettings).init([]);
+   	let chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
    	chart2.wrap.style('display', 'none');
    	chart.chart2 = chart2;
    	let table = webcharts.createTable(element, {}).init([]);

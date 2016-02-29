@@ -161,6 +161,7 @@ var settings = {
   stdy_col: 'ASTDY',
   endy_col: 'AENDY',
   sev_col: 'AESEV',
+  rel_col: 'AEREL',
   //Standard webcharts settings
   x: {
     "label": null,
@@ -190,7 +191,7 @@ var settings = {
     "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
   }],
   "color_by": "AESEV",
-  "colors": ['#66bd63', '#fdae61', '#d73027'],
+  "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
   "date_format": "%m/%d/%y",
   "resizable": true,
   "max_width": 1000,
@@ -200,17 +201,21 @@ var settings = {
   "range_band": 15
 };
 
-var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
+var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
 
 var secondSettings = {
   "x": { label: '', "type": "linear", "column": "wc_value" },
   "y": { label: '', "sort": "alphabetical-descending", "type": "ordinal", "column": "AESEQ" },
-  "legend": { "mark": "circle", label: 'Severity' },
   "marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }],
   color_by: "AESEV",
-  colors: ['#66bd63', '#fdae61', '#d73027'],
+  colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+  "legend": {
+    "mark": "circle",
+    "label": 'Severity'
+  },
   "date_format": "%d%b%Y:%X",
   // "resizable":false,
+  transitions: false,
   "max_width": 1000,
   // point_size: 3,
   "gridlines": "y",
@@ -262,25 +267,14 @@ function onDataTransform() {}
 
 function onDraw() {}
 
-function severityColor(chart) {
-  var colors = chart.config.colors;
-  chart.svg.selectAll('.wc-data-mark').attr('stroke', function (d) {
-    var ae = d.values;
-    var severity = ae.raw ? ae.raw[0].AESEV : ae[0].values.raw[0].AESEV;
-
-    if (severity === 'Grade 1') {
-      return colors[0];
-    } else if (severity === 'Grade 2') {
-      return colors[1];
-    } else if (severity === 'Grade 3') {
-      return colors[2];
-    }
-  });
-}
-
 function onResize() {
   var _this2 = this;
 
+  var chart = this;
+  this.chart2.on('datatransform', function () {
+    //make sure color scales stay consistent
+    this.config.color_dom = chart.colorScale.domain();
+  });
   this.chart2.x_dom = this.x_dom;
   this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
     var csv2 = _this2.raw_data.filter(function (f) {
@@ -289,10 +283,14 @@ function onResize() {
     _this2.chart2.wrap.style('display', 'block');
     _this2.chart2.draw(csv2);
     _this2.chart2.wrap.insert('h4', 'svg').attr('class', 'id-title').text(d);
+    //force legend to be drawn
+    _this2.chart2.makeLegend(_this2.colorScale);
 
     var tableData = _this2.superRaw.filter(function (f) {
       return f[_this2.config.id_col] === d;
     });
+    //set cols for table, otherwise can get mismatched
+    _this2.table.config.cols = Object.keys(tableData[0]);
     _this2.table.draw(tableData);
     _this2.wrap.style('display', 'none');
     _this2.controls.wrap.style('display', 'none');
@@ -301,7 +299,6 @@ function onResize() {
   var x2Axis = d3.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
 
   var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
-  // .attr("transform", "translate(0,-10)");
 
   g_x2_axis.call(x2Axis);
 
@@ -313,15 +310,6 @@ function onResize() {
     'shape-rendering': 'crispEdges'
   });
   g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
-
-  //Re-color AE severity
-  var severityChart = this;
-  severityColor(severityChart);
-
-  this.chart2.on('resize', function () {
-    var severityChart = this;
-    severityColor(severityChart);
-  });
 }
 
 if (typeof Object.assign != 'function') {
@@ -362,11 +350,15 @@ function outlierExplorer(element, settings$$) {
   controlInputs[0].value_col = mergedSettings.sev_col;
   controlInputs[1].value_col = mergedSettings.soc_col;
   controlInputs[2].value_col = mergedSettings.id_col;
+  controlInputs[3].value_col = mergedSettings.rel_col;
+
   //keep settings for secondary chart in sync
-  secondSettings.y.column = mergedSettings.seq_col;
-  secondSettings.marks[0].per[0] = mergedSettings.seq_col;
-  secondSettings.marks[1].per[0] = mergedSettings.seq_col;
-  secondSettings.color_by = mergedSettings.sev_col;
+  var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
+  mergedSecondSettings.y.column = mergedSettings.seq_col;
+  mergedSecondSettings.marks[0].per[0] = mergedSettings.seq_col;
+  mergedSecondSettings.marks[1].per[0] = mergedSettings.seq_col;
+  mergedSecondSettings.color_by = mergedSettings.sev_col;
+  mergedSecondSettings.color_dom = mergedSettings.legend ? mergedSecondSettings.legend.order : null;
 
   //create controls now
   var controls = webcharts.createControls(element, { location: 'top', inputs: controlInputs });
@@ -379,7 +371,7 @@ function outlierExplorer(element, settings$$) {
   chart.on('resize', onResize);
 
   //set up secondary chart and table
-  var chart2 = webcharts.createChart(element, secondSettings).init([]);
+  var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
   chart2.wrap.style('display', 'none');
   chart.chart2 = chart2;
   var table = webcharts.createTable(element, {}).init([]);

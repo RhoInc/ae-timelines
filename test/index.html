@@ -15,8 +15,17 @@
     <script src="bundle.js"></script>
     <script>
       var div = '#root';
-      var settings = {};
-      var dataFile = 'aes.csv';
+      var settings = {
+        legend: {
+          order: [
+            'Mild', 'Moderate', 'Severe', 'Life threatening'
+          ]
+        },
+        colors: [
+          'green', 'yellow', 'red', 'blue'
+        ]
+      };
+      var dataFile = 'bug.csv';
 
       d3.csv(dataFile, function (data){
         var plot = aeTimelines(div, settings).init(data);

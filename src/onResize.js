@@ -1,7 +1,11 @@
 import { select, svg } from 'd3';
-import severityColor from './severityColor';
 
 export default function onResize(){
+    var chart = this;
+    this.chart2.on('datatransform', function(){
+        //make sure color scales stay consistent
+        this.config.color_dom = chart.colorScale.domain();
+    });
     this.chart2.x_dom = this.x_dom;
     this.svg.select('.y.axis').selectAll('.tick')
     .style('cursor', 'pointer')
@@ -10,8 +14,12 @@ export default function onResize(){
         this.chart2.wrap.style('display', 'block');
         this.chart2.draw(csv2);
         this.chart2.wrap.insert('h4', 'svg').attr('class', 'id-title').text(d);
+        //force legend to be drawn
+        this.chart2.makeLegend(this.colorScale);
 
         var tableData = this.superRaw.filter(f => f[this.config.id_col] === d);
+        //set cols for table, otherwise can get mismatched
+        this.table.config.cols = Object.keys(tableData[0]);
         this.table.draw(tableData)
         this.wrap.style('display', 'none');
         this.controls.wrap.style('display', 'none');
@@ -25,8 +33,7 @@ export default function onResize(){
         .outerTickSize(this.xAxis.outerTickSize())
         .ticks(this.xAxis.ticks()[0]);
 
-    var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear")
-       // .attr("transform", "translate(0,-10)");
+    var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
 
     g_x2_axis.call(x2Axis);
 
@@ -38,13 +45,4 @@ export default function onResize(){
         'shape-rendering': 'crispEdges'
     });
     g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
-
-  //Re-color AE severity
-    var severityChart = this;
-    severityColor(severityChart);
-
-    this.chart2.on('resize', function() {
-        var severityChart = this;
-        severityColor(severityChart);
-    });
 }

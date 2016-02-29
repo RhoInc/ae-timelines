@@ -23,11 +23,15 @@ export default function outlierExplorer(element, settings){
 	controlInputs[0].value_col = mergedSettings.sev_col;
 	controlInputs[1].value_col = mergedSettings.soc_col;
 	controlInputs[2].value_col = mergedSettings.id_col;
+	controlInputs[3].value_col = mergedSettings.rel_col;
+	
 	//keep settings for secondary chart in sync
-	secondSettings.y.column = mergedSettings.seq_col;
-	secondSettings.marks[0].per[0] = mergedSettings.seq_col;
-	secondSettings.marks[1].per[0] = mergedSettings.seq_col;
-	secondSettings.color_by = mergedSettings.sev_col;
+	let mergedSecondSettings = Object.assign({}, secondSettings, settings);
+	mergedSecondSettings.y.column = mergedSettings.seq_col;
+	mergedSecondSettings.marks[0].per[0] = mergedSettings.seq_col;
+	mergedSecondSettings.marks[1].per[0] = mergedSettings.seq_col;
+	mergedSecondSettings.color_by = mergedSettings.sev_col;
+	mergedSecondSettings.color_dom = mergedSettings.legend ? mergedSecondSettings.legend.order : null;
 
 	//create controls now
 	let controls = createControls(element, {location: 'top', inputs: controlInputs});
@@ -40,7 +44,7 @@ export default function outlierExplorer(element, settings){
 	chart.on('resize', onResize);
 
 	//set up secondary chart and table
-	let chart2 = createChart(element, secondSettings).init([]);
+	let chart2 = createChart(element, mergedSecondSettings).init([]);
 	chart2.wrap.style('display', 'none');
 	chart.chart2 = chart2;
 	let table = createTable(element, {}).init([]);

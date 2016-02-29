@@ -7,6 +7,7 @@ const settings = {
     stdy_col: 'ASTDY',
     endy_col: 'AENDY',
     sev_col: 'AESEV',
+    rel_col: 'AEREL',
     //Standard webcharts settings
     x:{
         "label":null,
@@ -36,10 +37,10 @@ const settings = {
             "type":"circle",
             "per":["USUBJID", "AESEQ", "wc_value"], 
             "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
-        },
+        }
     ],
     "color_by": "AESEV",
-    "colors": ['#66bd63', '#fdae61', '#d73027'],
+    "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
     "date_format":"%m/%d/%y",
     "resizable":true,
     "max_width":1000,
@@ -53,21 +54,26 @@ export const controlInputs = [
     {label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true},
     {label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS"},
     {label: "Subject ID", type: "subsetter", value_col: "USUBJID"},
+    {label: "Related to Treatment", type: "subsetter", value_col: "AEREL"},
     {label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true}
 ];
 
 export const secondSettings = {
     "x":{label:'', "type":"linear","column":"wc_value"},
     "y":{label: '', "sort":"alphabetical-descending","type":"ordinal","column":"AESEQ"},
-    "legend":{"mark":"circle", label: 'Severity'},
     "marks":[
         {"type":"line","per":["AESEQ"], attributes:{'stroke-width': 5, 'stroke-opacity': .8 }},
         {"type":"circle","per":[ "AESEQ", "wc_value"]}
      ],
     color_by: "AESEV",
-    colors: ['#66bd63', '#fdae61', '#d73027'],
+    colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+    "legend":{
+        "mark":"circle", 
+        "label": 'Severity'
+    },
     "date_format":"%d%b%Y:%X",
     // "resizable":false,
+    transitions: false,
     "max_width":1000,
     // point_size: 3,
     "gridlines":"y",
