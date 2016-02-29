@@ -445,7 +445,15 @@ var Renderer = (function (_React$Component2) {
   _createClass(Renderer, [{
     key: 'createSettings',
     value: function createSettings(props) {
-      var shell = {};
+      var shell = {
+        legend: {
+          mark: 'circle',
+          order: null,
+          label: null
+        },
+        colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+        color_by: 'AESEV'
+      };
 
       binding.dataMappings.forEach(function (e) {
         var chartVal = stringAccessor(props.dataMappings, e.source);
@@ -472,7 +480,7 @@ var Renderer = (function (_React$Component2) {
           stringAccessor(shell, e.target, defaultVal);
         }
       });
-
+      console.log(shell);
       return shell;
     }
   }, {
