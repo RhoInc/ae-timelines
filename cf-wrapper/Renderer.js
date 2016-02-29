@@ -30,7 +30,15 @@ export default class Renderer extends React.Component {
     this.state = {data: [], settings: {}, template: {}, loadMsg: 'Loading...'};
   }
   createSettings(props) {
-    const shell = {};
+    const shell = {
+      legend: {
+        mark: 'circle',
+        order: null,
+        label: null
+      },
+      colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+      color_by: 'AESEV'
+    };
 
     binding.dataMappings.forEach(e => {
       let chartVal = stringAccessor(props.dataMappings, e.source);
@@ -61,7 +69,7 @@ export default class Renderer extends React.Component {
         stringAccessor(shell, e.target, defaultVal);
       }
     });
-
+console.log(shell)
     return shell;
   }
   componentWillMount() {
