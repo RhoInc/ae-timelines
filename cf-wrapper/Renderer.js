@@ -69,7 +69,7 @@ export default class Renderer extends React.Component {
         stringAccessor(shell, e.target, defaultVal);
       }
     });
-console.log(shell)
+
     return shell;
   }
   componentWillMount() {

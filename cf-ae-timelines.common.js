@@ -480,7 +480,7 @@ var Renderer = (function (_React$Component2) {
           stringAccessor(shell, e.target, defaultVal);
         }
       });
-      console.log(shell);
+
       return shell;
     }
   }, {
