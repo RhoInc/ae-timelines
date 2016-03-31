@@ -2,12 +2,12 @@
   "name": "se-ae-timelines",
   "version": "0.0.0",
   "description": "AE timelines for safety explorer",
-  "main": "cf-ae-timelines.common.js",
+  "main": "wrapper.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev-watch": "cd test && node watcher.js",
-    "build": "rollup -c | babel > index.js",
-    "build-renderer": "rollup -c renderer.rollup.config.js | babel > cf-ae-timelines.common.js"
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > wrapper.js",
+    "build-renderer": "rollup -c ./scripts/rollup.cf-renderer.config.js | babel > cf-render.js"
   },
   "author": "Rho, Inc.",
   "license": "ISC",

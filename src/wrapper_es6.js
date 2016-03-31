@@ -1,15 +1,15 @@
 import { createChart, createControls, createTable } from 'webcharts';
-import {  controlInputs } from './default-settings'
+import { controlInputs} from './default-settings'
 import config from './default-settings';
-import { secondSettings } from './default-settings';
+import { secondSettings } from './bin/second-settings';
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDataTransform from './onDataTransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
-import './object-assign';
+import './bin/object-assign';
 
-export default function outlierExplorer(element, settings){
+export default function aeTimeline(element, settings){
 	//merge user's settings with defaults
 	let mergedSettings = Object.assign({}, config, settings);
 	//keep settings in sync
@@ -35,6 +35,7 @@ export default function outlierExplorer(element, settings){
 
 	//create controls now
 	let controls = createControls(element, {location: 'top', inputs: controlInputs});
+	
 	//create chart
 	let chart = createChart(element, mergedSettings, controls);
 	chart.on('init', onInit);
