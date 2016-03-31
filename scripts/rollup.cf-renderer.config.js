@@ -1,5 +1,5 @@
 module.exports = {
-  entry: './cf-wrapper/Renderer.js',
+  entry: './src/chartfoundry/bin/Renderer.js',
   format: 'cjs',
   globals: {
     webcharts: 'webCharts',

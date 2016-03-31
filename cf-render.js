@@ -2,14 +2,14 @@
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _interopDefault(ex) {
-  return 'default' in ex ? ex['default'] : ex;
+  return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
 }
 
 var React = _interopDefault(require('react'));
@@ -336,7 +336,7 @@ if (typeof Object.assign != 'function') {
   })();
 }
 
-function outlierExplorer(element, settings$$) {
+function aeTimeline(element, settings$$) {
   //merge user's settings with defaults
   var mergedSettings = Object.assign({}, settings, settings$$);
   //keep settings in sync
@@ -362,6 +362,7 @@ function outlierExplorer(element, settings$$) {
 
   //create controls now
   var controls = webcharts.createControls(element, { location: 'top', inputs: controlInputs });
+
   //create chart
   var chart = webcharts.createChart(element, mergedSettings, controls);
   chart.on('init', onInit);
@@ -396,7 +397,7 @@ var ReactAETimelines = (function (_React$Component) {
       if (this.props.data.length) {
         //manually clear div and redraw
         d3.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
-        var chart = outlierExplorer('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
+        var chart = aeTimeline('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
       }
     }
   }, {
@@ -405,7 +406,7 @@ var ReactAETimelines = (function (_React$Component) {
       if (this.props.data.length) {
         //manually clear div and redraw
         d3.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
-        var chart = outlierExplorer('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
+        var chart = aeTimeline('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
       }
     }
   }, {

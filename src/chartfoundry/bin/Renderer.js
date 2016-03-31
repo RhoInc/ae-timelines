@@ -1,7 +1,7 @@
 import React from 'react';
 import stringAccessor from './string-accessor';
-import binding from './binding';
-import ReactAETimelines from './ReactAETimelines';
+import binding from '../binding';
+import reactTemplate from './reactTemplate';
 import { version as d3_version } from 'd3';
 import { version as wc_version } from 'webcharts';
 
@@ -82,7 +82,7 @@ export default class Renderer extends React.Component {
   }
   render() {
     return (
-      React.createElement(ReactAETimelines, {
+      React.createElement(reactTemplate, {
         id: this.props.id,
         settings: this.state.settings,
         controlInputs: this.props.template.controls,

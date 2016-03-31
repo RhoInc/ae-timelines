@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev-watch": "cd test && node watcher.js",
     "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > wrapper.js",
-    "build-renderer": "rollup -c ./scripts/rollup.cf-renderer.config.js | babel > cf-render.js"
+    "build-chartfoundry": "rollup -c ./scripts/rollup.cf-renderer.config.js | babel > cf-render.js"
   },
   "author": "Rho, Inc.",
   "license": "ISC",
