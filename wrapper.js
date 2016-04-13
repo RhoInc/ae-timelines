@@ -187,7 +187,7 @@ var aeTimelines = (function (webcharts, d3) {
         })();
     }
 
-    function outlierExplorer(element, settings$$) {
+    function aeTimeline(element, settings$$) {
         //merge user's settings with defaults
         var mergedSettings = Object.assign({}, settings, settings$$);
         //keep settings in sync
@@ -213,6 +213,7 @@ var aeTimelines = (function (webcharts, d3) {
 
         //create controls now
         var controls = webcharts.createControls(element, { location: 'top', inputs: controlInputs });
+
         //create chart
         var chart = webcharts.createChart(element, mergedSettings, controls);
         chart.on('init', onInit);
@@ -231,6 +232,6 @@ var aeTimelines = (function (webcharts, d3) {
         return chart;
     }
 
-    return outlierExplorer;
+    return aeTimeline;
 })(webCharts, d3);
 

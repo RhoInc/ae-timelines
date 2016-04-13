@@ -1,6 +1,6 @@
 import React from 'react';
 import { select } from 'd3';
-import mainChart from '../src/index';
+import mainChart from '../../wrapper_es6';
 
 export default class ReactAETimelines extends React.Component {
 	constructor(props) {
