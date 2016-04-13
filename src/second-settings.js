@@ -20,3 +20,13 @@ export const secondSettings = {
     "no_text_size":false,
     "range_band":28
 };
+
+export function syncSecondSettings(secondSettings, settings){
+    secondSettings.y.column = settings.seq_col;
+    secondSettings.marks[0].per[0] = settings.seq_col;
+    secondSettings.marks[1].per[0] = settings.seq_col;
+    secondSettings.color_by = settings.sev_col;
+    secondSettings.color_dom = settings.legend ? secondSettings.legend.order : null;
+
+    return secondSettings
+}

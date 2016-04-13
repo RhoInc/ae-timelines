@@ -1,5 +1,5 @@
 module.exports = {
-  entry: './src/wrapper_es6.js',
+  entry: './src/wrapper.js',
   format: 'iife',
   globals: {
     webcharts: 'webCharts',

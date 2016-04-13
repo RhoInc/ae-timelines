@@ -162,6 +162,7 @@ var settings = {
   endy_col: 'AENDY',
   sev_col: 'AESEV',
   rel_col: 'AEREL',
+
   //Standard webcharts settings
   x: {
     "label": null,
@@ -172,7 +173,6 @@ var settings = {
     "label": '',
     "sort": "earliest",
     "type": "ordinal",
-    "column": "USUBJID",
     "behavior": 'flex'
   },
   "margin": { "top": 50 },
@@ -182,15 +182,10 @@ var settings = {
   },
   "marks": [{
     "type": "line",
-    "per": ["USUBJID", "AESEQ"],
-    "attributes": { 'stroke-width': 5, 'stroke-opacity': .8 },
-    "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
+    "attributes": { 'stroke-width': 5, 'stroke-opacity': .8 }
   }, {
-    "type": "circle",
-    "per": ["USUBJID", "AESEQ", "wc_value"],
-    "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
+    "type": "circle"
   }],
-  "color_by": "AESEV",
   "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
   "date_format": "%m/%d/%y",
   "resizable": true,
@@ -201,7 +196,27 @@ var settings = {
   "range_band": 15
 };
 
+function syncSettings(settings) {
+  settings.y.column = settings.id_col;
+  settings.marks[0].per = [settings.id_col, settings.seq_col];
+  settings.marks[0].tooltip = 'System Organ Class: [' + settings.soc_col + ']\nPreferred Term: [' + settings.term_col + ']\nStart Day: [' + settings.stdy_col + ']\nStop Day: [' + settings.endy_col + ']';
+  settings.marks[1].per = [settings.id_col, settings.seq_col, 'wc_value'];
+  settings.marks[1].tooltip = 'System Organ Class: [' + settings.soc_col + ']\nPreferred Term: [' + settings.term_col + ']\nStart Day: [' + settings.stdy_col + ']\nStop Day: [' + settings.endy_col + ']';
+  settings.color_by = settings.sev_col;
+
+  return settings;
+}
+
 var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
+
+function syncControlInputs(controlInputs, settings) {
+  controlInputs[0].value_col = settings.sev_col;
+  controlInputs[1].value_col = settings.soc_col;
+  controlInputs[2].value_col = settings.id_col;
+  controlInputs[3].value_col = settings.rel_col;
+
+  return controlInputs;
+}
 
 var secondSettings = {
   "x": { label: '', "type": "linear", "column": "wc_value" },
@@ -222,6 +237,16 @@ var secondSettings = {
   "no_text_size": false,
   "range_band": 28
 };
+
+function syncSecondSettings(secondSettings, settings) {
+  secondSettings.y.column = settings.seq_col;
+  secondSettings.marks[0].per[0] = settings.seq_col;
+  secondSettings.marks[1].per[0] = settings.seq_col;
+  secondSettings.color_by = settings.sev_col;
+  secondSettings.color_dom = settings.legend ? secondSettings.legend.order : null;
+
+  return secondSettings;
+}
 
 function lengthenRaw(data, columns) {
   var my_data = [];
@@ -339,29 +364,19 @@ if (typeof Object.assign != 'function') {
 function aeTimeline(element, settings$$) {
   //merge user's settings with defaults
   var mergedSettings = Object.assign({}, settings, settings$$);
-  //keep settings in sync
-  mergedSettings.y.column = mergedSettings.id_col;
-  mergedSettings.marks[0].per = [mergedSettings.id_col, mergedSettings.seq_col];
-  mergedSettings.marks[0].tooltip = 'System Organ Class: [' + mergedSettings.soc_col + ']\nPreferred Term: [' + mergedSettings.term_col + ']\nStart Day: [' + mergedSettings.stdy_col + ']\nStop Day: [' + mergedSettings.endy_col + ']';
-  mergedSettings.marks[1].per = [mergedSettings.id_col, mergedSettings.seq_col, 'wc_value'];
-  mergedSettings.marks[1].tooltip = 'System Organ Class: [' + mergedSettings.soc_col + ']\nPreferred Term: [' + mergedSettings.term_col + ']\nStart Day: [' + mergedSettings.stdy_col + ']\nStop Day: [' + mergedSettings.endy_col + ']';
-  mergedSettings.color_by = mergedSettings.sev_col;
-  //keep control settings in sync
-  controlInputs[0].value_col = mergedSettings.sev_col;
-  controlInputs[1].value_col = mergedSettings.soc_col;
-  controlInputs[2].value_col = mergedSettings.id_col;
-  controlInputs[3].value_col = mergedSettings.rel_col;
+
+  //keep settings in sync with the data mappings
+  mergedSettings = syncSettings(mergedSettings);
 
   //keep settings for secondary chart in sync
   var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
-  mergedSecondSettings.y.column = mergedSettings.seq_col;
-  mergedSecondSettings.marks[0].per[0] = mergedSettings.seq_col;
-  mergedSecondSettings.marks[1].per[0] = mergedSettings.seq_col;
-  mergedSecondSettings.color_by = mergedSettings.sev_col;
-  mergedSecondSettings.color_dom = mergedSettings.legend ? mergedSecondSettings.legend.order : null;
+  mergedSecondSettings = syncSecondSettings(mergedSecondSettings, mergedSettings);
+
+  //keep control inputs settings in sync
+  var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
 
   //create controls now
-  var controls = webcharts.createControls(element, { location: 'top', inputs: controlInputs });
+  var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
 
   //create chart
   var chart = webcharts.createChart(element, mergedSettings, controls);

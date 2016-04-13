@@ -8,6 +8,7 @@ const settings = {
     endy_col: 'AENDY',
     sev_col: 'AESEV',
     rel_col: 'AEREL',
+
     //Standard webcharts settings
     x:{
         "label":null,
@@ -18,7 +19,6 @@ const settings = {
         "label": '', 
         "sort":"earliest",
         "type":"ordinal",
-        "column":"USUBJID", 
         "behavior": 'flex'
     },
    "margin": {"top": 50},
@@ -29,17 +29,12 @@ const settings = {
     "marks":[
         {
             "type":"line",
-            "per":["USUBJID", "AESEQ"], 
             "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
-            "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
         },
         {
             "type":"circle",
-            "per":["USUBJID", "AESEQ", "wc_value"], 
-            "tooltip": 'System Organ Class: [AEBODSYS]\nPreferred Term: [AETERM]\nStart Day: [ASTDY]\nStop Day: [AENDY]'
         }
     ],
-    "color_by": "AESEV",
     "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
     "date_format":"%m/%d/%y",
     "resizable":true,
@@ -50,6 +45,17 @@ const settings = {
     "range_band":15,
 };
 
+export function syncSettings(settings){
+    settings.y.column = settings.id_col;
+    settings.marks[0].per = [settings.id_col, settings.seq_col];
+    settings.marks[0].tooltip = `System Organ Class: [${settings.soc_col}]\nPreferred Term: [${settings.term_col}]\nStart Day: [${settings.stdy_col}]\nStop Day: [${settings.endy_col}]`;
+    settings.marks[1].per = [settings.id_col, settings.seq_col, 'wc_value'];
+    settings.marks[1].tooltip = `System Organ Class: [${settings.soc_col}]\nPreferred Term: [${settings.term_col}]\nStart Day: [${settings.stdy_col}]\nStop Day: [${settings.endy_col}]`;
+    settings.color_by = settings.sev_col;
+
+    return settings;
+}
+
 export const controlInputs = [ 
     {label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true},
     {label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS"},
@@ -57,5 +63,14 @@ export const controlInputs = [
     {label: "Related to Treatment", type: "subsetter", value_col: "AEREL"},
     {label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true}
 ];
+
+export function syncControlInputs(controlInputs, settings){
+    controlInputs[0].value_col = settings.sev_col;
+    controlInputs[1].value_col = settings.soc_col;
+    controlInputs[2].value_col = settings.id_col;
+    controlInputs[3].value_col = settings.rel_col;
+
+    return controlInputs
+}
 
 export default settings

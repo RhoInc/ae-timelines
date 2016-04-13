@@ -1,4 +1,4 @@
-import lengthenRaw from './bin/lengthen-raw';
+import lengthenRaw from './util/lengthen-raw';
 
 export default function onInit(){
     this.superRaw = this.raw_data;
