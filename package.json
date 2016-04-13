@@ -1,7 +1,7 @@
 {
-  "name": "se-ae-timelines",
-  "version": "0.0.0",
-  "description": "AE timelines for safety explorer",
+  "name": "ae-timelines",
+  "version": "1.1.0",
+  "description": "Adverse event timelines for clinical trials",
   "main": ".build/aeTimeline.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
