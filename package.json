@@ -1,5 +1,5 @@
 {
-  "name": "se-ae-timelines",
+  "name": "ae-timelines",
   "version": "0.0.0",
   "description": "AE timelines for safety explorer",
   "main": "cf-ae-timelines.common.js",
