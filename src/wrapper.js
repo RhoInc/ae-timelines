@@ -1,7 +1,6 @@
 import { createChart, createControls, createTable } from 'webcharts';
-import { syncSettings, controlInputs, syncControlInputs} from './default-settings'
+import { syncSettings, controlInputs, syncControlInputs,secondSettings, syncSecondSettings} from './default-settings'
 import config from './default-settings';
-import { secondSettings, syncSecondSettings } from './second-settings';
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDataTransform from './onDataTransform';

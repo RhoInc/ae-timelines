@@ -21,6 +21,7 @@ var aeTimelines = (function (webcharts, d3) {
             "column": 'wc_value'
         },
         y: {
+            "column": null, //set in syncSettings()
             "label": '',
             "sort": "earliest",
             "type": "ordinal",
@@ -32,9 +33,13 @@ var aeTimelines = (function (webcharts, d3) {
             "label": 'Severity'
         },
         "marks": [{
+            "per": null, //set in syncSettings()
+            "tooltip": null, //set in syncSettings()
             "type": "line",
             "attributes": { 'stroke-width': 5, 'stroke-opacity': .8 }
         }, {
+            "per": null, //set in syncSettings()
+            "tooltip": null, //set in syncSettings()
             "type": "circle"
         }],
         "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
@@ -44,7 +49,8 @@ var aeTimelines = (function (webcharts, d3) {
         "y_behavior": 'flex',
         "gridlines": "y",
         "no_text_size": false,
-        "range_band": 15
+        "range_band": 15,
+        "color_by": null //set in syncSettings()
     };
 
     function syncSettings(settings) {
@@ -58,17 +64,33 @@ var aeTimelines = (function (webcharts, d3) {
         return settings;
     }
 
-    var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
+    var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "System Organ Class", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
 
     function syncControlInputs(controlInputs, settings) {
-        controlInputs[0].value_col = settings.sev_col;
-        controlInputs[1].value_col = settings.soc_col;
-        controlInputs[2].value_col = settings.id_col;
-        controlInputs[3].value_col = settings.rel_col;
+        var severityControl = controlInputs.filter(function (d) {
+            return d.label == "Severity";
+        })[0];
+        severityControl.value_col = settings.sev_col;
+
+        var SOCControl = controlInputs.filter(function (d) {
+            return d.label == "System Organ Class";
+        })[0];
+        SOCControl.value_col = settings.soc_col;
+
+        var subjectControl = controlInputs.filter(function (d) {
+            return d.label == "Subject ID";
+        })[0];
+        subjectControl.value_col = settings.id_col;
+
+        var relatedControl = controlInputs.filter(function (d) {
+            return d.label == "Related to Treatment";
+        })[0];
+        relatedControl.value_col = settings.rel_col;
 
         return controlInputs;
     }
 
+    //Setting for custom details view
     var secondSettings = {
         "x": { label: '', "type": "linear", "column": "wc_value" },
         "y": { label: '', "sort": "alphabetical-descending", "type": "ordinal", "column": "AESEQ" },
