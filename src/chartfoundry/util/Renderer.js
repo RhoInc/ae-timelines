@@ -31,14 +31,76 @@ export default class Renderer extends React.Component {
   }
   createSettings(props) {
     const shell = {
-      legend: {
-        mark: 'circle',
-        order: null,
-        label: null
-      },
-      colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-      color_by: 'AESEV'
-    };
+        max_width: null,
+        date_format: null,
+        x: {
+          label: null,
+          type: null,
+          format: null,
+          column: null,
+          behavior: null,
+          bin: null,
+          sort: null,
+          order: [],
+          domain: null
+        },
+        y: {
+          label: null,
+          type: null,
+          format: null,
+          column: null,
+          behavior: null,
+          bin: null,
+          sort: null,
+          order: [],
+          domain: null
+        },
+        marks: [{
+          type: null,
+          per: [],
+          values: null,
+          split: null,
+          arrange: null,
+          tooltip: null,
+          summarizeX: null,
+          summarizeY: null,
+          attributes: { "fill-opacity": null },
+          text: null
+        }, {
+          type: null,
+          per: [],
+          values: null,
+          split: null,
+          arrange: null,
+          tooltip: null,
+          summarizeX: null,
+          summarizeY: null,
+          attributes: { "fill-opacity": null },
+          text: null
+        }],
+        legend: {
+          label: null,
+          mark: null,
+          order: [],
+          location: null
+        },
+        colors: [],
+        color_by: null,
+        resizable: null,
+        scale_text: null,
+        aspect: null,
+        range_band: null,
+        gridlines: null,
+        transitions: null,
+        width: null,
+        height: null,
+        margin: {
+          top: null,
+          bottom: null,
+          right: null,
+          left: null
+        }
+      };
 
     binding.dataMappings.forEach(e => {
       let chartVal = stringAccessor(props.dataMappings, e.source);

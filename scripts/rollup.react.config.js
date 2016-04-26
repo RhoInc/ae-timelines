@@ -1,9 +1,10 @@
 module.exports = {
   entry: './src/chartfoundry/util/Renderer.js',
-  format: 'cjs',
+  format: 'iife',
   globals: {
     webcharts: 'webCharts',
     d3: 'd3',
     react: 'React'
-  }
+  },
+  moduleName: 'aeTimelines'
 }; 
