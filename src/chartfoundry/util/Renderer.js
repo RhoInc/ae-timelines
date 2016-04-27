@@ -31,76 +31,26 @@ export default class Renderer extends React.Component {
   }
   createSettings(props) {
     const shell = {
-        max_width: null,
-        date_format: null,
-        x: {
-          label: null,
-          type: null,
-          format: null,
-          column: null,
-          behavior: null,
-          bin: null,
-          sort: null,
-          order: [],
-          domain: null
-        },
-        y: {
-          label: null,
-          type: null,
-          format: null,
-          column: null,
-          behavior: null,
-          bin: null,
-          sort: null,
-          order: [],
-          domain: null
-        },
-        marks: [{
-          type: null,
-          per: [],
-          values: null,
-          split: null,
-          arrange: null,
-          tooltip: null,
-          summarizeX: null,
-          summarizeY: null,
-          attributes: { "fill-opacity": null },
-          text: null
-        }, {
-          type: null,
-          per: [],
-          values: null,
-          split: null,
-          arrange: null,
-          tooltip: null,
-          summarizeX: null,
-          summarizeY: null,
-          attributes: { "fill-opacity": null },
-          text: null
-        }],
-        legend: {
-          label: null,
-          mark: null,
-          order: [],
-          location: null
-        },
-        colors: [],
-        color_by: null,
-        resizable: null,
-        scale_text: null,
-        aspect: null,
-        range_band: null,
-        gridlines: null,
-        transitions: null,
-        width: null,
-        height: null,
-        margin: {
-          top: null,
-          bottom: null,
-          right: null,
-          left: null
-        }
-      };
+      //Addition settings for this template
+      // id_col: 'USUBJID',
+      // seq_col: 'AESEQ',
+      // soc_col: 'AEBODSYS',
+      // term_col: 'AETERM',
+      stdy_col: 'ASTDY',
+      endy_col: 'AENDY',
+      // sev_col: 'AESEV',
+      // rel_col: 'AEREL',
+
+      //Standard webcharts settings
+      date_format: null,
+      legend: {
+        mark: 'circle',
+        order: null,
+        label: null
+      },
+      colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+      color_by: 'AESEV'
+    };
 
     binding.dataMappings.forEach(e => {
       let chartVal = stringAccessor(props.dataMappings, e.source);
@@ -131,7 +81,6 @@ export default class Renderer extends React.Component {
         stringAccessor(shell, e.target, defaultVal);
       }
     });
-
     return shell;
   }
   componentWillMount() {

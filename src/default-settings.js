@@ -22,7 +22,7 @@ const settings = {
         "type":"ordinal",
         "behavior": 'flex'
     },
-   "margin": {"top": 50},
+   "margin": {"top": 50, bottom: null, left: null, right: null},
     "legend":{
         "mark":"circle", 
         "label": 'Severity'
