@@ -267,7 +267,7 @@ var aeTimelines = (function (React,d3,webcharts) {
    };
 
    function syncSettings(preSettings){
-       const nextSettings = Object.assign({}, preSettings);
+       const nextSettings = Object.create(preSettings);
        nextSettings.y.column = nextSettings.id_col;
        nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
        nextSettings.marks[0].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
@@ -327,12 +327,13 @@ var aeTimelines = (function (React,d3,webcharts) {
    };
 
    function syncSecondSettings(settings1, settings2){
-       const nextSettings = Object.assign({}, settings1);
+       const nextSettings = Object.create(settings1);
        nextSettings.y.column = settings2.seq_col;
        nextSettings.marks[0].per[0] = settings2.seq_col;
        nextSettings.marks[1].per[0] = settings2.seq_col;
        nextSettings.color_by = settings2.sev_col;
        nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
+       nextSettings.colors = settings2.colors;
 
        return nextSettings;
    }
@@ -464,22 +465,24 @@ var aeTimelines = (function (React,d3,webcharts) {
    function aeTimeline(element, settings$$){
    	//merge user's settings with defaults
    	const initialSettings = Object.assign({}, settings, settings$$);
-
+   // console.log(settings)
+   // console.log(Object.create(settings))
+   // debugger;
    	//keep settings in sync with the data mappings
    	const mergedSettings = syncSettings(initialSettings);
 
    	//keep settings for secondary chart in sync
    	const initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings$$));
-   	const mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, Object.assign({}, mergedSettings));
+   	const mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, mergedSettings);
 
    	//keep control inputs settings in sync
-   	const syncedControlInputs = syncControlInputs(controlInputs, Object.assign({}, mergedSettings));
+   	const syncedControlInputs = syncControlInputs(controlInputs, Object.create(mergedSettings));
 
    	//create controls now
-   	let controls = webcharts.createControls(element, {location: 'top', inputs: syncedControlInputs});
+   	const controls = webcharts.createControls(element, {location: 'top', inputs: syncedControlInputs});
    	
    	//create chart
-   	let chart = webcharts.createChart(element, mergedSettings, controls);
+   	const chart = webcharts.createChart(element, mergedSettings, controls);
    	chart.on('init', onInit);
    	chart.on('layout', onLayout);
    	chart.on('datatransform', onDataTransform);
@@ -487,10 +490,10 @@ var aeTimelines = (function (React,d3,webcharts) {
    	chart.on('resize', onResize);
 
    	//set up secondary chart and table
-   	let chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
+   	const chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
    	chart2.wrap.style('display', 'none');
    	chart.chart2 = chart2;
-   	let table = webcharts.createTable(element, {}).init([]);
+   	const table = webcharts.createTable(element, {}).init([]);
    	chart.table = table;
 
    	return chart;
@@ -554,58 +557,7 @@ d3.csv(dataPath, function(error, csv) {
      }
      createSettings(props) {
        // set placeholders for anything the user can change
-       const shell = {
-      //Addition settings for this template
-       id_col: 'USUBJID',
-       seq_col: 'AESEQ',
-       soc_col: 'AEBODSYS',
-       term_col: 'AETERM',
-       stdy_col: 'ASTDY',
-       endy_col: 'AENDY',
-       sev_col: 'AESEV',
-       rel_col: 'AEREL',
-
-       //Standard webcharts settings
-       x:{
-           "label":null,
-           "type":"linear",
-           "column":'wc_value'
-       },
-       y:{
-           "column":null, //set in syncSettings()
-           "label": '', 
-           "sort":"earliest",
-           "type":"ordinal",
-           "behavior": 'flex'
-       },
-      "margin": {"top": 50, bottom: null, left: null, right: null},
-       "legend":{
-           "mark":"circle", 
-           "label": 'Severity'
-       },
-       "marks":[
-           {
-               "per":null, //set in syncSettings()
-               "tooltip":null, //set in syncSettings()
-               "type":"line",
-               "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
-           },
-           {
-               "per":null, //set in syncSettings()
-               "tooltip":null, //set in syncSettings()
-               "type":"circle",
-           }
-       ],
-       "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-       "date_format":"%m/%d/%y",
-       "resizable":true,
-       "max_width":1000,
-       "y_behavior": 'flex',
-       "gridlines":"y",
-       "no_text_size":false,
-       "range_band":15,
-       "color_by":null //set in syncSettings()
-       };
+       let shell = settings//Object.create(defaultSettings);
 
        binding.dataMappings.forEach(e => {
          let chartVal = stringAccessor(props.dataMappings, e.source);
@@ -621,9 +573,6 @@ d3.csv(dataPath, function(error, csv) {
            else if(defaultVal){
              stringAccessor(shell, e.target, defaultVal);
            }
-           // else{
-           //   stringAccessor(shell, e.target, null);
-           // }
          }
        });
        binding.chartProperties.forEach(e => {
@@ -636,6 +585,8 @@ d3.csv(dataPath, function(error, csv) {
            stringAccessor(shell, e.target, defaultVal);
          }
        });
+       console.log(syncSettings(shell))
+       // debugger;
        return syncSettings(shell);
      }
      componentWillMount() {

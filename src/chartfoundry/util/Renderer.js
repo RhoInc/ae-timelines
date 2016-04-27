@@ -2,7 +2,7 @@ import React from 'react';
 import stringAccessor from './string-accessor';
 import binding from '../binding';
 import reactTemplate from './reactTemplate';
-import { syncSettings } from '../../default-settings';
+import defaultSettings, { syncSettings } from '../../default-settings';
 import { version as d3_version } from 'd3';
 import { version as wc_version } from 'webcharts';
 
@@ -32,58 +32,7 @@ export default class Renderer extends React.Component {
   }
   createSettings(props) {
     // set placeholders for anything the user can change
-    const shell = {
-   //Addition settings for this template
-    id_col: 'USUBJID',
-    seq_col: 'AESEQ',
-    soc_col: 'AEBODSYS',
-    term_col: 'AETERM',
-    stdy_col: 'ASTDY',
-    endy_col: 'AENDY',
-    sev_col: 'AESEV',
-    rel_col: 'AEREL',
-
-    //Standard webcharts settings
-    x:{
-        "label":null,
-        "type":"linear",
-        "column":'wc_value'
-    },
-    y:{
-        "column":null, //set in syncSettings()
-        "label": '', 
-        "sort":"earliest",
-        "type":"ordinal",
-        "behavior": 'flex'
-    },
-   "margin": {"top": 50, bottom: null, left: null, right: null},
-    "legend":{
-        "mark":"circle", 
-        "label": 'Severity'
-    },
-    "marks":[
-        {
-            "per":null, //set in syncSettings()
-            "tooltip":null, //set in syncSettings()
-            "type":"line",
-            "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
-        },
-        {
-            "per":null, //set in syncSettings()
-            "tooltip":null, //set in syncSettings()
-            "type":"circle",
-        }
-    ],
-    "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-    "date_format":"%m/%d/%y",
-    "resizable":true,
-    "max_width":1000,
-    "y_behavior": 'flex',
-    "gridlines":"y",
-    "no_text_size":false,
-    "range_band":15,
-    "color_by":null //set in syncSettings()
-    };
+    let shell = defaultSettings//Object.create(defaultSettings);
 
     binding.dataMappings.forEach(e => {
       let chartVal = stringAccessor(props.dataMappings, e.source);
@@ -99,9 +48,6 @@ export default class Renderer extends React.Component {
         else if(defaultVal){
           stringAccessor(shell, e.target, defaultVal);
         }
-        // else{
-        //   stringAccessor(shell, e.target, null);
-        // }
       }
     });
     binding.chartProperties.forEach(e => {
@@ -114,6 +60,8 @@ export default class Renderer extends React.Component {
         stringAccessor(shell, e.target, defaultVal);
       }
     });
+    console.log(syncSettings(shell))
+    // debugger;
     return syncSettings(shell);
   }
   componentWillMount() {

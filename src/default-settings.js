@@ -52,7 +52,7 @@ const settings = {
 };
 
 export function syncSettings(preSettings){
-    const nextSettings = Object.assign({}, preSettings);
+    const nextSettings = Object.create(preSettings);
     nextSettings.y.column = nextSettings.id_col;
     nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
     nextSettings.marks[0].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
@@ -112,12 +112,13 @@ export const secondSettings = {
 };
 
 export function syncSecondSettings(settings1, settings2){
-    const nextSettings = Object.assign({}, settings1);
+    const nextSettings = Object.create(settings1);
     nextSettings.y.column = settings2.seq_col;
     nextSettings.marks[0].per[0] = settings2.seq_col;
     nextSettings.marks[1].per[0] = settings2.seq_col;
     nextSettings.color_by = settings2.sev_col;
     nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
+    nextSettings.colors = settings2.colors;
 
     return nextSettings;
 }
