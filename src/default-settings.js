@@ -51,15 +51,16 @@ const settings = {
     "color_by":null //set in syncSettings()
 };
 
-export function syncSettings(settings){
-    settings.y.column = settings.id_col;
-    settings.marks[0].per = [settings.id_col, settings.seq_col];
-    settings.marks[0].tooltip = `System Organ Class: [${settings.soc_col}]\nPreferred Term: [${settings.term_col}]\nStart Day: [${settings.stdy_col}]\nStop Day: [${settings.endy_col}]`;
-    settings.marks[1].per = [settings.id_col, settings.seq_col, 'wc_value'];
-    settings.marks[1].tooltip = `System Organ Class: [${settings.soc_col}]\nPreferred Term: [${settings.term_col}]\nStart Day: [${settings.stdy_col}]\nStop Day: [${settings.endy_col}]`;
-    settings.color_by = settings.sev_col;
+export function syncSettings(preSettings){
+    const nextSettings = Object.assign({}, preSettings);
+    nextSettings.y.column = nextSettings.id_col;
+    nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
+    nextSettings.marks[0].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
+    nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+    nextSettings.marks[1].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
+    nextSettings.color_by = nextSettings.sev_col;
 
-    return settings;
+    return nextSettings;
 }
 
 export const controlInputs = [ 
@@ -70,20 +71,20 @@ export const controlInputs = [
     {label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true}
 ];
 
-export function syncControlInputs(controlInputs, settings){
-    var severityControl = controlInputs.filter(function(d){return d.label=="Severity"})[0] 
-    severityControl.value_col = settings.sev_col;
+export function syncControlInputs(preControlInputs, preSettings){
+    var severityControl = preControlInputs.filter(function(d){return d.label=="Severity"})[0] 
+    severityControl.value_col = preSettings.sev_col;
 
-    var SOCControl = controlInputs.filter(function(d){return d.label=="System Organ Class"})[0] 
-    SOCControl.value_col = settings.soc_col;
+    var SOCControl = preControlInputs.filter(function(d){return d.label=="System Organ Class"})[0] 
+    SOCControl.value_col = preSettings.soc_col;
 
-    var subjectControl = controlInputs.filter(function(d){return d.label=="Subject ID"})[0] 
-    subjectControl.value_col = settings.id_col;
+    var subjectControl = preControlInputs.filter(function(d){return d.label=="Subject ID"})[0] 
+    subjectControl.value_col = preSettings.id_col;
 
-    var relatedControl = controlInputs.filter(function(d){return d.label=="Related to Treatment"})[0] 
-    relatedControl.value_col = settings.rel_col;
+    var relatedControl = preControlInputs.filter(function(d){return d.label=="Related to Treatment"})[0] 
+    relatedControl.value_col = preSettings.rel_col;
 
-    return controlInputs
+    return preControlInputs
 }
 
 //Setting for custom details view
@@ -110,13 +111,15 @@ export const secondSettings = {
     "range_band":28
 };
 
-export function syncSecondSettings(secondSettings, settings){
-    secondSettings.y.column = settings.seq_col;
-    secondSettings.marks[0].per[0] = settings.seq_col;
-    secondSettings.marks[1].per[0] = settings.seq_col;
-    secondSettings.color_by = settings.sev_col;
-    secondSettings.color_dom = settings.legend ? secondSettings.legend.order : null;
+export function syncSecondSettings(settings1, settings2){
+    const nextSettings = Object.assign({}, settings1);
+    nextSettings.y.column = settings2.seq_col;
+    nextSettings.marks[0].per[0] = settings2.seq_col;
+    nextSettings.marks[1].per[0] = settings2.seq_col;
+    nextSettings.color_by = settings2.sev_col;
+    nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
 
-    return secondSettings
+    return nextSettings;
 }
+
 export default settings

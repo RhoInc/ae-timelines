@@ -10,17 +10,17 @@ import './util/object-assign';
 
 export default function aeTimeline(element, settings){
 	//merge user's settings with defaults
-	let mergedSettings = Object.assign({}, config, settings);
-	
+	const initialSettings = Object.assign({}, config, settings);
+
 	//keep settings in sync with the data mappings
-	mergedSettings = syncSettings(mergedSettings)
-	
+	const mergedSettings = syncSettings(initialSettings);
+
 	//keep settings for secondary chart in sync
-	let mergedSecondSettings = Object.assign({}, secondSettings, settings);
-	mergedSecondSettings = syncSecondSettings(mergedSecondSettings, mergedSettings)
+	const initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings));
+	const mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, Object.assign({}, mergedSettings));
 
 	//keep control inputs settings in sync
-	let syncedControlInputs = syncControlInputs(controlInputs, mergedSettings)
+	const syncedControlInputs = syncControlInputs(controlInputs, Object.assign({}, mergedSettings));
 
 	//create controls now
 	let controls = createControls(element, {location: 'top', inputs: syncedControlInputs});

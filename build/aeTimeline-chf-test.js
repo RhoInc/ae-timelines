@@ -266,15 +266,16 @@ var aeTimelines = (function (React,d3,webcharts) {
        "color_by":null //set in syncSettings()
    };
 
-   function syncSettings(settings){
-       settings.y.column = settings.id_col;
-       settings.marks[0].per = [settings.id_col, settings.seq_col];
-       settings.marks[0].tooltip = `System Organ Class: [${settings.soc_col}]\nPreferred Term: [${settings.term_col}]\nStart Day: [${settings.stdy_col}]\nStop Day: [${settings.endy_col}]`;
-       settings.marks[1].per = [settings.id_col, settings.seq_col, 'wc_value'];
-       settings.marks[1].tooltip = `System Organ Class: [${settings.soc_col}]\nPreferred Term: [${settings.term_col}]\nStart Day: [${settings.stdy_col}]\nStop Day: [${settings.endy_col}]`;
-       settings.color_by = settings.sev_col;
+   function syncSettings(preSettings){
+       const nextSettings = Object.assign({}, preSettings);
+       nextSettings.y.column = nextSettings.id_col;
+       nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
+       nextSettings.marks[0].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
+       nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+       nextSettings.marks[1].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
+       nextSettings.color_by = nextSettings.sev_col;
 
-       return settings;
+       return nextSettings;
    }
 
    const controlInputs = [ 
@@ -285,20 +286,20 @@ var aeTimelines = (function (React,d3,webcharts) {
        {label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true}
    ];
 
-   function syncControlInputs(controlInputs, settings){
-       var severityControl = controlInputs.filter(function(d){return d.label=="Severity"})[0] 
-       severityControl.value_col = settings.sev_col;
+   function syncControlInputs(preControlInputs, preSettings){
+       var severityControl = preControlInputs.filter(function(d){return d.label=="Severity"})[0] 
+       severityControl.value_col = preSettings.sev_col;
 
-       var SOCControl = controlInputs.filter(function(d){return d.label=="System Organ Class"})[0] 
-       SOCControl.value_col = settings.soc_col;
+       var SOCControl = preControlInputs.filter(function(d){return d.label=="System Organ Class"})[0] 
+       SOCControl.value_col = preSettings.soc_col;
 
-       var subjectControl = controlInputs.filter(function(d){return d.label=="Subject ID"})[0] 
-       subjectControl.value_col = settings.id_col;
+       var subjectControl = preControlInputs.filter(function(d){return d.label=="Subject ID"})[0] 
+       subjectControl.value_col = preSettings.id_col;
 
-       var relatedControl = controlInputs.filter(function(d){return d.label=="Related to Treatment"})[0] 
-       relatedControl.value_col = settings.rel_col;
+       var relatedControl = preControlInputs.filter(function(d){return d.label=="Related to Treatment"})[0] 
+       relatedControl.value_col = preSettings.rel_col;
 
-       return controlInputs
+       return preControlInputs
    }
 
    //Setting for custom details view
@@ -325,14 +326,15 @@ var aeTimelines = (function (React,d3,webcharts) {
        "range_band":28
    };
 
-   function syncSecondSettings(secondSettings, settings){
-       secondSettings.y.column = settings.seq_col;
-       secondSettings.marks[0].per[0] = settings.seq_col;
-       secondSettings.marks[1].per[0] = settings.seq_col;
-       secondSettings.color_by = settings.sev_col;
-       secondSettings.color_dom = settings.legend ? secondSettings.legend.order : null;
+   function syncSecondSettings(settings1, settings2){
+       const nextSettings = Object.assign({}, settings1);
+       nextSettings.y.column = settings2.seq_col;
+       nextSettings.marks[0].per[0] = settings2.seq_col;
+       nextSettings.marks[1].per[0] = settings2.seq_col;
+       nextSettings.color_by = settings2.sev_col;
+       nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
 
-       return secondSettings
+       return nextSettings;
    }
 
    function lengthenRaw(data, columns){
@@ -461,17 +463,17 @@ var aeTimelines = (function (React,d3,webcharts) {
 
    function aeTimeline(element, settings$$){
    	//merge user's settings with defaults
-   	let mergedSettings = Object.assign({}, settings, settings$$);
-   	
+   	const initialSettings = Object.assign({}, settings, settings$$);
+
    	//keep settings in sync with the data mappings
-   	mergedSettings = syncSettings(mergedSettings)
-   	
+   	const mergedSettings = syncSettings(initialSettings);
+
    	//keep settings for secondary chart in sync
-   	let mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
-   	mergedSecondSettings = syncSecondSettings(mergedSecondSettings, mergedSettings)
+   	const initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings$$));
+   	const mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, Object.assign({}, mergedSettings));
 
    	//keep control inputs settings in sync
-   	let syncedControlInputs = syncControlInputs(controlInputs, mergedSettings)
+   	const syncedControlInputs = syncControlInputs(controlInputs, Object.assign({}, mergedSettings));
 
    	//create controls now
    	let controls = webcharts.createControls(element, {location: 'top', inputs: syncedControlInputs});
@@ -551,31 +553,63 @@ d3.csv(dataPath, function(error, csv) {
        this.state = {data: [], settings: {}, template: {}, loadMsg: 'Loading...'};
      }
      createSettings(props) {
+       // set placeholders for anything the user can change
        const shell = {
-         //Addition settings for this template
-         // id_col: 'USUBJID',
-         // seq_col: 'AESEQ',
-         // soc_col: 'AEBODSYS',
-         // term_col: 'AETERM',
-         stdy_col: 'ASTDY',
-         endy_col: 'AENDY',
-         // sev_col: 'AESEV',
-         // rel_col: 'AEREL',
+      //Addition settings for this template
+       id_col: 'USUBJID',
+       seq_col: 'AESEQ',
+       soc_col: 'AEBODSYS',
+       term_col: 'AETERM',
+       stdy_col: 'ASTDY',
+       endy_col: 'AENDY',
+       sev_col: 'AESEV',
+       rel_col: 'AEREL',
 
-         //Standard webcharts settings
-         date_format: null,
-         legend: {
-           mark: 'circle',
-           order: null,
-           label: null
-         },
-         colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-         color_by: 'AESEV'
+       //Standard webcharts settings
+       x:{
+           "label":null,
+           "type":"linear",
+           "column":'wc_value'
+       },
+       y:{
+           "column":null, //set in syncSettings()
+           "label": '', 
+           "sort":"earliest",
+           "type":"ordinal",
+           "behavior": 'flex'
+       },
+      "margin": {"top": 50, bottom: null, left: null, right: null},
+       "legend":{
+           "mark":"circle", 
+           "label": 'Severity'
+       },
+       "marks":[
+           {
+               "per":null, //set in syncSettings()
+               "tooltip":null, //set in syncSettings()
+               "type":"line",
+               "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
+           },
+           {
+               "per":null, //set in syncSettings()
+               "tooltip":null, //set in syncSettings()
+               "type":"circle",
+           }
+       ],
+       "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+       "date_format":"%m/%d/%y",
+       "resizable":true,
+       "max_width":1000,
+       "y_behavior": 'flex',
+       "gridlines":"y",
+       "no_text_size":false,
+       "range_band":15,
+       "color_by":null //set in syncSettings()
        };
 
        binding.dataMappings.forEach(e => {
          let chartVal = stringAccessor(props.dataMappings, e.source);
-         if(chartVal ){
+         if(chartVal){
            stringAccessor(shell, e.target, chartVal);
          }
          else{
@@ -587,9 +621,9 @@ d3.csv(dataPath, function(error, csv) {
            else if(defaultVal){
              stringAccessor(shell, e.target, defaultVal);
            }
-           else{
-             stringAccessor(shell, e.target, null);
-           }
+           // else{
+           //   stringAccessor(shell, e.target, null);
+           // }
          }
        });
        binding.chartProperties.forEach(e => {
@@ -602,7 +636,7 @@ d3.csv(dataPath, function(error, csv) {
            stringAccessor(shell, e.target, defaultVal);
          }
        });
-       return shell;
+       return syncSettings(shell);
      }
      componentWillMount() {
        var settings = this.createSettings(this.props);
