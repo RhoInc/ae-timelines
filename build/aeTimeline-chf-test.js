@@ -287,19 +287,19 @@ var aeTimelines = (function (React,d3,webcharts) {
    ];
 
    function syncControlInputs(preControlInputs, preSettings){
-       var severityControl = preControlInputs.filter(function(d){return d.label=="Severity"})[0] 
+       var severityControl = preControlInputs.filter(function(d){return d.label=="Severity"})[0];
        severityControl.value_col = preSettings.sev_col;
 
-       var SOCControl = preControlInputs.filter(function(d){return d.label=="System Organ Class"})[0] 
-       SOCControl.value_col = preSettings.soc_col;
+       var sOCControl = preControlInputs.filter(function(d){return d.label=="System Organ Class"})[0];
+       sOCControl.value_col = preSettings.soc_col;
 
-       var subjectControl = preControlInputs.filter(function(d){return d.label=="Subject ID"})[0] 
+       var subjectControl = preControlInputs.filter(function(d){return d.label=="Subject ID"})[0];
        subjectControl.value_col = preSettings.id_col;
 
-       var relatedControl = preControlInputs.filter(function(d){return d.label=="Related to Treatment"})[0] 
+       var relatedControl = preControlInputs.filter(function(d){return d.label=="Related to Treatment"})[0];
        relatedControl.value_col = preSettings.rel_col;
 
-       return preControlInputs
+       return preControlInputs;
    }
 
    //Setting for custom details view
