@@ -1,530 +1,616 @@
-'use strict';
+(function (global, factory) {
+   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('react'), require('d3'), require('webcharts')) :
+   typeof define === 'function' && define.amd ? define(['react', 'd3', 'webcharts'], factory) :
+   (global.aeTimelines = factory(global.React,global.d3,global.webCharts));
+}(this, function (React,d3,webcharts) { 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+   React = 'default' in React ? React['default'] : React;
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+   function stringAccessor(o, s, v) {
+   	//adapted from http://jsfiddle.net/alnitak/hEsys/
+       s = s.replace(/\[(\w+)\]/g, '.$1');
+       s = s.replace(/^\./, '');           
+       var a = s.split('.');
+       for (var i = 0, n = a.length; i < n; ++i) {
+           var k = a[i];
+           if (k in o) {
+               if(i == n-1 && v !== undefined)
+                   o[k] = v;
+               o = o[k];
+           } else {
+               return;
+           }
+       }
+       return o;
+   }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+   var binding = {
+   	dataMappings : [
+   		{
+   			source: "id_col",
+   			target: "id_col"
+   		},
+   		{
+   			source: "seq_col",
+   			target: "seq_col"
+   		},
+   		{
+   			source: "soc_col",
+   			target: "soc_col"
+   		},
+   		{
+   			source: "term_col",
+   			target: "term_col"
+   		},
+   		{
+   			source: "stdy_col",
+   			target: "stdy_col"
+   		},
+   		{
+   			source: "endy_col",
+   			target: "endy_col"
+   		},
+   		{
+   			source: "sev_col",
+   			target: "sev_col"
+   		},
+   		{
+   			source: "rel_col",
+   			target: "rel_col"
+   		},
+   		{
+   			source:"x",
+   			target:"x.column"
+   		},
+   		{
+   			source:"x_order",
+   			target:"x.order"
+   		},
+   		{
+   			source:"x_domain",
+   			target:"x.domain"
+   		},
+   		{
+   			source:"y",
+   			target:"y.column"
+   		},
+   		{
+   			source:"y_order",
+   			target:"y.order"
+   		},
+   		{
+   			source:"y_domain",
+   			target:"y.domain"
+   		},
+   		{
+   			source:"group",
+   			target:"marks.0.per"
+   		},
+   		{
+   			source:"subgroup",
+   			target:"marks.0.split"
+   		},
+   		{
+   			source:"subset",
+   			target:"marks.0.values"
+   		},
+   		{
+   			source:"color_by",
+   			target:"color_by"
+   		},
+   		{
+   			source:"legend_order",
+   			target:"legend.order"
+   		},
+   		{
+   			source:"tooltip",
+   			target:"marks.0.tooltip"
+   		}
+   	],
+   	chartProperties: [
+   		{
+   			source:"date_format",
+   			target:"date_format"
+   		},
+   		{
+   			source:"x_label",
+   			target:"x.label"
+   		},
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+   		{
+   			source:"x_type",
+   			target:"x.type"
+   		},
+   		{
+   			source:"x_format",
+   			target:"x.format"
+   		},
+   		{
+   			source:"x_sort",
+   			target:"x.sort"
+   		},
+   		{
+   			source:"x_bin",
+   			target:"x.bin"
+   		},
+   		{
+   			source:"x_behavior",
+   			target:"x.behavior"
+   		},
+   		{
+   			source:"y_label",
+   			target:"y.label"
+   		},
+   		{
+   			source:"y_type",
+   			target:"y.type"
+   		},
+   		{
+   			source:"y_format",
+   			target:"y.format"
+   		},
+   		{
+   			source:"y_sort",
+   			target:"y.sort"
+   		},
+   		{
+   			source:"y_behavior",
+   			target:"y.behavior"
+   		},
+   		{
+   			source:"marks_type",
+   			target:"marks.0.type"
+   		},
+   		{
+   			source:"marks_summarizeX",
+   			target:"marks.0.summarizeX"
+   		},
+   		{
+   			source:"marks_summarizeY",
+   			target:"marks.0.summarizeY"
+   		},
+   		{
+   			source:"marks_arrange",
+   			target:"marks.0.arrange"
+   		},
+   		{
+   			source:"marks_fill_opacity",
+   			target:"marks.0.attributes.fill-opacity"
+   		},
+   		{
+   			source:"aspect_ratio",
+   			target:"aspect"
+   		},
+   		{
+   			source:"range_band",
+   			target:"range_band"
+   		},
+   		{
+   			source:"colors",
+   			target:"colors"
+   		},
+   		{
+   			source:"gridlines",
+   			target:"gridlines"
+   		},
+   		{
+   			source:"max_width",
+   			target:"max_width"
+   		},
+   		{
+   			source:"resizable",
+   			target:"resizable"
+   		},
+   		{
+   			source:"scale_text",
+   			target:"scale_text"
+   		},
+   		{
+   			source: "legend_mark",
+   			target: "legend.mark"
+   		},
+   		{
+   			source: "legend_label",
+   			target: "legend.label"
+   		}
+   	]
+   }
 
-function _interopDefault(ex) {
-  return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
-}
+   const settings = {
+       //Addition settings for this template
+       id_col: 'USUBJID',
+       seq_col: 'AESEQ',
+       soc_col: 'AEBODSYS',
+       term_col: 'AETERM',
+       stdy_col: 'ASTDY',
+       endy_col: 'AENDY',
+       sev_col: 'AESEV',
+       rel_col: 'AEREL',
 
-var React = _interopDefault(require('react'));
-var d3 = require('d3');
-var webcharts = require('webcharts');
+       //Standard webcharts settings
+       x:{
+           "label":null,
+           "type":"linear",
+           "column":'wc_value'
+       },
+       y:{
+           "column":null, //set in syncSettings()
+           "label": '', 
+           "sort":"earliest",
+           "type":"ordinal",
+           "behavior": 'flex'
+       },
+      "margin": {"top": 50, bottom: null, left: null, right: null},
+       "legend":{
+           "mark":"circle", 
+           "label": 'Severity'
+       },
+       "marks":[
+           {
+               "per":null, //set in syncSettings()
+               "tooltip":null, //set in syncSettings()
+               "type":"line",
+               "attributes":{'stroke-width': 5, 'stroke-opacity': .8 },
+           },
+           {
+               "per":null, //set in syncSettings()
+               "tooltip":null, //set in syncSettings()
+               "type":"circle",
+           }
+       ],
+       "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+       "date_format":"%m/%d/%y",
+       "resizable":true,
+       "max_width":1000,
+       "y_behavior": 'flex',
+       "gridlines":"y",
+       "no_text_size":false,
+       "range_band":15,
+       "color_by":null //set in syncSettings()
+   };
 
-function stringAccessor(o, s, v) {
-  //adapted from http://jsfiddle.net/alnitak/hEsys/
-  s = s.replace(/\[(\w+)\]/g, '.$1');
-  s = s.replace(/^\./, '');
-  var a = s.split('.');
-  for (var i = 0, n = a.length; i < n; ++i) {
-    var k = a[i];
-    if (k in o) {
-      if (i == n - 1 && v !== undefined) o[k] = v;
-      o = o[k];
-    } else {
-      return;
-    }
-  }
-  return o;
-}
+   function syncSettings(preSettings){
+       const nextSettings = Object.create(preSettings);
+       nextSettings.y.column = nextSettings.id_col;
+       nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
+       nextSettings.marks[0].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
+       nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+       nextSettings.marks[1].tooltip = `System Organ Class: [${nextSettings.soc_col}]\nPreferred Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`;
+       nextSettings.color_by = nextSettings.sev_col;
 
-var binding = {
-  dataMappings: [{
-    source: "x",
-    target: "x.column"
-  }, {
-    source: "x_order",
-    target: "x.order"
-  }, {
-    source: "x_domain",
-    target: "x.domain"
-  }, {
-    source: "y",
-    target: "y.column"
-  }, {
-    source: "y_order",
-    target: "y.order"
-  }, {
-    source: "y_domain",
-    target: "y.domain"
-  }, {
-    source: "group",
-    target: "marks.0.per"
-  }, {
-    source: "subgroup",
-    target: "marks.0.split"
-  }, {
-    source: "subset",
-    target: "marks.0.values"
-  }, {
-    source: "color_by",
-    target: "color_by"
-  }, {
-    source: "legend_order",
-    target: "legend.order"
-  }, {
-    source: "tooltip",
-    target: "marks.0.tooltip"
-  }],
-  chartProperties: [{
-    source: "date_format",
-    target: "date_format"
-  }, {
-    source: "x_label",
-    target: "x.label"
-  }, {
-    source: "x_type",
-    target: "x.type"
-  }, {
-    source: "x_format",
-    target: "x.format"
-  }, {
-    source: "x_sort",
-    target: "x.sort"
-  }, {
-    source: "x_bin",
-    target: "x.bin"
-  }, {
-    source: "x_behavior",
-    target: "x.behavior"
-  }, {
-    source: "y_label",
-    target: "y.label"
-  }, {
-    source: "y_type",
-    target: "y.type"
-  }, {
-    source: "y_format",
-    target: "y.format"
-  }, {
-    source: "y_sort",
-    target: "y.sort"
-  }, {
-    source: "y_behavior",
-    target: "y.behavior"
-  }, {
-    source: "marks_type",
-    target: "marks.0.type"
-  }, {
-    source: "marks_summarizeX",
-    target: "marks.0.summarizeX"
-  }, {
-    source: "marks_summarizeY",
-    target: "marks.0.summarizeY"
-  }, {
-    source: "marks_arrange",
-    target: "marks.0.arrange"
-  }, {
-    source: "marks_fill_opacity",
-    target: "marks.0.attributes.fill-opacity"
-  }, {
-    source: "aspect_ratio",
-    target: "aspect"
-  }, {
-    source: "range_band",
-    target: "range_band"
-  }, {
-    source: "colors",
-    target: "colors"
-  }, {
-    source: "gridlines",
-    target: "gridlines"
-  }, {
-    source: "max_width",
-    target: "max_width"
-  }, {
-    source: "resizable",
-    target: "resizable"
-  }, {
-    source: "scale_text",
-    target: "scale_text"
-  }, {
-    source: "legend_mark",
-    target: "legend.mark"
-  }, {
-    source: "legend_label",
-    target: "legend.label"
-  }]
-};
+       return nextSettings;
+   }
 
-var settings = {
-  //Addition settings for this template
-  id_col: 'USUBJID',
-  seq_col: 'AESEQ',
-  soc_col: 'AEBODSYS',
-  term_col: 'AETERM',
-  stdy_col: 'ASTDY',
-  endy_col: 'AENDY',
-  sev_col: 'AESEV',
-  rel_col: 'AEREL',
+   const controlInputs = [ 
+       {label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true},
+       {label: "System Organ Class", type: "subsetter", value_col: "AEBODSYS"},
+       {label: "Subject ID", type: "subsetter", value_col: "USUBJID"},
+       {label: "Related to Treatment", type: "subsetter", value_col: "AEREL"},
+       {label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true}
+   ];
 
-  //Standard webcharts settings
-  x: {
-    "label": null,
-    "type": "linear",
-    "column": 'wc_value'
-  },
-  y: {
-    "label": '',
-    "sort": "earliest",
-    "type": "ordinal",
-    "behavior": 'flex'
-  },
-  "margin": { "top": 50 },
-  "legend": {
-    "mark": "circle",
-    "label": 'Severity'
-  },
-  "marks": [{
-    "type": "line",
-    "attributes": { 'stroke-width': 5, 'stroke-opacity': .8 }
-  }, {
-    "type": "circle"
-  }],
-  "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-  "date_format": "%m/%d/%y",
-  "resizable": true,
-  "max_width": 1000,
-  "y_behavior": 'flex',
-  "gridlines": "y",
-  "no_text_size": false,
-  "range_band": 15
-};
+   function syncControlInputs(preControlInputs, preSettings){
+       var severityControl = preControlInputs.filter(function(d){return d.label=="Severity"})[0];
+       severityControl.value_col = preSettings.sev_col;
 
-function syncSettings(settings) {
-  settings.y.column = settings.id_col;
-  settings.marks[0].per = [settings.id_col, settings.seq_col];
-  settings.marks[0].tooltip = 'System Organ Class: [' + settings.soc_col + ']\nPreferred Term: [' + settings.term_col + ']\nStart Day: [' + settings.stdy_col + ']\nStop Day: [' + settings.endy_col + ']';
-  settings.marks[1].per = [settings.id_col, settings.seq_col, 'wc_value'];
-  settings.marks[1].tooltip = 'System Organ Class: [' + settings.soc_col + ']\nPreferred Term: [' + settings.term_col + ']\nStart Day: [' + settings.stdy_col + ']\nStop Day: [' + settings.endy_col + ']';
-  settings.color_by = settings.sev_col;
+       var sOCControl = preControlInputs.filter(function(d){return d.label=="System Organ Class"})[0];
+       sOCControl.value_col = preSettings.soc_col;
 
-  return settings;
-}
+       var subjectControl = preControlInputs.filter(function(d){return d.label=="Subject ID"})[0];
+       subjectControl.value_col = preSettings.id_col;
 
-var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "AEBODSYS", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
+       var relatedControl = preControlInputs.filter(function(d){return d.label=="Related to Treatment"})[0];
+       relatedControl.value_col = preSettings.rel_col;
 
-function syncControlInputs(controlInputs, settings) {
-  controlInputs[0].value_col = settings.sev_col;
-  controlInputs[1].value_col = settings.soc_col;
-  controlInputs[2].value_col = settings.id_col;
-  controlInputs[3].value_col = settings.rel_col;
+       return preControlInputs;
+   }
 
-  return controlInputs;
-}
+   //Setting for custom details view
+   const secondSettings = {
+       "x":{label:'', "type":"linear","column":"wc_value"},
+       "y":{label: '', "sort":"alphabetical-descending","type":"ordinal","column":"AESEQ"},
+       "marks":[
+           {"type":"line","per":["AESEQ"], attributes:{'stroke-width': 5, 'stroke-opacity': .8 }},
+           {"type":"circle","per":[ "AESEQ", "wc_value"]}
+        ],
+       color_by: "AESEV",
+       colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
+       "legend":{
+           "mark":"circle", 
+           "label": 'Severity'
+       },
+       "date_format":"%d%b%Y:%X",
+       // "resizable":false,
+       transitions: false,
+       "max_width":1000,
+       // point_size: 3,
+       "gridlines":"y",
+       "no_text_size":false,
+       "range_band":28
+   };
 
-var secondSettings = {
-  "x": { label: '', "type": "linear", "column": "wc_value" },
-  "y": { label: '', "sort": "alphabetical-descending", "type": "ordinal", "column": "AESEQ" },
-  "marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }],
-  color_by: "AESEV",
-  colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-  "legend": {
-    "mark": "circle",
-    "label": 'Severity'
-  },
-  "date_format": "%d%b%Y:%X",
-  // "resizable":false,
-  transitions: false,
-  "max_width": 1000,
-  // point_size: 3,
-  "gridlines": "y",
-  "no_text_size": false,
-  "range_band": 28
-};
+   function syncSecondSettings(settings1, settings2){
+       const nextSettings = Object.create(settings1);
+       nextSettings.y.column = settings2.seq_col;
+       nextSettings.marks[0].per[0] = settings2.seq_col;
+       nextSettings.marks[1].per[0] = settings2.seq_col;
+       nextSettings.color_by = settings2.sev_col;
+       nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
+       nextSettings.colors = settings2.colors;
 
-function syncSecondSettings(secondSettings, settings) {
-  secondSettings.y.column = settings.seq_col;
-  secondSettings.marks[0].per[0] = settings.seq_col;
-  secondSettings.marks[1].per[0] = settings.seq_col;
-  secondSettings.color_by = settings.sev_col;
-  secondSettings.color_dom = settings.legend ? secondSettings.legend.order : null;
+       return nextSettings;
+   }
 
-  return secondSettings;
-}
+   function lengthenRaw(data, columns){
+     let my_data = [];
 
-function lengthenRaw(data, columns) {
-  var my_data = [];
+     data.forEach(e => {
+       columns.forEach(g => {
+         let obj = Object.assign({}, e);
+         obj.wc_category = g;
+         obj.wc_value = e[g];
+         my_data.push(obj);
+       });
 
-  data.forEach(function (e) {
-    columns.forEach(function (g) {
-      var obj = Object.assign({}, e);
-      obj.wc_category = g;
-      obj.wc_value = e[g];
-      my_data.push(obj);
-    });
-  });
+     });
 
-  return my_data;
-}
+     return my_data;
+   }
 
-function onInit() {
-  var _this = this;
+   function onInit(){
+       this.superRaw = this.raw_data;
+       this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col])  
+       this.raw_data.forEach(function(d){
+           d.wc_value = d.wc_value == "" ? NaN : +d.wc_value;
+       });
+       //create back button
+       var myChart = this;
+       this.chart2.wrap.insert('button', 'svg').html('&#8592; Back').style('cursor', 'pointer')
+       .on('click', () =>{
+           this.wrap.style('display', 'block');
+           this.table.draw([]);
+           this.chart2.wrap.style('display', 'none');
+           this.chart2.wrap.select('.id-title').remove();
+           this.controls.wrap.style('display', 'block');
+       });
 
-  this.superRaw = this.raw_data;
-  this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col]);
-  this.raw_data.forEach(function (d) {
-    d.wc_value = d.wc_value == "" ? NaN : +d.wc_value;
-  });
-  //create back button
-  var myChart = this;
-  this.chart2.wrap.insert('button', 'svg').html('&#8592; Back').style('cursor', 'pointer').on('click', function () {
-    _this.wrap.style('display', 'block');
-    _this.table.draw([]);
-    _this.chart2.wrap.style('display', 'none');
-    _this.chart2.wrap.select('.id-title').remove();
-    _this.controls.wrap.style('display', 'block');
-  });
-};
+   };
 
-function onLayout() {
+   function onLayout(){
 
-  var x2 = this.svg.append("g").attr("class", "x2 axis linear");
-  x2.append("text").attr("class", "axis-title top").attr("dy", "2em").attr("text-anchor", "middle").text(this.config.x_label);
-}
+     var x2 = this.svg.append("g").attr("class", "x2 axis linear");
+     x2.append("text").attr("class","axis-title top")
+       .attr("dy","2em")
+       .attr("text-anchor","middle")
+       .text(this.config.x_label);
 
-function onDataTransform() {}
+   }
 
-function onDraw() {}
+   function onDataTransform(){
 
-function onResize() {
-  var _this2 = this;
+   }
 
-  var chart = this;
-  this.chart2.on('datatransform', function () {
-    //make sure color scales stay consistent
-    this.config.color_dom = chart.colorScale.domain();
-  });
-  this.chart2.x_dom = this.x_dom;
-  this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
-    var csv2 = _this2.raw_data.filter(function (f) {
-      return f[_this2.config.id_col] === d;
-    });
-    _this2.chart2.wrap.style('display', 'block');
-    _this2.chart2.draw(csv2);
-    _this2.chart2.wrap.insert('h4', 'svg').attr('class', 'id-title').text(d);
-    //force legend to be drawn
-    _this2.chart2.makeLegend(_this2.colorScale);
+   function onDraw(){
 
-    var tableData = _this2.superRaw.filter(function (f) {
-      return f[_this2.config.id_col] === d;
-    });
-    //set cols for table, otherwise can get mismatched
-    _this2.table.config.cols = Object.keys(tableData[0]);
-    _this2.table.draw(tableData);
-    _this2.wrap.style('display', 'none');
-    _this2.controls.wrap.style('display', 'none');
-  });
+   }
 
-  var x2Axis = d3.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
+   function onResize(){
+       var chart = this;
+       this.chart2.on('datatransform', function(){
+           //make sure color scales stay consistent
+           this.config.color_dom = chart.colorScale.domain();
+       });
+       this.chart2.x_dom = this.x_dom;
+       this.svg.select('.y.axis').selectAll('.tick')
+       .style('cursor', 'pointer')
+       .on('click', d => {
+           var csv2 = this.raw_data.filter(f => f[this.config.id_col] === d);
+           this.chart2.wrap.style('display', 'block');
+           this.chart2.draw(csv2);
+           this.chart2.wrap.insert('h4', 'svg').attr('class', 'id-title').text(d);
+           //force legend to be drawn
+           this.chart2.makeLegend(this.colorScale);
 
-  var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
+           var tableData = this.superRaw.filter(f => f[this.config.id_col] === d);
+           //set cols for table, otherwise can get mismatched
+           this.table.config.cols = Object.keys(tableData[0]);
+           this.table.draw(tableData)
+           this.wrap.style('display', 'none');
+           this.controls.wrap.style('display', 'none');
+       });
 
-  g_x2_axis.call(x2Axis);
+       var x2Axis = d3.svg.axis()
+           .scale(this.x)
+           .orient('top')
+           .tickFormat(this.xAxis.tickFormat())
+           .innerTickSize(this.xAxis.innerTickSize())
+           .outerTickSize(this.xAxis.outerTickSize())
+           .ticks(this.xAxis.ticks()[0]);
 
-  g_x2_axis.select("text.axis-title.top").attr("transform", "translate(" + this.raw_width / 2 + ",-" + this.config.margin.top + ")");
+       var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
 
-  g_x2_axis.select('.domain').attr({
-    'fill': 'none',
-    'stroke': '#ccc',
-    'shape-rendering': 'crispEdges'
-  });
-  g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
-}
+       g_x2_axis.call(x2Axis);
 
-if (typeof Object.assign != 'function') {
-  (function () {
-    Object.assign = function (target) {
-      'use strict';
-      if (target === undefined || target === null) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
+       g_x2_axis.select("text.axis-title.top").attr("transform","translate("+(this.raw_width/2)+",-"+this.config.margin.top+")");
 
-      var output = Object(target);
-      for (var index = 1; index < arguments.length; index++) {
-        var source = arguments[index];
-        if (source !== undefined && source !== null) {
-          for (var nextKey in source) {
-            if (source.hasOwnProperty(nextKey)) {
-              output[nextKey] = source[nextKey];
-            }
-          }
-        }
-      }
-      return output;
-    };
-  })();
-}
+       g_x2_axis.select('.domain').attr({
+           'fill': 'none',
+           'stroke': '#ccc',
+           'shape-rendering': 'crispEdges'
+       });
+       g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+   }
 
-function aeTimeline(element, settings$$) {
-  //merge user's settings with defaults
-  var mergedSettings = Object.assign({}, settings, settings$$);
+   if (typeof Object.assign != 'function') {
+     (function () {
+       Object.assign = function (target) {
+         'use strict';
+         if (target === undefined || target === null) {
+           throw new TypeError('Cannot convert undefined or null to object');
+         }
 
-  //keep settings in sync with the data mappings
-  mergedSettings = syncSettings(mergedSettings);
+         var output = Object(target);
+         for (var index = 1; index < arguments.length; index++) {
+           var source = arguments[index];
+           if (source !== undefined && source !== null) {
+             for (var nextKey in source) {
+               if (source.hasOwnProperty(nextKey)) {
+                 output[nextKey] = source[nextKey];
+               }
+             }
+           }
+         }
+         return output;
+       };
+     })();
+   }
 
-  //keep settings for secondary chart in sync
-  var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
-  mergedSecondSettings = syncSecondSettings(mergedSecondSettings, mergedSettings);
+   function aeTimeline(element, settings$$){
+   	//merge user's settings with defaults
+   	const initialSettings = Object.assign({}, settings, settings$$);
+   // console.log(settings)
+   // console.log(Object.create(settings))
+   // debugger;
+   	//keep settings in sync with the data mappings
+   	const mergedSettings = syncSettings(initialSettings);
 
-  //keep control inputs settings in sync
-  var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+   	//keep settings for secondary chart in sync
+   	const initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings$$));
+   	const mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, mergedSettings);
 
-  //create controls now
-  var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+   	//keep control inputs settings in sync
+   	const syncedControlInputs = syncControlInputs(controlInputs, Object.create(mergedSettings));
 
-  //create chart
-  var chart = webcharts.createChart(element, mergedSettings, controls);
-  chart.on('init', onInit);
-  chart.on('layout', onLayout);
-  chart.on('datatransform', onDataTransform);
-  chart.on('draw', onDraw);
-  chart.on('resize', onResize);
+   	//create controls now
+   	const controls = webcharts.createControls(element, {location: 'top', inputs: syncedControlInputs});
+   	
+   	//create chart
+   	const chart = webcharts.createChart(element, mergedSettings, controls);
+   	chart.on('init', onInit);
+   	chart.on('layout', onLayout);
+   	chart.on('datatransform', onDataTransform);
+   	chart.on('draw', onDraw);
+   	chart.on('resize', onResize);
 
-  //set up secondary chart and table
-  var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
-  chart2.wrap.style('display', 'none');
-  chart.chart2 = chart2;
-  var table = webcharts.createTable(element, {}).init([]);
-  chart.table = table;
+   	//set up secondary chart and table
+   	const chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
+   	chart2.wrap.style('display', 'none');
+   	chart.chart2 = chart2;
+   	const table = webcharts.createTable(element, {}).init([]);
+   	chart.table = table;
 
-  return chart;
-}
+   	return chart;
+   }
 
-var ReactAETimelines = (function (_React$Component) {
-  _inherits(ReactAETimelines, _React$Component);
+   class ReactAETimelines extends React.Component {
+   	constructor(props) {
+   		super(props);
+   		this.state = {};
+   	}
+   	componentDidMount(prevProps, prevState){
+   		if(this.props.data.length){
+   			//manually clear div and redraw
+   			d3.select(`.chart-div.id-${this.props.id}`).selectAll('*').remove();
+   			let chart = aeTimeline(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
+   		}
+   	}
+   	componentDidUpdate(prevProps, prevState){
+   		if(this.props.data.length){
+   			//manually clear div and redraw
+   			d3.select(`.chart-div.id-${this.props.id}`).selectAll('*').remove();
+   			let chart = aeTimeline(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
+   		}
+   	}
+   	render(){
+   		return (
+   			React.createElement('div', {
+   				key: this.props.id,
+   				className: `chart-div id-${this.props.id} ${!(this.props.data.length) ? 'loading' : ''}`,
+   				style: { minHeight: '1px', minWidth: '1px' }
+   			})
+   		);
+   	}
+   }
 
-  function ReactAETimelines(props) {
-    _classCallCheck(this, ReactAETimelines);
+   ReactAETimelines.defaultProps = {data: [], controlInputs: [], id: 'id'}
 
-    _get(Object.getPrototypeOf(ReactAETimelines.prototype), 'constructor', this).call(this, props);
-    this.state = {};
-  }
+   function describeCode(props){
+     var settings = this.createSettings(props);
+     const code = `//uses d3 v.${d3.version}
+//uses webcharts v.${webcharts.version}
 
-  _createClass(ReactAETimelines, [{
-    key: 'componentDidMount',
-    value: function componentDidMount(prevProps, prevState) {
-      if (this.props.data.length) {
-        //manually clear div and redraw
-        d3.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
-        var chart = aeTimeline('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
-      }
-    }
-  }, {
-    key: 'componentDidUpdate',
-    value: function componentDidUpdate(prevProps, prevState) {
-      if (this.props.data.length) {
-        //manually clear div and redraw
-        d3.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
-        var chart = aeTimeline('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
-      }
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      return React.createElement('div', {
-        key: this.props.id,
-        className: 'chart-div id-' + this.props.id + ' ' + (!this.props.data.length ? 'loading' : ''),
-        style: { minHeight: '1px', minWidth: '1px' }
-      });
-    }
-  }]);
+var settings = ${JSON.stringify(settings, null, 2)};
 
-  return ReactAETimelines;
-})(React.Component);
+var myChart = aeTimelines(dataElement, settings);
 
-ReactAETimelines.defaultProps = { data: [], controlInputs: [], id: 'id' };
+d3.csv(dataPath, function(error, csv) {
+  myChart.init(csv);
+});
+  `;
+     return code;
+   }
 
-function describeCode(props) {
-  var settings = this.createSettings(props);
-  var code = '//uses d3 v.' + d3.version + '\n//uses webcharts v.' + webcharts.version + '\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n  ';
-  return code;
-}
 
-var Renderer = (function (_React$Component2) {
-  _inherits(Renderer, _React$Component2);
+   class Renderer extends React.Component {
+     constructor(props) {
+       super(props);
+       this.binding = binding;
+       this.describeCode = describeCode.bind(this);
+       this.state = {data: [], settings: {}, template: {}, loadMsg: 'Loading...'};
+     }
+     createSettings(props) {
+       // set placeholders for anything the user can change
+       let shell = settings//Object.create(defaultSettings);
 
-  function Renderer(props) {
-    _classCallCheck(this, Renderer);
+       binding.dataMappings.forEach(e => {
+         let chartVal = stringAccessor(props.dataMappings, e.source);
+         if(chartVal){
+           stringAccessor(shell, e.target, chartVal);
+         }
+         else{
+           let defaultVal = stringAccessor(props.template.dataMappings, e.source+'.default');
+           if(defaultVal && typeof defaultVal === 'string' && defaultVal.slice(0,3) === 'dm$'){
+             var pointerVal = stringAccessor(props.dataMappings, defaultVal.slice(3)) || null;
+             stringAccessor(shell, e.target, pointerVal);
+           }
+           else if(defaultVal){
+             stringAccessor(shell, e.target, defaultVal);
+           }
+         }
+       });
+       binding.chartProperties.forEach(e => {
+         let chartVal = stringAccessor(props.chartProperties, e.source);
+         if(chartVal !== undefined){
+           stringAccessor(shell, e.target, chartVal);
+         }
+         else{
+           let defaultVal = stringAccessor(props.template.chartProperties, e.source+'.default');
+           stringAccessor(shell, e.target, defaultVal);
+         }
+       });
 
-    _get(Object.getPrototypeOf(Renderer.prototype), 'constructor', this).call(this, props);
-    this.binding = binding;
-    this.describeCode = describeCode.bind(this);
-    this.state = { data: [], settings: {}, template: {}, loadMsg: 'Loading...' };
-  }
+       return syncSettings(shell);
+     }
+     componentWillMount() {
+       var settings = this.createSettings(this.props);
+       this.setState({settings: settings});
+     }
+     componentWillReceiveProps(nextProps){
+       var settings = this.createSettings(nextProps);
+       this.setState({settings: settings});
+     }
+     render() {
+       return (
+         React.createElement(ReactAETimelines, {
+           id: this.props.id,
+           settings: this.state.settings,
+           controlInputs: this.props.template.controls,
+           data: this.props.data
+         })
+       );
+     }
+   }
 
-  _createClass(Renderer, [{
-    key: 'createSettings',
-    value: function createSettings(props) {
-      var shell = {
-        legend: {
-          mark: 'circle',
-          order: null,
-          label: null
-        },
-        colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-        color_by: 'AESEV'
-      };
+   return Renderer;
 
-      binding.dataMappings.forEach(function (e) {
-        var chartVal = stringAccessor(props.dataMappings, e.source);
-        if (chartVal) {
-          stringAccessor(shell, e.target, chartVal);
-        } else {
-          var defaultVal = stringAccessor(props.template.dataMappings, e.source + '.default');
-          if (defaultVal && typeof defaultVal === 'string' && defaultVal.slice(0, 3) === 'dm$') {
-            var pointerVal = stringAccessor(props.dataMappings, defaultVal.slice(3)) || null;
-            stringAccessor(shell, e.target, pointerVal);
-          } else if (defaultVal) {
-            stringAccessor(shell, e.target, defaultVal);
-          } else {
-            stringAccessor(shell, e.target, null);
-          }
-        }
-      });
-      binding.chartProperties.forEach(function (e) {
-        var chartVal = stringAccessor(props.chartProperties, e.source);
-        if (chartVal !== undefined) {
-          stringAccessor(shell, e.target, chartVal);
-        } else {
-          var defaultVal = stringAccessor(props.template.chartProperties, e.source + '.default');
-          stringAccessor(shell, e.target, defaultVal);
-        }
-      });
-
-      return shell;
-    }
-  }, {
-    key: 'componentWillMount',
-    value: function componentWillMount() {
-      var settings = this.createSettings(this.props);
-      this.setState({ settings: settings });
-    }
-  }, {
-    key: 'componentWillReceiveProps',
-    value: function componentWillReceiveProps(nextProps) {
-      var settings = this.createSettings(nextProps);
-      this.setState({ settings: settings });
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      return React.createElement(ReactAETimelines, {
-        id: this.props.id,
-        settings: this.state.settings,
-        controlInputs: this.props.template.controls,
-        data: this.props.data
-      });
-    }
-  }]);
-
-  return Renderer;
-})(React.Component);
-
-module.exports = Renderer;
-
+}));

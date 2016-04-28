@@ -60,8 +60,7 @@ export default class Renderer extends React.Component {
         stringAccessor(shell, e.target, defaultVal);
       }
     });
-    console.log(syncSettings(shell))
-    // debugger;
+
     return syncSettings(shell);
   }
   componentWillMount() {
