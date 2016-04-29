@@ -534,14 +534,12 @@
 
    ReactAETimelines.defaultProps = {data: [], controlInputs: [], id: 'id'}
 
-   const pkg = require('ae-timelines/package.json');
-
    function describeCode(props) {
      const settings = this.createSettings(props);
      const code =
    `// uses d3 v.${d3.version}
 // uses webcharts v.${webcharts.version}
-// uses ae-timelines v.${pkg.version}
+// uses ae-timelines v.1.1.0
 
 var settings = ${JSON.stringify(settings, null, 2)};
 

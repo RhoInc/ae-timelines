@@ -5,14 +5,13 @@ import reactTemplate from './reactTemplate';
 import defaultSettings, { syncSettings } from '../../default-settings';
 import { version as d3Version } from 'd3';
 import { version as wcVersion } from 'webcharts';
-const pkg = require('ae-timelines/package.json');
 
 function describeCode(props) {
   const settings = this.createSettings(props);
   const code =
 `// uses d3 v.${d3Version}
 // uses webcharts v.${wcVersion}
-// uses ae-timelines v.${pkg.version}
+// uses ae-timelines v.1.1.0
 
 var settings = ${JSON.stringify(settings, null, 2)};
 
