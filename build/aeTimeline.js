@@ -27,7 +27,7 @@ var aeTimelines = (function (webcharts, d3) {
             "type": "ordinal",
             "behavior": 'flex'
         },
-        "margin": { "top": 50 },
+        "margin": { "top": 50, bottom: null, left: null, right: null },
         "legend": {
             "mark": "circle",
             "label": 'Severity'
@@ -53,41 +53,42 @@ var aeTimelines = (function (webcharts, d3) {
         "color_by": null //set in syncSettings()
     };
 
-    function syncSettings(settings) {
-        settings.y.column = settings.id_col;
-        settings.marks[0].per = [settings.id_col, settings.seq_col];
-        settings.marks[0].tooltip = 'System Organ Class: [' + settings.soc_col + ']\nPreferred Term: [' + settings.term_col + ']\nStart Day: [' + settings.stdy_col + ']\nStop Day: [' + settings.endy_col + ']';
-        settings.marks[1].per = [settings.id_col, settings.seq_col, 'wc_value'];
-        settings.marks[1].tooltip = 'System Organ Class: [' + settings.soc_col + ']\nPreferred Term: [' + settings.term_col + ']\nStart Day: [' + settings.stdy_col + ']\nStop Day: [' + settings.endy_col + ']';
-        settings.color_by = settings.sev_col;
+    function syncSettings(preSettings) {
+        var nextSettings = Object.create(preSettings);
+        nextSettings.y.column = nextSettings.id_col;
+        nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
+        nextSettings.marks[0].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+        nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+        nextSettings.marks[1].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+        nextSettings.color_by = nextSettings.sev_col;
 
-        return settings;
+        return nextSettings;
     }
 
     var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "System Organ Class", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
 
-    function syncControlInputs(controlInputs, settings) {
-        var severityControl = controlInputs.filter(function (d) {
+    function syncControlInputs(preControlInputs, preSettings) {
+        var severityControl = preControlInputs.filter(function (d) {
             return d.label == "Severity";
         })[0];
-        severityControl.value_col = settings.sev_col;
+        severityControl.value_col = preSettings.sev_col;
 
-        var SOCControl = controlInputs.filter(function (d) {
+        var sOCControl = preControlInputs.filter(function (d) {
             return d.label == "System Organ Class";
         })[0];
-        SOCControl.value_col = settings.soc_col;
+        sOCControl.value_col = preSettings.soc_col;
 
-        var subjectControl = controlInputs.filter(function (d) {
+        var subjectControl = preControlInputs.filter(function (d) {
             return d.label == "Subject ID";
         })[0];
-        subjectControl.value_col = settings.id_col;
+        subjectControl.value_col = preSettings.id_col;
 
-        var relatedControl = controlInputs.filter(function (d) {
+        var relatedControl = preControlInputs.filter(function (d) {
             return d.label == "Related to Treatment";
         })[0];
-        relatedControl.value_col = settings.rel_col;
+        relatedControl.value_col = preSettings.rel_col;
 
-        return controlInputs;
+        return preControlInputs;
     }
 
     //Setting for custom details view
@@ -111,14 +112,16 @@ var aeTimelines = (function (webcharts, d3) {
         "range_band": 28
     };
 
-    function syncSecondSettings(secondSettings, settings) {
-        secondSettings.y.column = settings.seq_col;
-        secondSettings.marks[0].per[0] = settings.seq_col;
-        secondSettings.marks[1].per[0] = settings.seq_col;
-        secondSettings.color_by = settings.sev_col;
-        secondSettings.color_dom = settings.legend ? secondSettings.legend.order : null;
+    function syncSecondSettings(settings1, settings2) {
+        var nextSettings = Object.create(settings1);
+        nextSettings.y.column = settings2.seq_col;
+        nextSettings.marks[0].per[0] = settings2.seq_col;
+        nextSettings.marks[1].per[0] = settings2.seq_col;
+        nextSettings.color_by = settings2.sev_col;
+        nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
+        nextSettings.colors = settings2.colors;
 
-        return secondSettings;
+        return nextSettings;
     }
 
     function lengthenRaw(data, columns) {
@@ -236,17 +239,19 @@ var aeTimelines = (function (webcharts, d3) {
 
     function aeTimeline(element, settings$$) {
         //merge user's settings with defaults
-        var mergedSettings = Object.assign({}, settings, settings$$);
-
+        var initialSettings = Object.assign({}, settings, settings$$);
+        // console.log(settings)
+        // console.log(Object.create(settings))
+        // debugger;
         //keep settings in sync with the data mappings
-        mergedSettings = syncSettings(mergedSettings);
+        var mergedSettings = syncSettings(initialSettings);
 
         //keep settings for secondary chart in sync
-        var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
-        mergedSecondSettings = syncSecondSettings(mergedSecondSettings, mergedSettings);
+        var initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings$$));
+        var mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, mergedSettings);
 
         //keep control inputs settings in sync
-        var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+        var syncedControlInputs = syncControlInputs(controlInputs, Object.create(mergedSettings));
 
         //create controls now
         var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });

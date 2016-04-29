@@ -3,13 +3,16 @@ import stringAccessor from './string-accessor';
 import binding from '../binding';
 import reactTemplate from './reactTemplate';
 import defaultSettings, { syncSettings } from '../../default-settings';
-import { version as d3_version } from 'd3';
-import { version as wc_version } from 'webcharts';
+import { version as d3Version } from 'd3';
+import { version as wcVersion } from 'webcharts';
+const pkg = require('ae-timelines/package.json');
 
-function describeCode(props){
-  var settings = this.createSettings(props);
-  const code = `//uses d3 v.${d3_version}
-//uses webcharts v.${wc_version}
+function describeCode(props) {
+  const settings = this.createSettings(props);
+  const code =
+`// uses d3 v.${d3Version}
+// uses webcharts v.${wcVersion}
+// uses ae-timelines v.${pkg.version}
 
 var settings = ${JSON.stringify(settings, null, 2)};
 
@@ -18,7 +21,7 @@ var myChart = aeTimelines(dataElement, settings);
 d3.csv(dataPath, function(error, csv) {
   myChart.init(csv);
 });
-  `;
+`;
   return code;
 }
 
@@ -28,20 +31,20 @@ export default class Renderer extends React.Component {
     super(props);
     this.binding = binding;
     this.describeCode = describeCode.bind(this);
-    this.state = {data: [], settings: {}, template: {}, loadMsg: 'Loading...'};
+    this.state = { data: [], settings: {}, template: {}, loadMsg: 'Loading...' };
   }
   createSettings(props) {
     // set placeholders for anything the user can change
-    let shell = defaultSettings//Object.create(defaultSettings);
+    const shell = defaultSettings;
 
     binding.dataMappings.forEach(e => {
       let chartVal = stringAccessor(props.dataMappings, e.source);
-      if(chartVal){
+      if (chartVal) {
         stringAccessor(shell, e.target, chartVal);
       }
-      else{
+      else {
         let defaultVal = stringAccessor(props.template.dataMappings, e.source+'.default');
-        if(defaultVal && typeof defaultVal === 'string' && defaultVal.slice(0,3) === 'dm$'){
+        if (defaultVal && typeof defaultVal === 'string' && defaultVal.slice(0,3) === 'dm$') {
           var pointerVal = stringAccessor(props.dataMappings, defaultVal.slice(3)) || null;
           stringAccessor(shell, e.target, pointerVal);
         }
@@ -52,10 +55,10 @@ export default class Renderer extends React.Component {
     });
     binding.chartProperties.forEach(e => {
       let chartVal = stringAccessor(props.chartProperties, e.source);
-      if(chartVal !== undefined){
+      if (chartVal !== undefined) {
         stringAccessor(shell, e.target, chartVal);
       }
-      else{
+      else {
         let defaultVal = stringAccessor(props.template.chartProperties, e.source+'.default');
         stringAccessor(shell, e.target, defaultVal);
       }
@@ -65,11 +68,11 @@ export default class Renderer extends React.Component {
   }
   componentWillMount() {
     var settings = this.createSettings(this.props);
-    this.setState({settings: settings});
+    this.setState({ settings });
   }
   componentWillReceiveProps(nextProps){
     var settings = this.createSettings(nextProps);
-    this.setState({settings: settings});
+    this.setState({ settings });
   }
   render() {
     return (
