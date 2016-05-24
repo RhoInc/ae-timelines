@@ -5,7 +5,7 @@
   "main": "./build/aeTimeline-chf.js",
   "scripts": {
     "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimeline.js",
-    "build-chf": "rollup -c ./scripts/rollup.react.config.js > ./build/aeTimeline-chf.js"
+    "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/aeTimeline-chf.js"
   },
   "author": "Rho, Inc.",
   "license": "MIT",
