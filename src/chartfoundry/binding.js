@@ -2,6 +2,38 @@
 export default {
 	dataMappings : [
 		{
+			source: "id_col",
+			target: "id_col"
+		},
+		{
+			source: "seq_col",
+			target: "seq_col"
+		},
+		{
+			source: "soc_col",
+			target: "soc_col"
+		},
+		{
+			source: "term_col",
+			target: "term_col"
+		},
+		{
+			source: "stdy_col",
+			target: "stdy_col"
+		},
+		{
+			source: "endy_col",
+			target: "endy_col"
+		},
+		{
+			source: "sev_col",
+			target: "sev_col"
+		},
+		{
+			source: "rel_col",
+			target: "rel_col"
+		},
+		{
 			source:"x",
 			target:"x.column"
 		},
