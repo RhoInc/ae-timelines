@@ -8,6 +8,7 @@ const settings = {
     endy_col: 'AENDY',
     sev_col: 'AESEV',
     rel_col: 'AEREL',
+    filter_cols: ['SITEID']
 
     //Standard webcharts settings
     x:{
@@ -83,7 +84,20 @@ export function syncControlInputs(preControlInputs, preSettings){
 
     var relatedControl = preControlInputs.filter(function(d){return d.label=="Related to Treatment"})[0];
     relatedControl.value_col = preSettings.rel_col;
-
+    
+    settings.filter_cols.forEach(function(d,i){
+      var thisFilter = {
+        type:"subsetter", 
+        value_col:d, 
+        multiple:true
+      }
+      thisFilter.label = settings.filter_labels[i] ? settings.filter_labels[i] : null
+      var filter_vars = preControlInputs.map(function(d){return d.value_col})
+      if (filter_vars.indexOf(thisFilter.value_col)== -1) {
+        preControlInputs.push(thisFilter);
+      } 
+    })
+  }
     return preControlInputs;
 }
 
