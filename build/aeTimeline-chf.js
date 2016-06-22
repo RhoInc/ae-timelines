@@ -92,9 +92,6 @@
 			target: "marks.0.tooltip"
 		}],
 		chartProperties: [{
-			source: "filter_labels",
-			target: "filter_labels"
-		}, {
 			source: "date_format",
 			target: "date_format"
 		}, {
@@ -185,8 +182,7 @@
 	    endy_col: 'AENDY',
 	    sev_col: 'AESEV',
 	    rel_col: 'AEREL',
-	    filter_cols: ['SITEID'],
-	    filter_labels: ['Site'],
+	    filter_cols: [],
 	    detail_cols: [],
 
 	    //Standard webcharts settings
@@ -267,9 +263,9 @@
 	        var thisFilter = {
 	            type: "subsetter",
 	            value_col: d,
+	            label: d,
 	            multiple: true
 	        };
-	        thisFilter.label = settings.filter_labels[i] ? settings.filter_labels[i] : null;
 	        var filter_vars = preControlInputs.map(function (d) {
 	            return d.value_col;
 	        });
@@ -593,7 +589,7 @@
 
 	function describeCode(props) {
 	  var settings = this.createSettings(props);
-	  var code = '// uses d3 v.' + d3$1.version + '\n// uses webcharts v.' + webcharts.version + '\n// uses ae-timelines v.1.2.0\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n';
+	  var code = '// uses d3 v.' + d3$1.version + '\n// uses webcharts v.' + webcharts.version + '\n// uses ae-timelines v.1.2.1\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n';
 	  return code;
 	}
 

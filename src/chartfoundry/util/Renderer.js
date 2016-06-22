@@ -11,7 +11,7 @@ function describeCode(props) {
   const code =
 `// uses d3 v.${d3Version}
 // uses webcharts v.${wcVersion}
-// uses ae-timelines v.1.2.0
+// uses ae-timelines v.1.2.1
 
 var settings = ${JSON.stringify(settings, null, 2)};
 

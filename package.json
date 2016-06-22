@@ -1,6 +1,6 @@
 {
   "name": "ae-timelines",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Adverse event timelines for clinical trials",
   "main": "./build/aeTimeline-chf.js",
   "scripts": {

@@ -13,8 +13,7 @@ var aeTimelines = (function (webcharts, d3$1) {
 		endy_col: 'AENDY',
 		sev_col: 'AESEV',
 		rel_col: 'AEREL',
-		filter_cols: ['SITEID'],
-		filter_labels: ['Site'],
+		filter_cols: [],
 		detail_cols: [],
 
 		//Standard webcharts settings
@@ -95,9 +94,9 @@ var aeTimelines = (function (webcharts, d3$1) {
 			var thisFilter = {
 				type: "subsetter",
 				value_col: d,
+				label: d,
 				multiple: true
 			};
-			thisFilter.label = settings.filter_labels[i] ? settings.filter_labels[i] : null;
 			var filter_vars = preControlInputs.map(function (d) {
 				return d.value_col;
 			});
