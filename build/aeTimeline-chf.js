@@ -6,58 +6,6 @@
 
 	React = 'default' in React ? React['default'] : React;
 
-	var babelHelpers = {};
-
-	babelHelpers.classCallCheck = function (instance, Constructor) {
-	  if (!(instance instanceof Constructor)) {
-	    throw new TypeError("Cannot call a class as a function");
-	  }
-	};
-
-	babelHelpers.createClass = function () {
-	  function defineProperties(target, props) {
-	    for (var i = 0; i < props.length; i++) {
-	      var descriptor = props[i];
-	      descriptor.enumerable = descriptor.enumerable || false;
-	      descriptor.configurable = true;
-	      if ("value" in descriptor) descriptor.writable = true;
-	      Object.defineProperty(target, descriptor.key, descriptor);
-	    }
-	  }
-
-	  return function (Constructor, protoProps, staticProps) {
-	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-	    if (staticProps) defineProperties(Constructor, staticProps);
-	    return Constructor;
-	  };
-	}();
-
-	babelHelpers.inherits = function (subClass, superClass) {
-	  if (typeof superClass !== "function" && superClass !== null) {
-	    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-	  }
-
-	  subClass.prototype = Object.create(superClass && superClass.prototype, {
-	    constructor: {
-	      value: subClass,
-	      enumerable: false,
-	      writable: true,
-	      configurable: true
-	    }
-	  });
-	  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-	};
-
-	babelHelpers.possibleConstructorReturn = function (self, call) {
-	  if (!self) {
-	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-	  }
-
-	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-	};
-
-	babelHelpers;
-
 	function stringAccessor (o, s, v) {
 	    //adapted from http://jsfiddle.net/alnitak/hEsys/
 	    s = s.replace(/\[(\w+)\]/g, '.$1');
@@ -228,6 +176,8 @@
 	    endy_col: 'AENDY',
 	    sev_col: 'AESEV',
 	    rel_col: 'AEREL',
+	    filter_cols: ['SITEID'],
+	    filter_labels: ['Site'],
 
 	    //Standard webcharts settings
 	    x: {
@@ -302,6 +252,21 @@
 	        return d.label == "Related to Treatment";
 	    })[0];
 	    relatedControl.value_col = preSettings.rel_col;
+
+	    settings.filter_cols.forEach(function (d, i) {
+	        var thisFilter = {
+	            type: "subsetter",
+	            value_col: d,
+	            multiple: true
+	        };
+	        thisFilter.label = settings.filter_labels[i] ? settings.filter_labels[i] : null;
+	        var filter_vars = preControlInputs.map(function (d) {
+	            return d.value_col;
+	        });
+	        if (filter_vars.indexOf(thisFilter.value_col) == -1) {
+	            preControlInputs.push(thisFilter);
+	        }
+	    });
 
 	    return preControlInputs;
 	}
@@ -490,19 +455,67 @@
 		return chart;
 	}
 
+	var classCallCheck = function (instance, Constructor) {
+	  if (!(instance instanceof Constructor)) {
+	    throw new TypeError("Cannot call a class as a function");
+	  }
+	};
+
+	var createClass = function () {
+	  function defineProperties(target, props) {
+	    for (var i = 0; i < props.length; i++) {
+	      var descriptor = props[i];
+	      descriptor.enumerable = descriptor.enumerable || false;
+	      descriptor.configurable = true;
+	      if ("value" in descriptor) descriptor.writable = true;
+	      Object.defineProperty(target, descriptor.key, descriptor);
+	    }
+	  }
+
+	  return function (Constructor, protoProps, staticProps) {
+	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+	    if (staticProps) defineProperties(Constructor, staticProps);
+	    return Constructor;
+	  };
+	}();
+
+	var inherits = function (subClass, superClass) {
+	  if (typeof superClass !== "function" && superClass !== null) {
+	    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+	  }
+
+	  subClass.prototype = Object.create(superClass && superClass.prototype, {
+	    constructor: {
+	      value: subClass,
+	      enumerable: false,
+	      writable: true,
+	      configurable: true
+	    }
+	  });
+	  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	};
+
+	var possibleConstructorReturn = function (self, call) {
+	  if (!self) {
+	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	  }
+
+	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+	};
+
 	var ReactAETimelines = function (_React$Component) {
-		babelHelpers.inherits(ReactAETimelines, _React$Component);
+		inherits(ReactAETimelines, _React$Component);
 
 		function ReactAETimelines(props) {
-			babelHelpers.classCallCheck(this, ReactAETimelines);
+			classCallCheck(this, ReactAETimelines);
 
-			var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ReactAETimelines).call(this, props));
+			var _this = possibleConstructorReturn(this, Object.getPrototypeOf(ReactAETimelines).call(this, props));
 
 			_this.state = {};
 			return _this;
 		}
 
-		babelHelpers.createClass(ReactAETimelines, [{
+		createClass(ReactAETimelines, [{
 			key: 'componentDidMount',
 			value: function componentDidMount(prevProps, prevState) {
 				if (this.props.data.length) {
@@ -537,17 +550,17 @@
 
 	function describeCode(props) {
 	  var settings = this.createSettings(props);
-	  var code = '// uses d3 v.' + d3.version + '\n// uses webcharts v.' + webcharts.version + '\n// uses ae-timelines v.1.1.0\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n';
+	  var code = '// uses d3 v.' + d3.version + '\n// uses webcharts v.' + webcharts.version + '\n// uses ae-timelines v.1.2.0\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n';
 	  return code;
 	}
 
 	var Renderer = function (_React$Component) {
-	  babelHelpers.inherits(Renderer, _React$Component);
+	  inherits(Renderer, _React$Component);
 
 	  function Renderer(props) {
-	    babelHelpers.classCallCheck(this, Renderer);
+	    classCallCheck(this, Renderer);
 
-	    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Renderer).call(this, props));
+	    var _this = possibleConstructorReturn(this, Object.getPrototypeOf(Renderer).call(this, props));
 
 	    _this.binding = binding;
 	    _this.describeCode = describeCode.bind(_this);
@@ -555,7 +568,7 @@
 	    return _this;
 	  }
 
-	  babelHelpers.createClass(Renderer, [{
+	  createClass(Renderer, [{
 	    key: 'createSettings',
 	    value: function createSettings(props) {
 	      // set placeholders for anything the user can change
