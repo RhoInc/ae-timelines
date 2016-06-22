@@ -1,6 +1,6 @@
 'use strict';
 
-var aeTimelines = (function (webcharts, d3) {
+var aeTimelines = (function (webcharts, d3$1) {
 	'use strict';
 
 	var settings = {
@@ -176,14 +176,47 @@ var aeTimelines = (function (webcharts, d3) {
 	};
 
 	function onLayout() {
+		//add div for participant counts
+		d3.select(this.div).append("span").classed("annote", true);
 
+		//add top x-axis
 		var x2 = this.svg.append("g").attr("class", "x2 axis linear");
 		x2.append("text").attr("class", "axis-title top").attr("dy", "2em").attr("text-anchor", "middle").text(this.config.x_label);
 	}
 
 	function onDataTransform() {}
 
-	function onDraw() {}
+	// Takes a webcharts object creates a text annotation giving the
+	// number and percentage of observations shown in the current view
+	// inputs:
+	// chart - a webcharts chart object
+	// id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
+	// id_unit - a text string to label the units in the annotation (default = "participants")
+	// selector - css selector for the annotation
+	function updateSubjectCount(chart, id_col, selector, id_unit) {
+		//count the number of unique ids in the data set
+		var totalObs = d3.set(chart.raw_data.map(function (d) {
+			return d[id_col];
+		})).values().length;
+
+		//count the number of unique ids in the current chart and calculate the percentage
+		var currentObs = d3.set(chart.filtered_data.map(function (d) {
+			return d[id_col];
+		})).values().length;
+		var percentage = d3.format('0.1%')(currentObs / totalObs);
+
+		//clear the annotation
+		var annotation = d3.select(selector);
+		d3.select(selector).selectAll("*").remove();
+
+		//update the annotation
+		var units = id_unit ? " " + id_unit : " participant(s)";
+		annotation.text(currentObs + " of " + totalObs + units + " shown (" + percentage + ")");
+	}
+
+	function onDraw() {
+		updateSubjectCount(this, this.config.id_col, ".annote");
+	}
 
 	function onResize() {
 		var _this2 = this;
@@ -214,7 +247,7 @@ var aeTimelines = (function (webcharts, d3) {
 			_this2.controls.wrap.style('display', 'none');
 		});
 
-		var x2Axis = d3.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
+		var x2Axis = d3$1.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
 
 		var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
 
