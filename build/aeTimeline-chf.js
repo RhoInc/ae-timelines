@@ -350,7 +350,7 @@
 
 	function onLayout() {
 	  //add div for participant counts
-	  d3.select(this.div).append("span").classed("annote", true);
+	  this.wrap.append("span").classed("annote", true);
 
 	  //add top x-axis
 	  var x2 = this.svg.append("g").attr("class", "x2 axis linear");
