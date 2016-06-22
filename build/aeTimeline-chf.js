@@ -2,61 +2,9 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('react'), require('d3'), require('webcharts')) :
 	typeof define === 'function' && define.amd ? define(['react', 'd3', 'webcharts'], factory) :
 	(global.aeTimelines = factory(global.React,global.d3,global.webCharts));
-}(this, function (React,d3,webcharts) { 'use strict';
+}(this, function (React,d3$1,webcharts) { 'use strict';
 
 	React = 'default' in React ? React['default'] : React;
-
-	var babelHelpers = {};
-
-	babelHelpers.classCallCheck = function (instance, Constructor) {
-	  if (!(instance instanceof Constructor)) {
-	    throw new TypeError("Cannot call a class as a function");
-	  }
-	};
-
-	babelHelpers.createClass = function () {
-	  function defineProperties(target, props) {
-	    for (var i = 0; i < props.length; i++) {
-	      var descriptor = props[i];
-	      descriptor.enumerable = descriptor.enumerable || false;
-	      descriptor.configurable = true;
-	      if ("value" in descriptor) descriptor.writable = true;
-	      Object.defineProperty(target, descriptor.key, descriptor);
-	    }
-	  }
-
-	  return function (Constructor, protoProps, staticProps) {
-	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-	    if (staticProps) defineProperties(Constructor, staticProps);
-	    return Constructor;
-	  };
-	}();
-
-	babelHelpers.inherits = function (subClass, superClass) {
-	  if (typeof superClass !== "function" && superClass !== null) {
-	    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-	  }
-
-	  subClass.prototype = Object.create(superClass && superClass.prototype, {
-	    constructor: {
-	      value: subClass,
-	      enumerable: false,
-	      writable: true,
-	      configurable: true
-	    }
-	  });
-	  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-	};
-
-	babelHelpers.possibleConstructorReturn = function (self, call) {
-	  if (!self) {
-	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-	  }
-
-	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-	};
-
-	babelHelpers;
 
 	function stringAccessor (o, s, v) {
 	    //adapted from http://jsfiddle.net/alnitak/hEsys/
@@ -101,6 +49,12 @@
 			source: "rel_col",
 			target: "rel_col"
 		}, {
+			source: "filter_cols",
+			target: "filter_cols"
+		}, {
+			source: "detail_cols",
+			target: "detail_cols"
+		}, {
 			source: "x",
 			target: "x.column"
 		}, {
@@ -138,6 +92,9 @@
 			target: "marks.0.tooltip"
 		}],
 		chartProperties: [{
+			source: "filter_labels",
+			target: "filter_labels"
+		}, {
 			source: "date_format",
 			target: "date_format"
 		}, {
@@ -228,6 +185,9 @@
 	    endy_col: 'AENDY',
 	    sev_col: 'AESEV',
 	    rel_col: 'AEREL',
+	    filter_cols: ['SITEID'],
+	    filter_labels: ['Site'],
+	    detail_cols: [],
 
 	    //Standard webcharts settings
 	    x: {
@@ -303,6 +263,21 @@
 	    })[0];
 	    relatedControl.value_col = preSettings.rel_col;
 
+	    settings.filter_cols.forEach(function (d, i) {
+	        var thisFilter = {
+	            type: "subsetter",
+	            value_col: d,
+	            multiple: true
+	        };
+	        thisFilter.label = settings.filter_labels[i] ? settings.filter_labels[i] : null;
+	        var filter_vars = preControlInputs.map(function (d) {
+	            return d.value_col;
+	        });
+	        if (filter_vars.indexOf(thisFilter.value_col) == -1) {
+	            preControlInputs.push(thisFilter);
+	        }
+	    });
+
 	    return preControlInputs;
 	}
 
@@ -374,14 +349,47 @@
 	};
 
 	function onLayout() {
+	  //add div for participant counts
+	  this.wrap.append("span").classed("annote", true);
 
+	  //add top x-axis
 	  var x2 = this.svg.append("g").attr("class", "x2 axis linear");
 	  x2.append("text").attr("class", "axis-title top").attr("dy", "2em").attr("text-anchor", "middle").text(this.config.x_label);
 	}
 
 	function onDataTransform() {}
 
-	function onDraw() {}
+	// Takes a webcharts object creates a text annotation giving the
+	// number and percentage of observations shown in the current view
+	// inputs:
+	// chart - a webcharts chart object
+	// id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
+	// id_unit - a text string to label the units in the annotation (default = "participants")
+	// selector - css selector for the annotation
+	function updateSubjectCount(chart, id_col, selector, id_unit) {
+	    //count the number of unique ids in the data set
+	    var totalObs = d3.set(chart.raw_data.map(function (d) {
+	        return d[id_col];
+	    })).values().length;
+
+	    //count the number of unique ids in the current chart and calculate the percentage
+	    var currentObs = d3.set(chart.filtered_data.map(function (d) {
+	        return d[id_col];
+	    })).values().length;
+	    var percentage = d3.format('0.1%')(currentObs / totalObs);
+
+	    //clear the annotation
+	    var annotation = d3.select(selector);
+	    d3.select(selector).selectAll("*").remove();
+
+	    //update the annotation
+	    var units = id_unit ? " " + id_unit : " participant(s)";
+	    annotation.text(currentObs + " of " + totalObs + units + " shown (" + percentage + ")");
+	}
+
+	function onDraw() {
+		updateSubjectCount(this, this.config.id_col, ".annote");
+	}
 
 	function onResize() {
 	    var _this = this;
@@ -406,13 +414,13 @@
 	            return f[_this.config.id_col] === d;
 	        });
 	        //set cols for table, otherwise can get mismatched
-	        _this.table.config.cols = Object.keys(tableData[0]);
+	        _this.table.config.cols = d3.merge([[chart.config.seq_col, chart.config.id_col, chart.config.soc_col, chart.config.term_col, chart.config.stdy_col, chart.config.endy_col, chart.config.sev_col, chart.config.rel_col], chart.config.filter_cols, chart.config.detail_cols]);
 	        _this.table.draw(tableData);
 	        _this.wrap.style('display', 'none');
 	        _this.controls.wrap.style('display', 'none');
 	    });
 
-	    var x2Axis = d3.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
+	    var x2Axis = d3$1.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
 
 	    var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
 
@@ -490,24 +498,72 @@
 		return chart;
 	}
 
+	var classCallCheck = function (instance, Constructor) {
+	  if (!(instance instanceof Constructor)) {
+	    throw new TypeError("Cannot call a class as a function");
+	  }
+	};
+
+	var createClass = function () {
+	  function defineProperties(target, props) {
+	    for (var i = 0; i < props.length; i++) {
+	      var descriptor = props[i];
+	      descriptor.enumerable = descriptor.enumerable || false;
+	      descriptor.configurable = true;
+	      if ("value" in descriptor) descriptor.writable = true;
+	      Object.defineProperty(target, descriptor.key, descriptor);
+	    }
+	  }
+
+	  return function (Constructor, protoProps, staticProps) {
+	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+	    if (staticProps) defineProperties(Constructor, staticProps);
+	    return Constructor;
+	  };
+	}();
+
+	var inherits = function (subClass, superClass) {
+	  if (typeof superClass !== "function" && superClass !== null) {
+	    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+	  }
+
+	  subClass.prototype = Object.create(superClass && superClass.prototype, {
+	    constructor: {
+	      value: subClass,
+	      enumerable: false,
+	      writable: true,
+	      configurable: true
+	    }
+	  });
+	  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	};
+
+	var possibleConstructorReturn = function (self, call) {
+	  if (!self) {
+	    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	  }
+
+	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+	};
+
 	var ReactAETimelines = function (_React$Component) {
-		babelHelpers.inherits(ReactAETimelines, _React$Component);
+		inherits(ReactAETimelines, _React$Component);
 
 		function ReactAETimelines(props) {
-			babelHelpers.classCallCheck(this, ReactAETimelines);
+			classCallCheck(this, ReactAETimelines);
 
-			var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(ReactAETimelines).call(this, props));
+			var _this = possibleConstructorReturn(this, Object.getPrototypeOf(ReactAETimelines).call(this, props));
 
 			_this.state = {};
 			return _this;
 		}
 
-		babelHelpers.createClass(ReactAETimelines, [{
+		createClass(ReactAETimelines, [{
 			key: 'componentDidMount',
 			value: function componentDidMount(prevProps, prevState) {
 				if (this.props.data.length) {
 					//manually clear div and redraw
-					d3.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
+					d3$1.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
 					var chart = aeTimeline('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
 				}
 			}
@@ -516,7 +572,7 @@
 			value: function componentDidUpdate(prevProps, prevState) {
 				if (this.props.data.length) {
 					//manually clear div and redraw
-					d3.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
+					d3$1.select('.chart-div.id-' + this.props.id).selectAll('*').remove();
 					var chart = aeTimeline('.chart-div.id-' + this.props.id, this.props.settings).init(this.props.data);
 				}
 			}
@@ -537,17 +593,17 @@
 
 	function describeCode(props) {
 	  var settings = this.createSettings(props);
-	  var code = '// uses d3 v.' + d3.version + '\n// uses webcharts v.' + webcharts.version + '\n// uses ae-timelines v.1.1.0\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n';
+	  var code = '// uses d3 v.' + d3$1.version + '\n// uses webcharts v.' + webcharts.version + '\n// uses ae-timelines v.1.2.0\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = aeTimelines(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n';
 	  return code;
 	}
 
 	var Renderer = function (_React$Component) {
-	  babelHelpers.inherits(Renderer, _React$Component);
+	  inherits(Renderer, _React$Component);
 
 	  function Renderer(props) {
-	    babelHelpers.classCallCheck(this, Renderer);
+	    classCallCheck(this, Renderer);
 
-	    var _this = babelHelpers.possibleConstructorReturn(this, Object.getPrototypeOf(Renderer).call(this, props));
+	    var _this = possibleConstructorReturn(this, Object.getPrototypeOf(Renderer).call(this, props));
 
 	    _this.binding = binding;
 	    _this.describeCode = describeCode.bind(_this);
@@ -555,7 +611,7 @@
 	    return _this;
 	  }
 
-	  babelHelpers.createClass(Renderer, [{
+	  createClass(Renderer, [{
 	    key: 'createSettings',
 	    value: function createSettings(props) {
 	      // set placeholders for anything the user can change
