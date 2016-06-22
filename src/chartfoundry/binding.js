@@ -92,10 +92,6 @@ export default {
 	],
 	chartProperties: [
 		{
-			source:"filter_labels",
-			target:"filter_labels"
-		},
-		{
 			source:"date_format",
 			target:"date_format"
 		},
