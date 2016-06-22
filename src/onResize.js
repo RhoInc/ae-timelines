@@ -19,7 +19,20 @@ export default function onResize(){
 
         var tableData = this.superRaw.filter(f => f[this.config.id_col] === d);
         //set cols for table, otherwise can get mismatched
-        this.table.config.cols = Object.keys(tableData[0]);
+        this.table.config.cols = d3.merge([
+            [
+                chart.config.seq_col, 
+                chart.config.id_col, 
+                chart.config.soc_col,
+                chart.config.term_col,
+                chart.config.stdy_col,
+                chart.config.endy_col,
+                chart.config.sev_col,
+                chart.config.rel_col
+            ],
+            chart.config.filter_cols,
+            chart.config.detail_cols
+        ]);
         this.table.draw(tableData)
         this.wrap.style('display', 'none');
         this.controls.wrap.style('display', 'none');

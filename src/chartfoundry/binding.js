@@ -34,6 +34,14 @@ export default {
 			target: "rel_col"
 		},
 		{
+			source: "filter_cols",
+			target: "filter_cols"
+		},
+		{
+			source:"detail_cols",
+			target:"detail_cols"
+		},
+		{
 			source:"x",
 			target:"x.column"
 		},
@@ -83,6 +91,10 @@ export default {
 		}
 	],
 	chartProperties: [
+		{
+			source:"filter_labels",
+			target:"filter_labels"
+		},
 		{
 			source:"date_format",
 			target:"date_format"

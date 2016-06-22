@@ -15,6 +15,7 @@ var aeTimelines = (function (webcharts, d3$1) {
 		rel_col: 'AEREL',
 		filter_cols: ['SITEID'],
 		filter_labels: ['Site'],
+		detail_cols: [],
 
 		//Standard webcharts settings
 		x: {
@@ -241,7 +242,7 @@ var aeTimelines = (function (webcharts, d3$1) {
 				return f[_this2.config.id_col] === d;
 			});
 			//set cols for table, otherwise can get mismatched
-			_this2.table.config.cols = Object.keys(tableData[0]);
+			_this2.table.config.cols = d3.merge([[chart.config.seq_col, chart.config.id_col, chart.config.soc_col, chart.config.term_col, chart.config.stdy_col, chart.config.endy_col, chart.config.sev_col, chart.config.rel_col], chart.config.filter_cols, chart.config.detail_cols]);
 			_this2.table.draw(tableData);
 			_this2.wrap.style('display', 'none');
 			_this2.controls.wrap.style('display', 'none');

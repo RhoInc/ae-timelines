@@ -10,6 +10,7 @@ const settings = {
     rel_col: 'AEREL',
     filter_cols: ['SITEID'],
     filter_labels:['Site'],
+    detail_cols:[],
 
     //Standard webcharts settings
     x:{

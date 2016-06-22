@@ -49,6 +49,12 @@
 			source: "rel_col",
 			target: "rel_col"
 		}, {
+			source: "filter_cols",
+			target: "filter_cols"
+		}, {
+			source: "detail_cols",
+			target: "detail_cols"
+		}, {
 			source: "x",
 			target: "x.column"
 		}, {
@@ -86,6 +92,9 @@
 			target: "marks.0.tooltip"
 		}],
 		chartProperties: [{
+			source: "filter_labels",
+			target: "filter_labels"
+		}, {
 			source: "date_format",
 			target: "date_format"
 		}, {
@@ -178,6 +187,7 @@
 	    rel_col: 'AEREL',
 	    filter_cols: ['SITEID'],
 	    filter_labels: ['Site'],
+	    detail_cols: [],
 
 	    //Standard webcharts settings
 	    x: {
@@ -404,7 +414,7 @@
 	            return f[_this.config.id_col] === d;
 	        });
 	        //set cols for table, otherwise can get mismatched
-	        _this.table.config.cols = Object.keys(tableData[0]);
+	        _this.table.config.cols = d3.merge([[chart.config.seq_col, chart.config.id_col, chart.config.soc_col, chart.config.term_col, chart.config.stdy_col, chart.config.endy_col, chart.config.sev_col, chart.config.rel_col], chart.config.filter_cols, chart.config.detail_cols]);
 	        _this.table.draw(tableData);
 	        _this.wrap.style('display', 'none');
 	        _this.controls.wrap.style('display', 'none');
