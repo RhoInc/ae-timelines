@@ -49,14 +49,14 @@ var aeTimelines = (function (webcharts, d3$1) {
 			"tooltip": null, //set in syncSettings()
 			"type": "line",
 			"attributes": { 'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black' },
-			"values": { "AESER": ["Yes"] }
+			"values": { "AESER": ["Yes", 'Y'] }
 		}, {
 			"per": null, //set in syncSettings()
 			"tooltip": null, //set in syncSettings()
 			"type": "circle",
 			"attributes": { 'stroke-width': 3, 'stroke': 'black' },
 			"radius": 5,
-			"values": { "AESER": ["Yes"] }
+			"values": { "AESER": ["Yes", 'Y'] }
 		}],
 		"colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
 		"date_format": "%m/%d/%y",
@@ -135,7 +135,7 @@ var aeTimelines = (function (webcharts, d3$1) {
 	var secondSettings = {
 		"x": { label: '', "type": "linear", "column": "wc_value" },
 		"y": { label: '', "sort": "alphabetical-descending", "type": "ordinal", "column": "AESEQ" },
-		"marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }, { "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black' }, "values": { "AESER": ["Yes"] } }, { "type": "circle", "per": ["AESEQ", "wc_value"], "attributes": { 'stroke': 'black', 'stroke-width': 2 }, "radius": 5, "values": { "AESER": ["Yes"] } }],
+		"marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }, { "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black' }, "values": { "AESER": ["Yes", 'Y'] } }, { "type": "circle", "per": ["AESEQ", "wc_value"], "attributes": { 'stroke': 'black', 'stroke-width': 2 }, "radius": 5, "values": { "AESER": ["Yes", 'Y'] } }],
 		color_by: "AESEV",
 		colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
 		"legend": {

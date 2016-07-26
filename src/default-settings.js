@@ -47,7 +47,7 @@ const settings = {
             "tooltip":null, //set in syncSettings()
             "type":"line",
             "attributes":{'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black'},
-            "values":{"AESER": ["Yes"]}
+            "values":{"AESER": ["Yes", 'Y']}
         },
         {
             "per":null, //set in syncSettings()
@@ -55,7 +55,7 @@ const settings = {
             "type":"circle",
             "attributes":{'stroke-width': 3, 'stroke': 'black'},
             "radius":5,
-            "values":{"AESER": ["Yes"]}
+            "values":{"AESER": ["Yes", 'Y']}
         }
     ],
     "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
@@ -133,8 +133,8 @@ export const secondSettings = {
     "marks":[
         {"type":"line","per":["AESEQ"], attributes:{'stroke-width': 5, 'stroke-opacity': .8 }},
         {"type":"circle","per":[ "AESEQ", "wc_value"]},
-        {"type":"line","per":[ "AESEQ"], attributes:{'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black'},"values":{"AESER": ["Yes"]}},
-        {"type":"circle","per":[ "AESEQ", "wc_value"],"attributes":{'stroke': 'black','stroke-width': 2},"radius":5,"values":{"AESER": ["Yes"]}}
+        {"type":"line","per":[ "AESEQ"], attributes:{'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black'},"values":{"AESER": ["Yes", 'Y']}},
+        {"type":"circle","per":[ "AESEQ", "wc_value"],"attributes":{'stroke': 'black','stroke-width': 2},"radius":5,"values":{"AESER": ["Yes", 'Y']}}
      ],
     color_by: "AESEV",
     colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
