@@ -13,6 +13,7 @@ var aeTimelines = (function (webcharts, d3$1) {
 		endy_col: 'AENDY',
 		sev_col: 'AESEV',
 		rel_col: 'AEREL',
+		ser_col: 'AESER',
 		filter_cols: [],
 		detail_cols: [],
 
@@ -43,6 +44,19 @@ var aeTimelines = (function (webcharts, d3$1) {
 			"per": null, //set in syncSettings()
 			"tooltip": null, //set in syncSettings()
 			"type": "circle"
+		}, {
+			"per": null, //set in syncSettings()
+			"tooltip": null, //set in syncSettings()
+			"type": "line",
+			"attributes": { 'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black' },
+			"values": { "AESER": ["Yes"] }
+		}, {
+			"per": null, //set in syncSettings()
+			"tooltip": null, //set in syncSettings()
+			"type": "circle",
+			"attributes": { 'stroke-width': 3, 'stroke': 'black' },
+			"radius": 5,
+			"values": { "AESER": ["Yes"] }
 		}],
 		"colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
 		"date_format": "%m/%d/%y",
@@ -62,12 +76,16 @@ var aeTimelines = (function (webcharts, d3$1) {
 		nextSettings.marks[0].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
 		nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
 		nextSettings.marks[1].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+		nextSettings.marks[2].per = [nextSettings.id_col, nextSettings.seq_col];
+		nextSettings.marks[2].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+		nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+		nextSettings.marks[3].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
 		nextSettings.color_by = nextSettings.sev_col;
 
 		return nextSettings;
 	}
 
-	var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "System Organ Class", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
+	var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "System Organ Class", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Serious?", type: "subsetter", value_col: "AESER" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
 
 	function syncControlInputs(preControlInputs, preSettings) {
 		var severityControl = preControlInputs.filter(function (d) {
@@ -89,6 +107,11 @@ var aeTimelines = (function (webcharts, d3$1) {
 			return d.label == "Related to Treatment";
 		})[0];
 		relatedControl.value_col = preSettings.rel_col;
+
+		var seriousControl = preControlInputs.filter(function (d) {
+			return d.label == "Serious?";
+		})[0];
+		seriousControl.value_col = preSettings.ser_col;
 
 		settings.filter_cols.forEach(function (d, i) {
 			var thisFilter = {
@@ -112,7 +135,7 @@ var aeTimelines = (function (webcharts, d3$1) {
 	var secondSettings = {
 		"x": { label: '', "type": "linear", "column": "wc_value" },
 		"y": { label: '', "sort": "alphabetical-descending", "type": "ordinal", "column": "AESEQ" },
-		"marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }],
+		"marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }, { "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black' }, "values": { "AESER": ["Yes"] } }, { "type": "circle", "per": ["AESEQ", "wc_value"], "attributes": { 'stroke': 'black', 'stroke-width': 2 }, "radius": 5, "values": { "AESER": ["Yes"] } }],
 		color_by: "AESEV",
 		colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
 		"legend": {
@@ -120,10 +143,8 @@ var aeTimelines = (function (webcharts, d3$1) {
 			"label": 'Severity'
 		},
 		"date_format": "%d%b%Y:%X",
-		// "resizable":false,
 		transitions: false,
 		"max_width": 1000,
-		// point_size: 3,
 		"gridlines": "y",
 		"no_text_size": false,
 		"range_band": 28
