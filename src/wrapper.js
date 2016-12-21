@@ -11,9 +11,7 @@ import './util/object-assign';
 export default function aeTimeline(element, settings){
 	//merge user's settings with defaults
 	const initialSettings = Object.assign({}, config, settings);
-// console.log(settings)
-// console.log(Object.create(settings))
-// debugger;
+
 	//keep settings in sync with the data mappings
 	const mergedSettings = syncSettings(initialSettings);
 
@@ -26,7 +24,7 @@ export default function aeTimeline(element, settings){
 
 	//create controls now
 	const controls = createControls(element, {location: 'top', inputs: syncedControlInputs});
-	
+
 	//create chart
 	const chart = createChart(element, mergedSettings, controls);
 	chart.on('init', onInit);

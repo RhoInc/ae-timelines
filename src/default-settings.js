@@ -25,11 +25,6 @@ const settings = {
         "type":"ordinal",
         "behavior": 'flex'
     },
-   "margin": {"top": 50, bottom: null, left: null, right: null},
-    "legend":{
-        "mark":"circle", 
-        "label": 'Severity'
-    },
     "marks":[
         {
             "per":null, //set in syncSettings()
@@ -58,6 +53,11 @@ const settings = {
             "values":{"AESER": ["Yes", 'Y']}
         }
     ],
+    "legend":{
+        "mark":"circle", 
+        "label": 'Severity'
+    },
+    "margin": {"top": 50, bottom: null, left: null, right: null},
     "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
     "date_format":"%m/%d/%y",
     "resizable":true,
@@ -136,14 +136,14 @@ export const secondSettings = {
         {"type":"line","per":[ "AESEQ"], attributes:{'stroke-width': 3, 'stroke-opacity': .8, 'stroke': 'black'},"values":{"AESER": ["Yes", 'Y']}},
         {"type":"circle","per":[ "AESEQ", "wc_value"],"attributes":{'stroke': 'black','stroke-width': 2},"radius":5,"values":{"AESER": ["Yes", 'Y']}}
      ],
-    color_by: "AESEV",
-    colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
     "legend":{
         "mark":"circle", 
         "label": 'Severity'
     },
+    "color_by": "AESEV",
+    "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
     "date_format":"%d%b%Y:%X",
-    transitions: false,
+    "transitions": false,
     "max_width":1000,
     "gridlines":"y",
     "no_text_size":false,
@@ -155,6 +155,8 @@ export function syncSecondSettings(settings1, settings2){
     nextSettings.y.column = settings2.seq_col;
     nextSettings.marks[0].per[0] = settings2.seq_col;
     nextSettings.marks[1].per[0] = settings2.seq_col;
+    nextSettings.marks[2].per[0] = settings2.seq_col;
+    nextSettings.marks[3].per[0] = settings2.seq_col;
     nextSettings.color_by = settings2.sev_col;
     nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
     nextSettings.colors = settings2.colors;
