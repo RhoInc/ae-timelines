@@ -1,15 +1,18 @@
-export default function lengthenRaw(data, columns){
-  let my_data = [];
+/*------------------------------------------------------------------------------------------------\
+  Expand a data array to one item per original item per specified column.
+\------------------------------------------------------------------------------------------------*/
 
-  data.forEach(e => {
-    columns.forEach(g => {
-      let obj = Object.assign({}, e);
-      obj.wc_category = g;
-      obj.wc_value = e[g];
-      my_data.push(obj);
+export default function lengthenRaw(data, columns) {
+    let my_data = [];
+
+    data.forEach(d => {
+        columns.forEach(column => {
+            let obj = Object.assign({}, d);
+            obj.wc_category = column;
+            obj.wc_value = d[column];
+            my_data.push(obj);
+        });
     });
 
-  });
-
-  return my_data;
+    return my_data;
 }
