@@ -2,17 +2,20 @@ import lengthenRaw
     from './util/lengthen-raw';
 
 export default function onInit() {
-  //Data manipulation
+  //Raw data manipulation
     this.superRaw = this.raw_data;
+    this.superRaw
+        .forEach(d => {
+        });
+
+  //Derived data manipulation
     this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col]);
-    this.raw_data.forEach(d => {
-        d.wc_value = d.wc_value
-            ? +d.wc_value
-            : NaN;
-        d['Participant Status'] = /^\s*$/.test(d[this.config.rfendt_col])
-            ? 'Active'
-            : 'Discontinued';
-    });
+    this.raw_data
+        .forEach(d => {
+            d.wc_value = d.wc_value
+                ? +d.wc_value
+                : NaN;
+        });
 
   //Create div for back button and participant ID title.
     this.chart2.wrap.insert('div', ':first-child')
@@ -27,4 +30,18 @@ export default function onInit() {
                 this.chart2.wrap.select('.id-title').remove();
                 this.controls.wrap.style('display', 'block');
             });
+
+  //Modify tooltips when user specifies study visit column (settings.vis_col).
+    if (this.config.vis_col) {
+        for (let i = 0; i < this.config.marks.length; i++) {
+            this.config.marks[i].tooltip = this.config.marks[i].tooltip
+                + '\nStudy Visit: ['
+                + this.config.vis_col
+                + ']';
+            this.chart2.config.marks[i].tooltip = this.chart2.config.marks[i].tooltip
+                + '\nStudy Visit: ['
+                + this.config.vis_col
+                + ']';
+        }
+    }
 }

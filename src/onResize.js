@@ -62,12 +62,12 @@ export default function onResize() {
           //Define listing columns.
             this.table.config.cols = d3.set(d3.merge(
                 [Object.keys(context.config.initialSettings)
-                    .filter(di => di.match(/_col(?!s)/))
+                    .filter(di => di.match(/_col(?!s)/) && context.config.initialSettings[di])
                     .map(di => context.config.initialSettings[di])
                 ,context.config.filter_cols
                 ,context.config.detail_cols
                 ])).values()
-                    .filter(di => di !== context.config.id_col);
+                    .filter(di => [context.config.id_col, context.config.rfendt_col, 'Participant Status'].indexOf(di) === -1);
             this.table.draw(tableData)
             this.table.wrap.selectAll('th,td')
                 .style(

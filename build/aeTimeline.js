@@ -45,12 +45,12 @@ var aeTimelines = function (webcharts, d3$1) {
     { stdy_col: 'ASTDY',
         endy_col: 'AENDY',
         id_col: 'USUBJID',
-        rfendt_col: 'RFENDTC',
         seq_col: 'AESEQ',
         sev_col: 'AESEV',
         sev_vals: ['MILD', 'MODERATE', 'SEVERE'],
         ser_col: 'AESER',
         term_col: 'AETERM',
+        vis_col: null,
         filter_cols: [],
         detail_cols: []
 
@@ -103,23 +103,27 @@ var aeTimelines = function (webcharts, d3$1) {
     function syncSettings(preSettings) {
         const nextSettings = Object.create(preSettings);
 
-        if (!nextSettings.filter_cols || nextSettings.filter_cols.length === 0) nextSettings.filter_cols = [nextSettings.ser_col, nextSettings.sev_col, nextSettings.id_col, 'Participant Status'];
+        if (!nextSettings.filter_cols || nextSettings.filter_cols.length === 0) nextSettings.filter_cols = [nextSettings.ser_col, nextSettings.sev_col, nextSettings.id_col];
 
         nextSettings.y.column = nextSettings.id_col;
 
+        //Lines (AE duration)
         nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[0].tooltip = `Verbatim Term: [${ nextSettings.term_col }]\nStart Day: [${ nextSettings.stdy_col }]\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[0].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
 
+        //Circles (AE start days)
         nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip = `Verbatim Term: [${ nextSettings.term_col }]\nStart Day: [${ nextSettings.stdy_col }]\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[1].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
+        //Lines (SAE duration)
         nextSettings.marks[2].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[2].tooltip = `Verbatim Term: [${ nextSettings.term_col }]\nStart Day: [${ nextSettings.stdy_col }]\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[2].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
         nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
+        //Circles (SAE start days)
         nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[3].tooltip = `Verbatim Term: [${ nextSettings.term_col }]\nStart Day: [${ nextSettings.stdy_col }]\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[3].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
         nextSettings.marks[3].values = { wc_category: [nextSettings.stdy_col] };
         nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
@@ -133,11 +137,13 @@ var aeTimelines = function (webcharts, d3$1) {
     const controlInputs = [{ type: 'dropdown', option: 'y.sort', label: 'Sort IDs', values: ['earliest', 'alphabetical-descending'], require: true }];
 
     function syncControlInputs(preControlInputs, preSettings) {
+        const value_colLabels = [{ value_col: preSettings.id_col, label: 'Participant ID' }, { value_col: preSettings.term_col, label: 'Reported Term' }, { value_col: 'AEDECOD', label: 'Dictionary-Derived Term' }, { value_col: 'AEBODSYS', label: 'Body System or Organ Class' }, { value_col: 'AELOC', label: 'Location of Event' }, { value_col: preSettings.sev_col, label: 'Severity/Intensity' }, { value_col: preSettings.ser_col, label: 'Serious Event' }, { value_col: 'AEACN', label: 'Action Taken with Study Treatment' }, { value_col: 'AEREL', label: 'Causality' }, { value_col: 'AEOUT', label: 'Outcome of Event' }, { value_col: 'AETOXGR', label: 'Toxicity Grade' }];
         preSettings.filter_cols.reverse().forEach((d, i) => {
-            var thisFilter = { type: 'subsetter',
+            const value_colPosition = value_colLabels.map(di => di.value_col).indexOf(d);
+            const thisFilter = { type: 'subsetter',
                 value_col: d,
-                label: d };
-            var filter_vars = preControlInputs.map(d => d.value_col);
+                label: value_colPosition > -1 ? value_colLabels[value_colPosition].label : d };
+            const filter_vars = preControlInputs.map(d => d.value_col);
 
             //Check whether [ filter_vars ] settings property contains default filter column.
             if (filter_vars.indexOf(thisFilter.value_col) === -1) preControlInputs.unshift(thisFilter);
@@ -202,12 +208,14 @@ var aeTimelines = function (webcharts, d3$1) {
     }
 
     function onInit() {
-        //Data manipulation
+        //Raw data manipulation
         this.superRaw = this.raw_data;
+        this.superRaw.forEach(d => {});
+
+        //Derived data manipulation
         this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col]);
         this.raw_data.forEach(d => {
             d.wc_value = d.wc_value ? +d.wc_value : NaN;
-            d['Participant Status'] = /^\s*$/.test(d[this.config.rfendt_col]) ? 'Active' : 'Discontinued';
         });
 
         //Create div for back button and participant ID title.
@@ -218,6 +226,14 @@ var aeTimelines = function (webcharts, d3$1) {
             this.chart2.wrap.select('.id-title').remove();
             this.controls.wrap.style('display', 'block');
         });
+
+        //Modify tooltips when user specifies study visit column (settings.vis_col).
+        if (this.config.vis_col) {
+            for (let i = 0; i < this.config.marks.length; i++) {
+                this.config.marks[i].tooltip = this.config.marks[i].tooltip + '\nStudy Visit: [' + this.config.vis_col + ']';
+                this.chart2.config.marks[i].tooltip = this.chart2.config.marks[i].tooltip + '\nStudy Visit: [' + this.config.vis_col + ']';
+            }
+        }
     }
 
     function onLayout() {
@@ -374,7 +390,7 @@ var aeTimelines = function (webcharts, d3$1) {
             let tableData = this.superRaw.filter(di => di[this.config.id_col] === d).sort((a, b) => +a[seq_col] < b[seq_col] ? -1 : 1);
 
             //Define listing columns.
-            this.table.config.cols = d3.set(d3.merge([Object.keys(context.config.initialSettings).filter(di => di.match(/_col(?!s)/)).map(di => context.config.initialSettings[di]), context.config.filter_cols, context.config.detail_cols])).values().filter(di => di !== context.config.id_col);
+            this.table.config.cols = d3.set(d3.merge([Object.keys(context.config.initialSettings).filter(di => di.match(/_col(?!s)/) && context.config.initialSettings[di]).map(di => context.config.initialSettings[di]), context.config.filter_cols, context.config.detail_cols])).values().filter(di => [context.config.id_col, context.config.rfendt_col, 'Participant Status'].indexOf(di) === -1);
             this.table.draw(tableData);
             this.table.wrap.selectAll('th,td').style({ 'text-align': 'left',
                 'padding-right': '10px' });

@@ -7,7 +7,6 @@ const settings =
     {stdy_col: 'ASTDY'
     ,endy_col: 'AENDY'
     ,id_col: 'USUBJID'
-    ,rfendt_col: 'RFENDTC'
     ,seq_col: 'AESEQ'
     ,sev_col: 'AESEV'
     ,sev_vals:
@@ -16,6 +15,7 @@ const settings =
         ,'SEVERE']
     ,ser_col: 'AESER'
     ,term_col: 'AETERM'
+    ,vis_col: null
     ,filter_cols: []
     ,detail_cols: []
 
@@ -87,24 +87,35 @@ export function syncSettings(preSettings) {
         nextSettings.filter_cols =
             [nextSettings.ser_col
             ,nextSettings.sev_col
-            ,nextSettings.id_col
-            ,'Participant Status'];
+            ,nextSettings.id_col];
 
     nextSettings.y.column = nextSettings.id_col;
 
+  //Lines (AE duration)
     nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
 
+  //Circles (AE start days)
     nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[1].values = {wc_category: [nextSettings.stdy_col]};
 
+  //Lines (SAE duration)
     nextSettings.marks[2].per = [nextSettings.id_col, nextSettings.seq_col];
-    nextSettings.marks[2].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[2].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
+  //Circles (SAE start days)
     nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[3].values = {wc_category: [nextSettings.stdy_col]};
     nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
@@ -121,13 +132,30 @@ export const controlInputs =
     ];
 
 export function syncControlInputs(preControlInputs, preSettings) {
+    const value_colLabels =
+        [   {value_col: preSettings.id_col, label: 'Participant ID'}
+        ,   {value_col: preSettings.term_col, label: 'Reported Term'}
+        ,   {value_col: 'AEDECOD', label: 'Dictionary-Derived Term'}
+        ,   {value_col: 'AEBODSYS', label: 'Body System or Organ Class'}
+        ,   {value_col: 'AELOC', label: 'Location of Event'}
+        ,   {value_col: preSettings.sev_col, label: 'Severity/Intensity'}
+        ,   {value_col: preSettings.ser_col, label: 'Serious Event'}
+        ,   {value_col: 'AEACN', label: 'Action Taken with Study Treatment'}
+        ,   {value_col: 'AEREL', label: 'Causality'}
+        ,   {value_col: 'AEOUT', label: 'Outcome of Event'}
+        ,   {value_col: 'AETOXGR', label: 'Toxicity Grade'}];
     preSettings.filter_cols.reverse()
         .forEach((d,i) => {
-            var thisFilter =
+            const value_colPosition = value_colLabels
+                .map(di => di.value_col)
+                .indexOf(d);
+            const thisFilter =
                 {type: 'subsetter'
                 ,value_col: d
-                ,label: d};
-            var filter_vars = preControlInputs
+                ,label: value_colPosition > -1
+                    ? value_colLabels[value_colPosition].label
+                    : d};
+            const filter_vars = preControlInputs
                 .map(d => d.value_col);
 
           //Check whether [ filter_vars ] settings property contains default filter column.
