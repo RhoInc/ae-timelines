@@ -2,22 +2,6 @@
 export default {
 	dataMappings : [
 		{
-			source: "id_col",
-			target: "id_col"
-		},
-		{
-			source: "seq_col",
-			target: "seq_col"
-		},
-		{
-			source: "soc_col",
-			target: "soc_col"
-		},
-		{
-			source: "term_col",
-			target: "term_col"
-		},
-		{
 			source: "stdy_col",
 			target: "stdy_col"
 		},
@@ -26,12 +10,28 @@ export default {
 			target: "endy_col"
 		},
 		{
+			source: "id_col",
+			target: "id_col"
+		},
+		{
+			source: "seq_col",
+			target: "seq_col"
+		},
+		{
 			source: "sev_col",
 			target: "sev_col"
 		},
 		{
-			source: "rel_col",
-			target: "rel_col"
+			source: "ser_col",
+			target: "ser_col"
+		},
+		{
+			source: "term_col",
+			target: "term_col"
+		},
+		{
+			source: "vis_col",
+			target: "vis_col"
 		},
 		{
 			source: "filter_cols",
