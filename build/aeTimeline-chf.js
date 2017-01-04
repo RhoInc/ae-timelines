@@ -172,327 +172,124 @@
 		}]
 	};
 
-	var settings = {
-	    //Addition settings for this template
-	    id_col: 'USUBJID',
-	    seq_col: 'AESEQ',
-	    soc_col: 'AEBODSYS',
-	    term_col: 'AETERM',
-	    stdy_col: 'ASTDY',
-	    endy_col: 'AENDY',
-	    sev_col: 'AESEV',
-	    rel_col: 'AEREL',
-	    filter_cols: [],
-	    detail_cols: [],
-
-	    //Standard webcharts settings
-	    x: {
-	        "label": null,
-	        "type": "linear",
-	        "column": 'wc_value'
-	    },
-	    y: {
-	        "column": null, //set in syncSettings()
-	        "label": '',
-	        "sort": "earliest",
-	        "type": "ordinal",
-	        "behavior": 'flex'
-	    },
-	    "margin": { "top": 50, bottom: null, left: null, right: null },
-	    "legend": {
-	        "mark": "circle",
-	        "label": 'Severity'
-	    },
-	    "marks": [{
-	        "per": null, //set in syncSettings()
-	        "tooltip": null, //set in syncSettings()
-	        "type": "line",
-	        "attributes": { 'stroke-width': 5, 'stroke-opacity': .8 }
-	    }, {
-	        "per": null, //set in syncSettings()
-	        "tooltip": null, //set in syncSettings()
-	        "type": "circle"
-	    }],
-	    "colors": ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-	    "date_format": "%m/%d/%y",
-	    "resizable": true,
-	    "max_width": 1000,
-	    "y_behavior": 'flex',
-	    "gridlines": "y",
-	    "no_text_size": false,
-	    "range_band": 15,
-	    "color_by": null //set in syncSettings()
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+	  return typeof obj;
+	} : function (obj) {
+	  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 	};
 
-	function syncSettings(preSettings) {
-	    var nextSettings = Object.create(preSettings);
-	    nextSettings.y.column = nextSettings.id_col;
-	    nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-	    nextSettings.marks[0].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
-	    nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-	    nextSettings.marks[1].tooltip = 'System Organ Class: [' + nextSettings.soc_col + ']\nPreferred Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
-	    nextSettings.color_by = nextSettings.sev_col;
+	var asyncGenerator = function () {
+	  function AwaitValue(value) {
+	    this.value = value;
+	  }
 
-	    return nextSettings;
-	}
+	  function AsyncGenerator(gen) {
+	    var front, back;
 
-	var controlInputs = [{ label: "Severity", type: "subsetter", value_col: "AESEV", multiple: true }, { label: "System Organ Class", type: "subsetter", value_col: "AEBODSYS" }, { label: "Subject ID", type: "subsetter", value_col: "USUBJID" }, { label: "Related to Treatment", type: "subsetter", value_col: "AEREL" }, { label: "Sort Ptcpts", type: "dropdown", option: "y.sort", values: ["earliest", "alphabetical-descending"], require: true }];
-
-	function syncControlInputs(preControlInputs, preSettings) {
-	    var severityControl = preControlInputs.filter(function (d) {
-	        return d.label == "Severity";
-	    })[0];
-	    severityControl.value_col = preSettings.sev_col;
-
-	    var sOCControl = preControlInputs.filter(function (d) {
-	        return d.label == "System Organ Class";
-	    })[0];
-	    sOCControl.value_col = preSettings.soc_col;
-
-	    var subjectControl = preControlInputs.filter(function (d) {
-	        return d.label == "Subject ID";
-	    })[0];
-	    subjectControl.value_col = preSettings.id_col;
-
-	    var relatedControl = preControlInputs.filter(function (d) {
-	        return d.label == "Related to Treatment";
-	    })[0];
-	    relatedControl.value_col = preSettings.rel_col;
-
-	    settings.filter_cols.forEach(function (d, i) {
-	        var thisFilter = {
-	            type: "subsetter",
-	            value_col: d,
-	            label: d,
-	            multiple: true
+	    function send(key, arg) {
+	      return new Promise(function (resolve, reject) {
+	        var request = {
+	          key: key,
+	          arg: arg,
+	          resolve: resolve,
+	          reject: reject,
+	          next: null
 	        };
-	        var filter_vars = preControlInputs.map(function (d) {
-	            return d.value_col;
-	        });
-	        if (filter_vars.indexOf(thisFilter.value_col) == -1) {
-	            preControlInputs.push(thisFilter);
+
+	        if (back) {
+	          back = back.next = request;
+	        } else {
+	          front = back = request;
+	          resume(key, arg);
 	        }
-	    });
+	      });
+	    }
 
-	    return preControlInputs;
-	}
+	    function resume(key, arg) {
+	      try {
+	        var result = gen[key](arg);
+	        var value = result.value;
 
-	//Setting for custom details view
-	var secondSettings = {
-	    "x": { label: '', "type": "linear", "column": "wc_value" },
-	    "y": { label: '', "sort": "alphabetical-descending", "type": "ordinal", "column": "AESEQ" },
-	    "marks": [{ "type": "line", "per": ["AESEQ"], attributes: { 'stroke-width': 5, 'stroke-opacity': .8 } }, { "type": "circle", "per": ["AESEQ", "wc_value"] }],
-	    color_by: "AESEV",
-	    colors: ['#66bd63', '#fdae61', '#d73027', '#6e016b'],
-	    "legend": {
-	        "mark": "circle",
-	        "label": 'Severity'
-	    },
-	    "date_format": "%d%b%Y:%X",
-	    // "resizable":false,
-	    transitions: false,
-	    "max_width": 1000,
-	    // point_size: 3,
-	    "gridlines": "y",
-	    "no_text_size": false,
-	    "range_band": 28
-	};
+	        if (value instanceof AwaitValue) {
+	          Promise.resolve(value.value).then(function (arg) {
+	            resume("next", arg);
+	          }, function (arg) {
+	            resume("throw", arg);
+	          });
+	        } else {
+	          settle(result.done ? "return" : "normal", result.value);
+	        }
+	      } catch (err) {
+	        settle("throw", err);
+	      }
+	    }
 
-	function syncSecondSettings(settings1, settings2) {
-	    var nextSettings = Object.create(settings1);
-	    nextSettings.y.column = settings2.seq_col;
-	    nextSettings.marks[0].per[0] = settings2.seq_col;
-	    nextSettings.marks[1].per[0] = settings2.seq_col;
-	    nextSettings.color_by = settings2.sev_col;
-	    nextSettings.color_dom = settings2.legend ? nextSettings.legend.order : null;
-	    nextSettings.colors = settings2.colors;
+	    function settle(type, value) {
+	      switch (type) {
+	        case "return":
+	          front.resolve({
+	            value: value,
+	            done: true
+	          });
+	          break;
 
-	    return nextSettings;
-	}
+	        case "throw":
+	          front.reject(value);
+	          break;
 
-	function lengthenRaw(data, columns) {
-	  var my_data = [];
-
-	  data.forEach(function (e) {
-	    columns.forEach(function (g) {
-	      var obj = Object.assign({}, e);
-	      obj.wc_category = g;
-	      obj.wc_value = e[g];
-	      my_data.push(obj);
-	    });
-	  });
-
-	  return my_data;
-	}
-
-	function onInit() {
-	    var _this = this;
-
-	    this.superRaw = this.raw_data;
-	    this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col]);
-	    this.raw_data.forEach(function (d) {
-	        d.wc_value = d.wc_value == "" ? NaN : +d.wc_value;
-	    });
-	    //create back button
-	    var myChart = this;
-	    this.chart2.wrap.insert('button', 'svg').html('&#8592; Back').style('cursor', 'pointer').on('click', function () {
-	        _this.wrap.style('display', 'block');
-	        _this.table.draw([]);
-	        _this.chart2.wrap.style('display', 'none');
-	        _this.chart2.wrap.select('.id-title').remove();
-	        _this.controls.wrap.style('display', 'block');
-	    });
-	};
-
-	function onLayout() {
-	  //add div for participant counts
-	  this.wrap.append("span").classed("annote", true);
-
-	  //add top x-axis
-	  var x2 = this.svg.append("g").attr("class", "x2 axis linear");
-	  x2.append("text").attr("class", "axis-title top").attr("dy", "2em").attr("text-anchor", "middle").text(this.config.x_label);
-	}
-
-	function onDataTransform() {}
-
-	// Takes a webcharts object creates a text annotation giving the
-	// number and percentage of observations shown in the current view
-	// inputs:
-	// chart - a webcharts chart object
-	// id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
-	// id_unit - a text string to label the units in the annotation (default = "participants")
-	// selector - css selector for the annotation
-	function updateSubjectCount(chart, id_col, selector, id_unit) {
-	    //count the number of unique ids in the data set
-	    var totalObs = d3.set(chart.raw_data.map(function (d) {
-	        return d[id_col];
-	    })).values().length;
-
-	    //count the number of unique ids in the current chart and calculate the percentage
-	    var currentObs = d3.set(chart.filtered_data.map(function (d) {
-	        return d[id_col];
-	    })).values().length;
-	    var percentage = d3.format('0.1%')(currentObs / totalObs);
-
-	    //clear the annotation
-	    var annotation = d3.select(selector);
-	    d3.select(selector).selectAll("*").remove();
-
-	    //update the annotation
-	    var units = id_unit ? " " + id_unit : " participant(s)";
-	    annotation.text(currentObs + " of " + totalObs + units + " shown (" + percentage + ")");
-	}
-
-	function onDraw() {
-		updateSubjectCount(this, this.config.id_col, ".annote");
-	}
-
-	function onResize() {
-	    var _this = this;
-
-	    var chart = this;
-	    this.chart2.on('datatransform', function () {
-	        //make sure color scales stay consistent
-	        this.config.color_dom = chart.colorScale.domain();
-	    });
-	    this.chart2.x_dom = this.x_dom;
-	    this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
-	        var csv2 = _this.raw_data.filter(function (f) {
-	            return f[_this.config.id_col] === d;
-	        });
-	        _this.chart2.wrap.style('display', 'block');
-	        _this.chart2.draw(csv2);
-	        _this.chart2.wrap.insert('h4', 'svg').attr('class', 'id-title').text(d);
-	        //force legend to be drawn
-	        _this.chart2.makeLegend(_this.colorScale);
-
-	        var tableData = _this.superRaw.filter(function (f) {
-	            return f[_this.config.id_col] === d;
-	        });
-	        //set cols for table, otherwise can get mismatched
-	        _this.table.config.cols = d3.merge([[chart.config.seq_col, chart.config.id_col, chart.config.soc_col, chart.config.term_col, chart.config.stdy_col, chart.config.endy_col, chart.config.sev_col, chart.config.rel_col], chart.config.filter_cols, chart.config.detail_cols]);
-	        _this.table.draw(tableData);
-	        _this.wrap.style('display', 'none');
-	        _this.controls.wrap.style('display', 'none');
-	    });
-
-	    var x2Axis = d3$1.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
-
-	    var g_x2_axis = this.svg.select("g.x2.axis").attr("class", "x2 axis linear");
-
-	    g_x2_axis.call(x2Axis);
-
-	    g_x2_axis.select("text.axis-title.top").attr("transform", "translate(" + this.raw_width / 2 + ",-" + this.config.margin.top + ")");
-
-	    g_x2_axis.select('.domain').attr({
-	        'fill': 'none',
-	        'stroke': '#ccc',
-	        'shape-rendering': 'crispEdges'
-	    });
-	    g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
-	}
-
-	if (typeof Object.assign != 'function') {
-	  (function () {
-	    Object.assign = function (target) {
-	      'use strict';
-
-	      if (target === undefined || target === null) {
-	        throw new TypeError('Cannot convert undefined or null to object');
+	        default:
+	          front.resolve({
+	            value: value,
+	            done: false
+	          });
+	          break;
 	      }
 
-	      var output = Object(target);
-	      for (var index = 1; index < arguments.length; index++) {
-	        var source = arguments[index];
-	        if (source !== undefined && source !== null) {
-	          for (var nextKey in source) {
-	            if (source.hasOwnProperty(nextKey)) {
-	              output[nextKey] = source[nextKey];
-	            }
-	          }
-	        }
+	      front = front.next;
+
+	      if (front) {
+	        resume(front.key, front.arg);
+	      } else {
+	        back = null;
 	      }
-	      return output;
+	    }
+
+	    this._invoke = send;
+
+	    if (typeof gen.return !== "function") {
+	      this.return = undefined;
+	    }
+	  }
+
+	  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+	    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+	      return this;
 	    };
-	  })();
-	}
+	  }
 
-	function aeTimeline(element, settings$$) {
-		//merge user's settings with defaults
-		var initialSettings = Object.assign({}, settings, settings$$);
-		// console.log(settings)
-		// console.log(Object.create(settings))
-		// debugger;
-		//keep settings in sync with the data mappings
-		var mergedSettings = syncSettings(initialSettings);
+	  AsyncGenerator.prototype.next = function (arg) {
+	    return this._invoke("next", arg);
+	  };
 
-		//keep settings for secondary chart in sync
-		var initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings$$));
-		var mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, mergedSettings);
+	  AsyncGenerator.prototype.throw = function (arg) {
+	    return this._invoke("throw", arg);
+	  };
 
-		//keep control inputs settings in sync
-		var syncedControlInputs = syncControlInputs(controlInputs, Object.create(mergedSettings));
+	  AsyncGenerator.prototype.return = function (arg) {
+	    return this._invoke("return", arg);
+	  };
 
-		//create controls now
-		var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
-
-		//create chart
-		var chart = webcharts.createChart(element, mergedSettings, controls);
-		chart.on('init', onInit);
-		chart.on('layout', onLayout);
-		chart.on('datatransform', onDataTransform);
-		chart.on('draw', onDraw);
-		chart.on('resize', onResize);
-
-		//set up secondary chart and table
-		var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
-		chart2.wrap.style('display', 'none');
-		chart.chart2 = chart2;
-		var table = webcharts.createTable(element, {}).init([]);
-		chart.table = table;
-
-		return chart;
-	}
+	  return {
+	    wrap: function (fn) {
+	      return function () {
+	        return new AsyncGenerator(fn.apply(this, arguments));
+	      };
+	    },
+	    await: function (value) {
+	      return new AwaitValue(value);
+	    }
+	  };
+	}();
 
 	var classCallCheck = function (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
@@ -542,13 +339,549 @@
 	  return call && (typeof call === "object" || typeof call === "function") ? call : self;
 	};
 
+	/*------------------------------------------------------------------------------------------------\
+	  Clone a variable (http://stackoverflow.com/a/728694).
+	\------------------------------------------------------------------------------------------------*/
+
+	function clone(obj) {
+	    var copy;
+
+	    //Handle the 3 simple types, and null or undefined
+	    if (null == obj || "object" != (typeof obj === "undefined" ? "undefined" : _typeof(obj))) return obj;
+
+	    //Handle Date
+	    if (obj instanceof Date) {
+	        copy = new Date();
+	        copy.setTime(obj.getTime());
+	        return copy;
+	    }
+
+	    //Handle Array
+	    if (obj instanceof Array) {
+	        copy = [];
+	        for (var i = 0, len = obj.length; i < len; i++) {
+	            copy[i] = clone(obj[i]);
+	        }
+	        return copy;
+	    }
+
+	    //Handle Object
+	    if (obj instanceof Object) {
+	        copy = {};
+	        for (var attr in obj) {
+	            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+	        }
+	        return copy;
+	    }
+
+	    throw new Error("Unable to copy obj! Its type isn't supported.");
+	}
+
+	var settings =
+
+	//Template-specific settings
+	{ stdy_col: 'ASTDY',
+	    endy_col: 'AENDY',
+	    id_col: 'USUBJID',
+	    seq_col: 'AESEQ',
+	    sev_col: 'AESEV',
+	    sev_vals: ['MILD', 'MODERATE', 'SEVERE'],
+	    ser_col: 'AESER',
+	    term_col: 'AETERM',
+	    vis_col: null,
+	    filter_cols: [],
+	    detail_cols: []
+
+	    //Standard chart settings
+	    , x: { column: 'wc_value',
+	        type: 'linear',
+	        label: null },
+	    y: { column: null // set in syncSettings()
+	        , type: 'ordinal',
+	        label: '',
+	        sort: 'earliest',
+	        behavior: 'flex' },
+	    marks: [{ type: 'line',
+	        per: null // set in syncSettings()
+	        , tooltip: null // set in syncSettings()
+	        , attributes: { 'stroke-width': 5,
+	            'stroke-opacity': .5 } }, { type: 'circle',
+	        per: null // set in syncSettings()
+	        , tooltip: null,
+	        attributes: { 'fill-opacity': .5,
+	            'stroke-opacity': .5 } } // set in syncSettings()
+
+	    , { type: 'line',
+	        per: null // set in syncSettings()
+	        , values: {} // set in syncSettings()
+	        , tooltip: null // set in syncSettings()
+	        , attributes: { 'class': 'serious',
+	            'stroke': 'black',
+	            'stroke-width': 2 } }, { type: 'circle',
+	        per: null // set in syncSettings()
+	        , values: {} // set in syncSettings()
+	        , tooltip: null // set in syncSettings()
+	        , attributes: { 'class': 'serious',
+	            'fill': 'none',
+	            'stroke': 'black',
+	            'stroke-width': 2 } }],
+	    legend: { location: 'top',
+	        label: 'Severity' },
+	    color_by: null // set in syncSettings()
+	    , colors: ['#66bd63', '#fdae61', '#d73027'],
+	    date_format: '%Y-%m-%d',
+	    y_behavior: 'flex',
+	    gridlines: 'y',
+	    no_text_size: false,
+	    range_band: 15,
+	    margin: { top: 50 },
+	    resizable: true
+	};
+
+	function syncSettings(preSettings) {
+	    var nextSettings = Object.create(preSettings);
+
+	    if (!nextSettings.filter_cols || nextSettings.filter_cols.length === 0) nextSettings.filter_cols = [nextSettings.ser_col, nextSettings.sev_col, nextSettings.id_col];
+
+	    nextSettings.y.column = nextSettings.id_col;
+
+	    //Lines (AE duration)
+	    nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
+	    nextSettings.marks[0].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
+
+	    //Circles (AE start days)
+	    nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+	    nextSettings.marks[1].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
+	    nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
+
+	    //Lines (SAE duration)
+	    nextSettings.marks[2].per = [nextSettings.id_col, nextSettings.seq_col];
+	    nextSettings.marks[2].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
+	    nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
+
+	    //Circles (SAE start days)
+	    nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+	    nextSettings.marks[3].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
+	    nextSettings.marks[3].values = { wc_category: [nextSettings.stdy_col] };
+	    nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
+
+	    nextSettings.legend.order = nextSettings.sev_vals;
+
+	    nextSettings.color_by = nextSettings.sev_col;
+
+	    return nextSettings;
+	}
+
+	var controlInputs = [{ type: 'dropdown', option: 'y.sort', label: 'Sort IDs', values: ['earliest', 'alphabetical-descending'], require: true }];
+
+	function syncControlInputs(preControlInputs, preSettings) {
+	    var value_colLabels = [{ value_col: preSettings.id_col, label: 'Participant ID' }, { value_col: preSettings.term_col, label: 'Reported Term' }, { value_col: 'AEDECOD', label: 'Dictionary-Derived Term' }, { value_col: 'AEBODSYS', label: 'Body System or Organ Class' }, { value_col: 'AELOC', label: 'Location of Event' }, { value_col: preSettings.sev_col, label: 'Severity/Intensity' }, { value_col: preSettings.ser_col, label: 'Serious Event' }, { value_col: 'AEACN', label: 'Action Taken with Study Treatment' }, { value_col: 'AEREL', label: 'Causality' }, { value_col: 'AEOUT', label: 'Outcome of Event' }, { value_col: 'AETOXGR', label: 'Toxicity Grade' }];
+	    preSettings.filter_cols.reverse().forEach(function (d, i) {
+	        var value_colPosition = value_colLabels.map(function (di) {
+	            return di.value_col;
+	        }).indexOf(d);
+	        var thisFilter = { type: 'subsetter',
+	            value_col: d,
+	            label: value_colPosition > -1 ? value_colLabels[value_colPosition].label : d };
+	        var filter_vars = preControlInputs.map(function (d) {
+	            return d.value_col;
+	        });
+
+	        //Check whether [ filter_vars ] settings property contains default filter column.
+	        if (filter_vars.indexOf(thisFilter.value_col) === -1) preControlInputs.unshift(thisFilter);
+	    });
+
+	    return preControlInputs;
+	}
+
+	//Setting for custom details view
+	var cloneSettings = clone(settings);
+	cloneSettings.y.sort = 'alphabetical-descending';
+	cloneSettings.transitions = false;
+	cloneSettings.range_band = settings.range_band * 2;
+	cloneSettings.margin = null;
+	var secondSettings = cloneSettings;
+
+	function syncSecondSettings(preSettings) {
+	    var nextSettings = Object.create(preSettings);
+
+	    nextSettings.y.column = nextSettings.seq_col;
+
+	    nextSettings.marks[0].per = [nextSettings.seq_col];
+	    nextSettings.marks[0].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+
+	    nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
+	    nextSettings.marks[1].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+	    nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
+
+	    nextSettings.marks[2].per = [nextSettings.seq_col];
+	    nextSettings.marks[2].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+	    nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
+
+	    nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
+	    nextSettings.marks[3].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']\nStart Day: [' + nextSettings.stdy_col + ']\nStop Day: [' + nextSettings.endy_col + ']';
+	    nextSettings.marks[3].values = { wc_category: [nextSettings.stdy_col] };
+	    nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
+
+	    nextSettings.legend.order = nextSettings.sev_vals;
+
+	    nextSettings.color_by = nextSettings.sev_col;
+
+	    return nextSettings;
+	}
+
+	/*------------------------------------------------------------------------------------------------\
+	  Expand a data array to one item per original item per specified column.
+	\------------------------------------------------------------------------------------------------*/
+
+	function lengthenRaw(data, columns) {
+	    var my_data = [];
+
+	    data.forEach(function (d) {
+	        columns.forEach(function (column) {
+	            var obj = Object.assign({}, d);
+	            obj.wc_category = column;
+	            obj.wc_value = d[column];
+	            my_data.push(obj);
+	        });
+	    });
+
+	    return my_data;
+	}
+
+	function onInit() {
+	    var _this = this;
+
+	    //Raw data manipulation
+	    this.superRaw = this.raw_data;
+	    this.superRaw.forEach(function (d) {});
+
+	    //Derived data manipulation
+	    this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col]);
+	    this.raw_data.forEach(function (d) {
+	        d.wc_value = d.wc_value ? +d.wc_value : NaN;
+	    });
+
+	    //Create div for back button and participant ID title.
+	    this.chart2.wrap.insert('div', ':first-child').attr('id', 'backButton').insert('button', '.legend').html('&#8592; Back').style('cursor', 'pointer').on('click', function () {
+	        _this.wrap.style('display', 'block');
+	        _this.table.draw([]);
+	        _this.chart2.wrap.style('display', 'none');
+	        _this.chart2.wrap.select('.id-title').remove();
+	        _this.controls.wrap.style('display', 'block');
+	    });
+
+	    //Modify tooltips when user specifies study visit column (settings.vis_col).
+	    if (this.config.vis_col) {
+	        for (var i = 0; i < this.config.marks.length; i++) {
+	            this.config.marks[i].tooltip = this.config.marks[i].tooltip + '\nStudy Visit: [' + this.config.vis_col + ']';
+	            this.chart2.config.marks[i].tooltip = this.chart2.config.marks[i].tooltip + '\nStudy Visit: [' + this.config.vis_col + ']';
+	        }
+	    }
+	}
+
+	function onLayout() {
+	    //Add div for participant counts.
+	    this.wrap.select('.legend').append('span').classed('annote', true).style('float', 'right');
+
+	    //Add top x-axis.
+	    var x2 = this.svg.append('g').attr('class', 'x2 axis linear');
+	    x2.append('text').attr({ 'class': 'axis-title top',
+	        'dy': '2em',
+	        'text-anchor': 'middle' }).text(this.config.x_label);
+	}
+
+	function onDataTransform() {}
+
+	/*------------------------------------------------------------------------------------------------\
+	  Annotate number of participants based on current filters, number of participants in all, and
+	  the corresponding percentage.
+
+	  Inputs:
+
+	    chart - a webcharts chart object
+	    id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
+	    id_unit - a text string to label the units in the annotation (default = 'participants')
+	    selector - css selector for the annotation
+	\------------------------------------------------------------------------------------------------*/
+
+	function updateSubjectCount(chart, id_col, selector, id_unit) {
+	    //count the number of unique ids in the data set
+	    var totalObs = d3.set(chart.raw_data.map(function (d) {
+	        return d[id_col];
+	    })).values().length;
+
+	    //count the number of unique ids in the current chart and calculate the percentage
+	    var filtered_data = chart.raw_data.filter(function (d) {
+	        var filtered = d[chart.config.initialSettings.seq_col] === '';
+	        chart.filters.forEach(function (di) {
+	            if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
+	        });
+	        return !filtered;
+	    });
+	    var currentObs = d3.set(filtered_data.map(function (d) {
+	        return d[id_col];
+	    })).values().length;
+
+	    var percentage = d3.format('0.1%')(currentObs / totalObs);
+
+	    //clear the annotation
+	    var annotation = d3.select(selector);
+	    annotation.selectAll('*').remove();
+
+	    //update the annotation
+	    var units = id_unit ? ' ' + id_unit : ' participant(s)';
+	    annotation.text(currentObs + ' of ' + totalObs + units + ' shown (' + percentage + ')');
+	}
+
+	function onDraw() {
+	    var _this = this;
+
+	    //Annotate number of selected participants out of total participants.
+	    updateSubjectCount(this, this.config.id_col, '.annote');
+
+	    //Sort y-axis based on `Sort IDs` control selection.
+	    var yAxisSort = this.controls.wrap.selectAll('.control-group').filter(function (d) {
+	        return d.label === 'Sort IDs';
+	    }).selectAll('option:checked').text();
+	    if (yAxisSort === 'earliest') {
+	        (function () {
+	            var filtered_data = _this.raw_data.filter(function (d) {
+	                var filtered = d[_this.config.seq_col] === '';
+	                _this.filters.forEach(function (di) {
+	                    if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
+	                });
+	                return !filtered;
+	            });
+	            var withStartDay = d3.nest().key(function (d) {
+	                return d[_this.config.id_col];
+	            }).rollup(function (d) {
+	                return d3.min(d, function (di) {
+	                    return +di[_this.config.stdy_col];
+	                });
+	            }).entries(filtered_data.filter(function (d) {
+	                return !isNaN(parseFloat(d[_this.config.stdy_col])) && isFinite(d[_this.config.stdy_col]);
+	            })).sort(function (a, b) {
+	                return a.values > b.values ? -2 : a.values < b.values ? 2 : a.key > b.key ? -1 : 1;
+	            }).map(function (d) {
+	                return d.key;
+	            });
+	            var withoutStartDay = d3.set(filtered_data.filter(function (d) {
+	                return +d[_this.config.seq_col] > 0 && (isNaN(parseFloat(d[_this.config.stdy_col])) || !isFinite(d[_this.config.stdy_col])) && withStartDay.indexOf(d[_this.config.id_col]) === -1;
+	            }).map(function (d) {
+	                return d[_this.config.id_col];
+	            })).values();
+	            _this.y_dom = withStartDay.concat(withoutStartDay);
+	        })();
+	    } else this.y_dom = this.y_dom.sort(d3.descending);
+	}
+
+	/*------------------------------------------------------------------------------------------------\
+	  Sync colors of legend marks and chart marks.
+	\------------------------------------------------------------------------------------------------*/
+
+	function syncColors(chart) {
+	    //Recolor legend.
+	    var legendItems = chart.wrap.selectAll('.legend-item');
+	    legendItems.each(function (d, i) {
+	        d3.select(this).select('.legend-mark').style('stroke', chart.config.colors[chart.config.sev_vals.indexOf(d.label)]).style('stroke-width', '25%');
+	    });
+
+	    //Recolor circles.
+	    var circles = chart.svg.selectAll('circle.wc-data-mark:not(.serious)');
+	    circles.each(function (d, i) {
+	        var sev_val = d.values.raw[0][chart.config.initialSettings.sev_col];
+	        d3.select(this).style('stroke', chart.config.colors[chart.config.sev_vals.indexOf(sev_val)]);
+	        d3.select(this).style('fill', chart.config.colors[chart.config.sev_vals.indexOf(sev_val)]);
+	    });
+
+	    //Recolor lines.
+	    var lines = chart.svg.selectAll('path.wc-data-mark:not(.serious)');
+	    lines.each(function (d, i) {
+	        var sev_val = d.values[0].values.raw[0][chart.config.initialSettings.sev_col];
+	        d3.select(this).style('stroke', chart.config.colors[chart.config.sev_vals.indexOf(sev_val)]);
+	    });
+	}
+
+	/*------------------------------------------------------------------------------------------------\
+	  Add serious adverse event legend item.
+	\------------------------------------------------------------------------------------------------*/
+
+	function addSeriousLegendItem(chart) {
+	    chart.wrap.select('.legend li.serious').remove();
+	    var seriousLegendItem = chart.wrap.select('.legend').append('li').attr('class', 'serious').style({ 'list-style-type': 'none',
+	        'margin-right': '1em',
+	        'display': 'inline-block' });
+	    var seriousLegendColorBlock = seriousLegendItem.append('svg').attr({ width: '1.75em',
+	        height: '1.5em' }).style({ 'position': 'relative',
+	        'top': '0.35em' });
+	    seriousLegendColorBlock.append('circle').attr({ cx: 10,
+	        cy: 10,
+	        r: 4 }).style({ 'stroke': 'black',
+	        'stroke-width': 2,
+	        'fill': 'none' });
+	    seriousLegendColorBlock.append('line').attr({ x1: 2 * 3.14 * 4 - 10,
+	        y1: 10,
+	        x2: 2 * 3.14 * 4 - 5,
+	        y2: 10 }).style({ 'stroke': 'black',
+	        'stroke-width': 2,
+	        'shape-rendering': 'crispEdges' });
+	    seriousLegendItem.append('text').style('margin-left', '.35em').text('Serious');
+	}
+
+	function onResize() {
+	    var _this = this;
+
+	    var context = this;
+
+	    //Sync legend and mark colors.
+	    syncColors(this);
+
+	    //Add serious adverse event legend item.
+	    addSeriousLegendItem(this);
+
+	    //Draw second x-axis at top of chart.
+	    var x2Axis = d3$1.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
+	    var g_x2_axis = this.svg.select('g.x2.axis').attr('class', 'x2 axis linear');
+	    g_x2_axis.call(x2Axis);
+	    g_x2_axis.select('text.axis-title.top').attr('transform', 'translate(' + this.raw_width / 2 + ',-' + this.config.margin.top + ')');
+	    g_x2_axis.select('.domain').attr({ 'fill': 'none',
+	        'stroke': '#ccc',
+	        'shape-rendering': 'crispEdges' });
+	    g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+
+	    //Draw second chart when y-axis tick label is clicked.
+	    this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
+	        var csv2 = _this.raw_data.filter(function (di) {
+	            return di[_this.config.id_col] === d;
+	        });
+	        _this.chart2.wrap.style('display', 'block');
+	        _this.chart2.draw(csv2);
+	        _this.chart2.wrap.select('#backButton').append('strong').attr('class', 'id-title').style('margin-left', '1%').text('Participant: ' + d);
+
+	        //Sort listing by sequence.
+	        var seq_col = context.config.initialSettings.seq_col;
+	        var tableData = _this.superRaw.filter(function (di) {
+	            return di[_this.config.id_col] === d;
+	        }).sort(function (a, b) {
+	            return +a[seq_col] < b[seq_col] ? -1 : 1;
+	        });
+
+	        //Define listing columns.
+	        _this.table.config.cols = d3.set(d3.merge([Object.keys(context.config.initialSettings).filter(function (di) {
+	            return di.match(/_col(?!s)/) && context.config.initialSettings[di];
+	        }).map(function (di) {
+	            return context.config.initialSettings[di];
+	        }), context.config.filter_cols, context.config.detail_cols])).values().filter(function (di) {
+	            return [context.config.id_col, context.config.rfendt_col, 'Participant Status'].indexOf(di) === -1;
+	        });
+	        _this.table.draw(tableData);
+	        _this.table.wrap.selectAll('th,td').style({ 'text-align': 'left',
+	            'padding-right': '10px' });
+
+	        //Hide timelines.
+	        _this.wrap.style('display', 'none');
+	        _this.controls.wrap.style('display', 'none');
+	    });
+
+	    /**-------------------------------------------------------------------------------------------\
+	      Second chart callbacks.
+	    \-------------------------------------------------------------------------------------------**/
+
+	    this.chart2.on('datatransform', function () {
+	        //Define color scale.
+	        this.config.color_dom = context.colorScale.domain();
+	    });
+
+	    this.chart2.on('draw', function () {
+	        //Sync x-axis domain of second chart with that of the original chart.
+	        this.x_dom = context.x_dom;
+	    });
+
+	    this.chart2.on('resize', function () {
+	        //Sync legend and mark colors.
+	        syncColors(this);
+
+	        //Add serious adverse event legend item.
+	        addSeriousLegendItem(this);
+	    });
+	}
+
+	/*------------------------------------------------------------------------------------------------\
+	  Add assign method to Object if nonexistent.
+	\------------------------------------------------------------------------------------------------*/
+
+	if (typeof Object.assign != 'function') {
+	  (function () {
+	    Object.assign = function (target) {
+	      'use strict';
+
+	      if (target === undefined || target === null) {
+	        throw new TypeError('Cannot convert undefined or null to object');
+	      }
+
+	      var output = Object(target);
+	      for (var index = 1; index < arguments.length; index++) {
+	        var source = arguments[index];
+	        if (source !== undefined && source !== null) {
+	          for (var nextKey in source) {
+	            if (source.hasOwnProperty(nextKey)) {
+	              output[nextKey] = source[nextKey];
+	            }
+	          }
+	        }
+	      }
+	      return output;
+	    };
+	  })();
+	}
+
+	function aeTimeline(element, settings$$) {
+	    //Merge default settings with custom settings.
+	    var mergedSettings = Object.assign({}, settings, settings$$);
+
+	    //Sync properties within settings object.
+	    var syncedSettings = syncSettings(mergedSettings);
+
+	    //keep control inputs settings in sync
+	    var syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
+
+	    //Merge default secondary settings with custom settings.
+	    var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
+
+	    //Sync secondary settings with data mapping
+	    var syncedSecondSettings = syncSecondSettings(mergedSecondSettings);
+
+	    //create controls now
+	    var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+
+	    //create chart
+	    var chart = webcharts.createChart(element, syncedSettings, controls);
+	    chart.config.initialSettings = mergedSettings;
+	    chart.on('init', onInit);
+	    chart.on('layout', onLayout);
+	    chart.on('datatransform', onDataTransform);
+	    chart.on('draw', onDraw);
+	    chart.on('resize', onResize);
+
+	    //set up secondary chart and table
+	    var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
+	    chart2.config.initialSettings = mergedSecondSettings;
+	    chart2.wrap.style('display', 'none');
+	    chart.chart2 = chart2;
+	    var table = webcharts.createTable(element, {}).init([]);
+	    chart.table = table;
+
+	    return chart;
+	}
+
 	var ReactAETimelines = function (_React$Component) {
 		inherits(ReactAETimelines, _React$Component);
 
 		function ReactAETimelines(props) {
 			classCallCheck(this, ReactAETimelines);
 
-			var _this = possibleConstructorReturn(this, Object.getPrototypeOf(ReactAETimelines).call(this, props));
+			var _this = possibleConstructorReturn(this, (ReactAETimelines.__proto__ || Object.getPrototypeOf(ReactAETimelines)).call(this, props));
 
 			_this.state = {};
 			return _this;
@@ -599,7 +932,7 @@
 	  function Renderer(props) {
 	    classCallCheck(this, Renderer);
 
-	    var _this = possibleConstructorReturn(this, Object.getPrototypeOf(Renderer).call(this, props));
+	    var _this = possibleConstructorReturn(this, (Renderer.__proto__ || Object.getPrototypeOf(Renderer)).call(this, props));
 
 	    _this.binding = binding;
 	    _this.describeCode = describeCode.bind(_this);
