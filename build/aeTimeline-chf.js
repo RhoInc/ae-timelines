@@ -818,44 +818,44 @@
 	}
 
 	function aeTimeline(element, settings$$) {
-	    //Merge default settings with custom settings.
-	    var mergedSettings = Object.assign({}, settings, settings$$);
+	  //Merge default settings with custom settings.
+	  var mergedSettings = Object.assign({}, settings, settings$$);
 
-	    //Sync properties within settings object.
-	    var syncedSettings = syncSettings(mergedSettings);
+	  //Sync properties within settings object.
+	  var syncedSettings = syncSettings(mergedSettings);
 
-	    //Sync control inputs with settings object.
-	    var syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
+	  //Sync control inputs with settings object.
+	  var syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
 
-	    //Merge default secondary settings with custom settings.
-	    var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
+	  //Merge default secondary settings with custom settings.
+	  var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
 
-	    //Sync properties within secondary settings object.
-	    var syncedSecondSettings = syncSecondSettings(mergedSecondSettings);
+	  //Sync properties within secondary settings object.
+	  var syncedSecondSettings = syncSecondSettings(mergedSecondSettings);
 
-	    //Create controls.
-	    var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+	  //Create controls.
+	  var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
 
-	    //Create chart.
-	    var chart = webcharts.createChart(element, syncedSettings, controls);
-	    chart.config.initialSettings = mergedSettings;
-	    chart.on('init', onInit);
-	    chart.on('layout', onLayout);
-	    chart.on('datatransform', onDataTransform);
-	    chart.on('draw', onDraw);
-	    chart.on('resize', onResize);
+	  //Create chart.
+	  var chart = webcharts.createChart(element, syncedSettings, controls);
+	  chart.config.initialSettings = mergedSettings;
+	  chart.on('init', onInit);
+	  chart.on('layout', onLayout);
+	  chart.on('datatransform', onDataTransform);
+	  chart.on('draw', onDraw);
+	  chart.on('resize', onResize);
 
-	    //Create participant-level chart.
-	    var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
-	    chart2.config.initialSettings = mergedSecondSettings;
-	    chart2.wrap.style('display', 'none');
-	    chart.chart2 = chart2;
+	  //Create participant-level chart.
+	  var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
+	  chart2.config.initialSettings = mergedSecondSettings;
+	  chart2.wrap.style('display', 'none');
+	  chart.chart2 = chart2;
 
-	    //Create participant-level listing.
-	    var table = webcharts.createTable(element, {}).init([]);
-	    chart.table = table;
+	  //Create participant-level listing.
+	  var table = webcharts.createTable(element, {}).init([]);
+	  chart.table = table;
 
-	    return chart;
+	  return chart;
 	}
 
 	var ReactAETimelines = function (_React$Component) {

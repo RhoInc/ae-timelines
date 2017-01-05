@@ -240,8 +240,8 @@ var aeTimelines = function (webcharts, d3$1) {
     /*------------------------------------------------------------------------------------------------\
       Annotate number of participants based on current filters, number of participants in all, and
       the corresponding percentage.
-        Inputs:
-          chart - a webcharts chart object
+       Inputs:
+         chart - a webcharts chart object
         id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
         id_unit - a text string to label the units in the annotation (default = 'participants')
         selector - css selector for the annotation
