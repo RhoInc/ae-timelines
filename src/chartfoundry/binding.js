@@ -30,12 +30,8 @@ export default {
 			target: "term_col"
 		},
 		{
-			source: "vis_col",
-			target: "vis_col"
-		},
-		{
-			source: "filter_cols",
-			target: "filter_cols"
+			source: "filters",
+			target: "filters"
 		},
 		{
 			source:"detail_cols",

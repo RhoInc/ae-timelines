@@ -30,18 +30,4 @@ export default function onInit() {
                 this.chart2.wrap.select('.id-title').remove();
                 this.controls.wrap.style('display', 'block');
             });
-
-  //Modify tooltips when user specifies study visit column (settings.vis_col).
-    if (this.config.vis_col) {
-        for (let i = 0; i < this.config.marks.length; i++) {
-            this.config.marks[i].tooltip = this.config.marks[i].tooltip
-                + '\nStudy Visit: ['
-                + this.config.vis_col
-                + ']';
-            this.chart2.config.marks[i].tooltip = this.chart2.config.marks[i].tooltip
-                + '\nStudy Visit: ['
-                + this.config.vis_col
-                + ']';
-        }
-    }
 }

@@ -15,8 +15,7 @@ const settings =
         ,'SEVERE']
     ,ser_col: 'AESER'
     ,term_col: 'AETERM'
-    ,vis_col: null
-    ,filter_cols: []
+    ,filters: []
     ,detail_cols: []
 
   //Standard chart settings
@@ -39,18 +38,17 @@ const settings =
         ,
             {type: 'circle'
             ,per: null // set in syncSettings()
-            ,tooltip: null
+            ,tooltip: null // set in syncSettings()
             ,attributes:
                 {'fill-opacity': .5
-                ,'stroke-opacity': .5}} // set in syncSettings()
+                ,'stroke-opacity': .5}}
         ,
             {type: 'line'
             ,per: null // set in syncSettings()
             ,values: {} // set in syncSettings()
             ,tooltip: null // set in syncSettings()
             ,attributes:
-                {'class': 'serious'
-                ,'stroke': 'black'
+                {'stroke': 'black'
                 ,'stroke-width': 2}}
         ,
             {type: 'circle'
@@ -83,11 +81,11 @@ const settings =
 export function syncSettings(preSettings) {
     const nextSettings = Object.create(preSettings);
 
-    if (!nextSettings.filter_cols || nextSettings.filter_cols.length === 0)
-        nextSettings.filter_cols =
-            [nextSettings.ser_col
-            ,nextSettings.sev_col
-            ,nextSettings.id_col];
+    if (!nextSettings.filters || nextSettings.filters.length === 0)
+        nextSettings.filters =
+            [   {value_col: nextSettings.ser_col, label: 'Serious Event'}
+            ,   {value_col: nextSettings.sev_col, label: 'Severity/Intensity'}
+            ,   {value_col: nextSettings.id_col, label: 'Participant ID'}];
 
     nextSettings.y.column = nextSettings.id_col;
 
@@ -97,7 +95,7 @@ export function syncSettings(preSettings) {
         + `\nStart Day: [${nextSettings.stdy_col}]`
         + `\nStop Day: [${nextSettings.endy_col}]`;
 
-  //Circles (AE start days)
+  //Circles (AE start day)
     nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
     nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
         + `\nStart Day: [${nextSettings.stdy_col}]`
@@ -111,7 +109,7 @@ export function syncSettings(preSettings) {
         + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
-  //Circles (SAE start days)
+  //Circles (SAE start day)
     nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
     nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
         + `\nStart Day: [${nextSettings.stdy_col}]`
@@ -132,35 +130,14 @@ export const controlInputs =
     ];
 
 export function syncControlInputs(preControlInputs, preSettings) {
-    const value_colLabels =
-        [   {value_col: preSettings.id_col, label: 'Participant ID'}
-        ,   {value_col: preSettings.term_col, label: 'Reported Term'}
-        ,   {value_col: 'AEDECOD', label: 'Dictionary-Derived Term'}
-        ,   {value_col: 'AEBODSYS', label: 'Body System or Organ Class'}
-        ,   {value_col: 'AELOC', label: 'Location of Event'}
-        ,   {value_col: preSettings.sev_col, label: 'Severity/Intensity'}
-        ,   {value_col: preSettings.ser_col, label: 'Serious Event'}
-        ,   {value_col: 'AEACN', label: 'Action Taken with Study Treatment'}
-        ,   {value_col: 'AEREL', label: 'Causality'}
-        ,   {value_col: 'AEOUT', label: 'Outcome of Event'}
-        ,   {value_col: 'AETOXGR', label: 'Toxicity Grade'}];
-    preSettings.filter_cols.reverse()
+    preSettings.filters.reverse()
         .forEach((d,i) => {
-            const value_colPosition = value_colLabels
-                .map(di => di.value_col)
-                .indexOf(d);
             const thisFilter =
                 {type: 'subsetter'
-                ,value_col: d
-                ,label: value_colPosition > -1
-                    ? value_colLabels[value_colPosition].label
-                    : d};
-            const filter_vars = preControlInputs
-                .map(d => d.value_col);
-
-          //Check whether [ filter_vars ] settings property contains default filter column.
-            if (filter_vars.indexOf(thisFilter.value_col) === -1)
-                preControlInputs.unshift(thisFilter);
+                ,value_col: d.value_col ? d.value_col : d
+                ,label: d.label ? d.label : d.value_col ? d.value_col : d};
+            preControlInputs.unshift(thisFilter);
+            preSettings.detail_cols.push(d.value_col ? d.value_col : d);
         });
   
     return preControlInputs;
@@ -179,19 +156,31 @@ export function syncSecondSettings(preSettings) {
 
     nextSettings.y.column = nextSettings.seq_col;
 
+  //Lines (AE duration)
     nextSettings.marks[0].per = [nextSettings.seq_col];
-    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
 
+  //Circles (AE start day)
     nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[1].values = {wc_category: [nextSettings.stdy_col]};
 
+  //Lines (SAE duration)
     nextSettings.marks[2].per = [nextSettings.seq_col];
-    nextSettings.marks[2].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[2].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
+  //Circles (SAE start day)
     nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]\nStart Day: [${nextSettings.stdy_col}]\nStop Day: [${nextSettings.endy_col}]`
+    nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+        + `\nStart Day: [${nextSettings.stdy_col}]`
+        + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[3].values = {wc_category: [nextSettings.stdy_col]};
     nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
