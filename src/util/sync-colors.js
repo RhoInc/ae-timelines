@@ -14,7 +14,7 @@ export default function syncColors(chart) {
   //Recolor circles.
     let circles = chart.svg.selectAll('circle.wc-data-mark:not(.highlight), circle.wc-data-mark:not(.custom)');
     circles.each(function(d,i) {
-        const color_by_value = d.values.raw[0][chart.config.initialSettings.color_by];
+        const color_by_value = d.values.raw[0][chart.config.color_by];
         d3.select(this)
             .style('stroke', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
         d3.select(this)
@@ -24,7 +24,7 @@ export default function syncColors(chart) {
   //Recolor lines.
     let lines = chart.svg.selectAll('path.wc-data-mark:not(.highlight), path.wc-data-mark:not(.custom)');
     lines.each(function(d,i) {
-        const color_by_value = d.values[0].values.raw[0][chart.config.initialSettings.color_by];
+        const color_by_value = d.values[0].values.raw[0][chart.config.color_by];
         d3.select(this)
             .style('stroke', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
     });

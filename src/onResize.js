@@ -55,7 +55,7 @@ export default function onResize() {
                 .text('Participant: ' + d);
 
           //Sort listing by sequence.
-            const seq_col = context.config.initialSettings.seq_col;
+            const seq_col = context.config.seq_col;
             let tableData = this.superRaw
                 .filter(di => di[this.config.id_col] === d)
                 .sort((a,b) => +a[seq_col] < b[seq_col] ? -1 : 1);

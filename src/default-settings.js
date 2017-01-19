@@ -9,11 +9,25 @@ const settings =
     ,stdy_col: 'ASTDY'
     ,endy_col: 'AENDY'
     ,term_col: 'AETERM'
-    ,color_by: 'AESEV'
-    ,color_by_values:
-        ['MILD'
-        ,'MODERATE'
-        ,'SEVERE']
+
+    ,color:
+        {value_col: 'AESEV'
+        ,label: 'Severity/Intensity'
+        ,values:
+            ['MILD'
+            ,'MODERATE'
+            ,'SEVERE']
+        ,colors:
+            ['#66bd63' // green
+            ,'#fdae61' // sherbet
+            ,'#d73027' // red
+            ,'#377eb8'
+            ,'#984ea3'
+            ,'#ff7f00'
+            ,'#a65628'
+            ,'#f781bf'
+            ,'#999999']}
+
     ,highlight:
         {value_col: 'AESER'
         ,label: 'Serious Event'
@@ -23,6 +37,7 @@ const settings =
             {'stroke': 'black'
             ,'stroke-width': '2'
             ,'fill': 'none'}}
+
     ,filters: null
     ,details: null
     ,custom_marks: null
@@ -52,19 +67,8 @@ const settings =
                 {'fill-opacity': .5
                 ,'stroke-opacity': .5}}
         ]
-    ,colors:
-        ['#66bd63'
-        ,'#fdae61'
-        ,'#d73027'
-        ,'#377eb8'
-        ,'#984ea3'
-        ,'#ff7f00'
-        ,'#a65628'
-        ,'#f781bf'
-        ,'#999999']
     ,legend:
-        {location: 'top'
-        ,label: 'Severity/Intensity'}
+        {location: 'top'}
     ,date_format: '%Y-%m-%d'
     ,y_behavior: 'flex'
     ,gridlines: 'y'
@@ -75,7 +79,7 @@ const settings =
 };
 
 export function syncSettings(preSettings) {
-    const nextSettings = Object.create(preSettings);
+    const nextSettings = clone(preSettings);
 
     nextSettings.y.column = nextSettings.id_col;
 
@@ -127,13 +131,17 @@ export function syncSettings(preSettings) {
         nextSettings.marks.push(highlightCircle);
     }
 
-  //Define legend order.
-    nextSettings.legend.order = nextSettings.color_by_values;
+  //Define mark coloring and legend.
+    nextSettings.color_by = nextSettings.color.value_col;
+    nextSettings.colors = nextSettings.color.colors;
+    nextSettings.legend = nextSettings.legend || {location: 'top'};
+    nextSettings.legend.label = nextSettings.color.label;
+    nextSettings.legend.order = nextSettings.color.values;
 
   //Default filters
     if (!nextSettings.filters || nextSettings.filters.length === 0) {
         nextSettings.filters =
-            [   {value_col: nextSettings.color_by, label: nextSettings.legend.label}
+            [   {value_col: nextSettings.color.value_col, label: nextSettings.color.label}
             ,   {value_col: nextSettings.id_col, label: 'Subject Identifier'}];
         if (nextSettings.highlight)
             nextSettings.filters.unshift(
@@ -147,12 +155,10 @@ export function syncSettings(preSettings) {
         ,   {'value_col': nextSettings.endy_col, label: 'Stop Day'}
         ,   {'value_col': nextSettings.term_col, label: 'Reported Term'}];
 
-      //Add settings.color_by to default details.
+      //Add settings.color.value_col to default details.
         defaultDetails.push(
-            {'value_col': nextSettings.color_by
-            ,'label': nextSettings.legend
-                ? nextSettings.legend.label || nextSettings.color_by
-                : nextSettings.color_by});
+            {'value_col': nextSettings.color.value_col
+            ,'label': nextSettings.color.label});
 
       //Add settings.highlight.value_col and settings.highlight.detail_col to default details.
         if (nextSettings.highlight) {
@@ -224,78 +230,23 @@ export function syncControlInputs(preControlInputs, preSettings) {
     return preControlInputs;
 }
 
-//Setting for custom details view
-let cloneSettings = clone(settings);
-    cloneSettings.y.sort = 'alphabetical-descending';
-    cloneSettings.transitions = false;
-    cloneSettings.range_band = settings.range_band*2;
-    cloneSettings.margin = null;
-export const secondSettings = cloneSettings;
-
 export function syncSecondSettings(preSettings) {
-    const nextSettings = Object.create(preSettings);
+    const nextSettings = clone(preSettings);
 
     nextSettings.y.column = nextSettings.seq_col;
+    nextSettings.y.sort = 'alphabetical-descending';
 
-  //Lines (AE duration)
     nextSettings.marks[0].per = [nextSettings.seq_col];
-    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-
-  //Circles (AE start day)
     nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-    nextSettings.marks[1].values = {wc_category: [nextSettings.stdy_col]};
 
-  //Define highlight marks.
     if (nextSettings.highlight) {
-      //Lines (highlighted event duration)
-        let highlightLine =
-            {'type': 'line'
-            ,'per': [nextSettings.seq_col]
-            ,'tooltip': `Verbatim Term: [${nextSettings.term_col}]`
-                    + `\nStart Day: [${nextSettings.stdy_col}]`
-                    + `\nStop Day: [${nextSettings.endy_col}]`
-                    + `\n${nextSettings.highlight.label}: [${nextSettings.highlight.detail_col
-                        ? nextSettings.highlight.detail_col
-                        : nextSettings.highlight.value_col}]`
-            ,'values': {}
-            ,'attributes': nextSettings.highlight.attributes || {}};
-        highlightLine.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-        highlightLine.attributes.class = 'highlight';
-        nextSettings.marks.push(highlightLine);
-
-      //Circles (highlighted event start day)
-        let highlightCircle =
-            {'type': 'circle'
-            ,'per': [nextSettings.seq_col, 'wc_value']
-            ,'tooltip': `Verbatim Term: [${nextSettings.term_col}]`
-                    + `\nStart Day: [${nextSettings.stdy_col}]`
-                    + `\nStop Day: [${nextSettings.endy_col}]`
-                    + `\n${nextSettings.highlight.label}: [${nextSettings.highlight.detail_col
-                        ? nextSettings.highlight.detail_col
-                        : nextSettings.highlight.value_col}]`
-            ,'values': {'wc_category': nextSettings.stdy_col}
-            ,'attributes': nextSettings.highlight.attributes || {}};
-        highlightCircle.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-        highlightCircle.attributes.class = 'highlight';
-        nextSettings.marks.push(highlightCircle);
+        nextSettings.marks[2].per = [nextSettings.seq_col];
+        nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
     }
 
-  //Define legend order.
-    nextSettings.legend.order = [].concat(nextSettings.color_by_values);
-
-  //Add custom marks to marks array.
-    if (nextSettings.custom_marks)
-        nextSettings.custom_marks
-            .forEach(custom_mark => {
-                custom_mark.attributes = custom_mark.attributes || {};
-                custom_mark.attributes.class = 'custom';
-                nextSettings.marks.push(custom_mark);
-            });
+    nextSettings.range_band = settings.range_band*2;
+    nextSettings.margin = null;
+    nextSettings.transitions = false;
 
     return nextSettings;
 }

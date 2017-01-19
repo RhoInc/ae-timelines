@@ -14,7 +14,7 @@ export default function updateSubjectCount(chart, id_col, selector, id_unit) {
   //count the number of unique ids in the current chart and calculate the percentage
     const filtered_data = chart.raw_data
         .filter(d => {
-            let filtered = d[chart.config.initialSettings.seq_col] === '';
+            let filtered = d[chart.config.seq_col] === '';
             chart.filters
                 .forEach(di => {
                     if (filtered === false && di.val !== 'All')

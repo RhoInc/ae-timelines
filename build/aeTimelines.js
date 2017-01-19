@@ -47,8 +47,15 @@ var aeTimelines = function (webcharts, d3$1) {
         stdy_col: 'ASTDY',
         endy_col: 'AENDY',
         term_col: 'AETERM',
-        color_by: 'AESEV',
-        color_by_values: ['MILD', 'MODERATE', 'SEVERE'],
+
+        color: { value_col: 'AESEV',
+            label: 'Severity/Intensity',
+            values: ['MILD', 'MODERATE', 'SEVERE'],
+            colors: ['#66bd63' // green
+            , '#fdae61' // sherbet
+            , '#d73027' // red
+            , '#377eb8', '#984ea3', '#ff7f00', '#a65628', '#f781bf', '#999999'] },
+
         highlight: { value_col: 'AESER',
             label: 'Serious Event',
             value: 'Y',
@@ -56,6 +63,7 @@ var aeTimelines = function (webcharts, d3$1) {
             attributes: { 'stroke': 'black',
                 'stroke-width': '2',
                 'fill': 'none' } },
+
         filters: null,
         details: null,
         custom_marks: null
@@ -78,9 +86,7 @@ var aeTimelines = function (webcharts, d3$1) {
             , tooltip: null // set in syncSettings()
             , attributes: { 'fill-opacity': .5,
                 'stroke-opacity': .5 } }],
-        colors: ['#66bd63', '#fdae61', '#d73027', '#377eb8', '#984ea3', '#ff7f00', '#a65628', '#f781bf', '#999999'],
-        legend: { location: 'top',
-            label: 'Severity/Intensity' },
+        legend: { location: 'top' },
         date_format: '%Y-%m-%d',
         y_behavior: 'flex',
         gridlines: 'y',
@@ -91,7 +97,7 @@ var aeTimelines = function (webcharts, d3$1) {
     };
 
     function syncSettings(preSettings) {
-        const nextSettings = Object.create(preSettings);
+        const nextSettings = clone(preSettings);
 
         nextSettings.y.column = nextSettings.id_col;
 
@@ -127,21 +133,25 @@ var aeTimelines = function (webcharts, d3$1) {
             nextSettings.marks.push(highlightCircle);
         }
 
-        //Define legend order.
-        nextSettings.legend.order = nextSettings.color_by_values;
+        //Define mark coloring and legend.
+        nextSettings.color_by = nextSettings.color.value_col;
+        nextSettings.colors = nextSettings.color.colors;
+        nextSettings.legend = nextSettings.legend || { location: 'top' };
+        nextSettings.legend.label = nextSettings.color.label;
+        nextSettings.legend.order = nextSettings.color.values;
 
         //Default filters
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
-            nextSettings.filters = [{ value_col: nextSettings.color_by, label: nextSettings.legend.label }, { value_col: nextSettings.id_col, label: 'Subject Identifier' }];
+            nextSettings.filters = [{ value_col: nextSettings.color.value_col, label: nextSettings.color.label }, { value_col: nextSettings.id_col, label: 'Subject Identifier' }];
             if (nextSettings.highlight) nextSettings.filters.unshift({ value_col: nextSettings.highlight.value_col, label: nextSettings.highlight.label });
         }
 
         //Default detail listing columns
         const defaultDetails = [{ 'value_col': nextSettings.seq_col, label: 'Sequence Number' }, { 'value_col': nextSettings.stdy_col, label: 'Start Day' }, { 'value_col': nextSettings.endy_col, label: 'Stop Day' }, { 'value_col': nextSettings.term_col, label: 'Reported Term' }];
 
-        //Add settings.color_by to default details.
-        defaultDetails.push({ 'value_col': nextSettings.color_by,
-            'label': nextSettings.legend ? nextSettings.legend.label || nextSettings.color_by : nextSettings.color_by });
+        //Add settings.color.value_col to default details.
+        defaultDetails.push({ 'value_col': nextSettings.color.value_col,
+            'label': nextSettings.color.label });
 
         //Add settings.highlight.value_col and settings.highlight.detail_col to default details.
         if (nextSettings.highlight) {
@@ -195,60 +205,23 @@ var aeTimelines = function (webcharts, d3$1) {
         return preControlInputs;
     }
 
-    //Setting for custom details view
-    let cloneSettings = clone(settings);
-    cloneSettings.y.sort = 'alphabetical-descending';
-    cloneSettings.transitions = false;
-    cloneSettings.range_band = settings.range_band * 2;
-    cloneSettings.margin = null;
-    const secondSettings = cloneSettings;
-
     function syncSecondSettings(preSettings) {
-        const nextSettings = Object.create(preSettings);
+        const nextSettings = clone(preSettings);
 
         nextSettings.y.column = nextSettings.seq_col;
+        nextSettings.y.sort = 'alphabetical-descending';
 
-        //Lines (AE duration)
         nextSettings.marks[0].per = [nextSettings.seq_col];
-        nextSettings.marks[0].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
-
-        //Circles (AE start day)
         nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
-        nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
-        //Define highlight marks.
         if (nextSettings.highlight) {
-            //Lines (highlighted event duration)
-            let highlightLine = { 'type': 'line',
-                'per': [nextSettings.seq_col],
-                'tooltip': `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]` + `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]`,
-                'values': {},
-                'attributes': nextSettings.highlight.attributes || {} };
-            highlightLine.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-            highlightLine.attributes.class = 'highlight';
-            nextSettings.marks.push(highlightLine);
-
-            //Circles (highlighted event start day)
-            let highlightCircle = { 'type': 'circle',
-                'per': [nextSettings.seq_col, 'wc_value'],
-                'tooltip': `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]` + `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]`,
-                'values': { 'wc_category': nextSettings.stdy_col },
-                'attributes': nextSettings.highlight.attributes || {} };
-            highlightCircle.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-            highlightCircle.attributes.class = 'highlight';
-            nextSettings.marks.push(highlightCircle);
+            nextSettings.marks[2].per = [nextSettings.seq_col];
+            nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
         }
 
-        //Define legend order.
-        nextSettings.legend.order = [].concat(nextSettings.color_by_values);
-
-        //Add custom marks to marks array.
-        if (nextSettings.custom_marks) nextSettings.custom_marks.forEach(custom_mark => {
-            custom_mark.attributes = custom_mark.attributes || {};
-            custom_mark.attributes.class = 'custom';
-            nextSettings.marks.push(custom_mark);
-        });
+        nextSettings.range_band = settings.range_band * 2;
+        nextSettings.margin = null;
+        nextSettings.transitions = false;
 
         return nextSettings;
     }
@@ -334,7 +307,7 @@ var aeTimelines = function (webcharts, d3$1) {
     function updateSubjectCount(chart, id_col, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
         const filtered_data = chart.raw_data.filter(d => {
-            let filtered = d[chart.config.initialSettings.seq_col] === '';
+            let filtered = d[chart.config.seq_col] === '';
             chart.filters.forEach(di => {
                 if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
             });
@@ -394,7 +367,7 @@ var aeTimelines = function (webcharts, d3$1) {
         //Recolor circles.
         let circles = chart.svg.selectAll('circle.wc-data-mark:not(.highlight), circle.wc-data-mark:not(.custom)');
         circles.each(function (d, i) {
-            const color_by_value = d.values.raw[0][chart.config.initialSettings.color_by];
+            const color_by_value = d.values.raw[0][chart.config.color_by];
             d3.select(this).style('stroke', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
             d3.select(this).style('fill', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
         });
@@ -402,7 +375,7 @@ var aeTimelines = function (webcharts, d3$1) {
         //Recolor lines.
         let lines = chart.svg.selectAll('path.wc-data-mark:not(.highlight), path.wc-data-mark:not(.custom)');
         lines.each(function (d, i) {
-            const color_by_value = d.values[0].values.raw[0][chart.config.initialSettings.color_by];
+            const color_by_value = d.values[0].values.raw[0][chart.config.color_by];
             d3.select(this).style('stroke', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
         });
     }
@@ -456,7 +429,7 @@ var aeTimelines = function (webcharts, d3$1) {
             this.chart2.wrap.select('#backButton').append('strong').attr('class', 'id-title').style('margin-left', '1%').text('Participant: ' + d);
 
             //Sort listing by sequence.
-            const seq_col = context.config.initialSettings.seq_col;
+            const seq_col = context.config.seq_col;
             let tableData = this.superRaw.filter(di => di[this.config.id_col] === d).sort((a, b) => +a[seq_col] < b[seq_col] ? -1 : 1);
 
             //Define listing columns.
@@ -533,18 +506,14 @@ var aeTimelines = function (webcharts, d3$1) {
         //Sync control inputs with settings object.
         const syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
 
-        //Merge default secondary settings with custom settings.
-        const mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
-
         //Sync properties within secondary settings object.
-        const syncedSecondSettings = syncSecondSettings(mergedSecondSettings);
+        const syncedSecondSettings = syncSecondSettings(syncedSettings);
 
         //Create controls.
         const controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
 
         //Create chart.
         const chart = webcharts.createChart(element, syncedSettings, controls);
-        chart.config.initialSettings = mergedSettings;
         chart.on('init', onInit);
         chart.on('layout', onLayout);
         chart.on('datatransform', onDataTransform);
@@ -552,8 +521,7 @@ var aeTimelines = function (webcharts, d3$1) {
         chart.on('resize', onResize);
 
         //Create participant-level chart.
-        const chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
-        chart2.config.initialSettings = mergedSecondSettings;
+        const chart2 = webcharts.createChart(element, syncedSecondSettings).init([]);
         chart2.wrap.style('display', 'none');
         chart.chart2 = chart2;
 
