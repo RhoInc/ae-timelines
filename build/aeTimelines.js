@@ -113,34 +113,36 @@ var aeTimelines = function (webcharts, d3$1) {
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
         //Add custom marks to marks array.
-        nextSettings.custom_marks.forEach(custom_mark => {
+        if (nextSettings.custom_marks) {
+            nextSettings.custom_marks.forEach(custom_mark => {
 
-            //Classify custom marks to avoid re-coloring in onResize() with syncColors().
-            if (custom_mark.attributes) custom_mark.attributes.class = 'highlight';else custom_mark.attributes = { 'class': 'highlight' };
+                //Classify custom marks to avoid re-coloring in onResize() with syncColors().
+                if (custom_mark.attributes) custom_mark.attributes.class = 'highlight';else custom_mark.attributes = { 'class': 'highlight' };
 
-            //Lines (highlighted event duration)
-            if (custom_mark.type === 'line') {
-                custom_mark.per = custom_mark.per || [nextSettings.id_col, nextSettings.seq_col];
-                custom_mark.tooltip = custom_mark.tooltip || `${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
-
-                if (!custom_mark.values) {
-                    custom_mark.values = {};
-                    custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-                }
-            }
-            //Circles (highlighted event start day)
-            else if (custom_mark.type === 'circle') {
-                    custom_mark.per = custom_mark.per || [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-                    custom_mark.tooltip = custom_mark.tooltip || `${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+                //Lines (highlighted event duration)
+                if (custom_mark.type === 'line') {
+                    custom_mark.per = custom_mark.per || [nextSettings.id_col, nextSettings.seq_col];
+                    custom_mark.tooltip = custom_mark.tooltip || `Verbatim Term: [${ nextSettings.term_col }]` + (nextSettings.highlight ? `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` : ``) + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
 
                     if (!custom_mark.values) {
-                        custom_mark.values = { 'wc_category': nextSettings.stdy_col };
-                        custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+                        custom_mark.values = {};
+                        if (nextSettings.highlight) custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
                     }
                 }
+                //Circles (highlighted event start day)
+                else if (custom_mark.type === 'circle') {
+                        custom_mark.per = custom_mark.per || [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+                        custom_mark.tooltip = custom_mark.tooltip || `Verbatim Term: [${ nextSettings.term_col }]` + (nextSettings.highlight ? `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` : ``) + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
 
-            nextSettings.marks.push(custom_mark);
-        });
+                        if (!custom_mark.values) {
+                            custom_mark.values = { 'wc_category': nextSettings.stdy_col };
+                            if (nextSettings.highlight) custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+                        }
+                    }
+
+                nextSettings.marks.push(custom_mark);
+            });
+        } else nextSettings.highlight = null;
 
         //Define legend order.
         nextSettings.legend.order = nextSettings.color_by_values;
@@ -152,7 +154,7 @@ var aeTimelines = function (webcharts, d3$1) {
         const defaultDetails = [{ 'value_col': nextSettings.seq_col, label: 'Sequence Number' }, { 'value_col': nextSettings.stdy_col, label: 'Start Day' }, { 'value_col': nextSettings.endy_col, label: 'Stop Day' }, { 'value_col': nextSettings.term_col, label: 'Reported Term' }];
 
         //Add settings.color_by to default details.
-        if (nextSettings.color_by) defaultDetails.push({ 'value_col': nextSettings.color_by,
+        defaultDetails.push({ 'value_col': nextSettings.color_by,
             'label': nextSettings.legend ? nextSettings.legend.label || nextSettings.color_by : nextSettings.color_by });
 
         //Add settings.highlight.value_col and settings.highlight.detail_col to default details.
@@ -223,34 +225,36 @@ var aeTimelines = function (webcharts, d3$1) {
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
         //Add custom marks to marks array.
-        nextSettings.custom_marks.forEach(custom_mark => {
+        if (nextSettings.custom_marks) {
+            nextSettings.custom_marks.forEach(custom_mark => {
 
-            //Classify custom marks to avoid re-coloring in onResize() with syncColors().
-            if (custom_mark.attributes) custom_mark.attributes.class = 'highlight';else custom_mark.attributes = { 'class': 'highlight' };
+                //Classify custom marks to avoid re-coloring in onResize() with syncColors().
+                if (custom_mark.attributes) custom_mark.attributes.class = 'highlight';else custom_mark.attributes = { 'class': 'highlight' };
 
-            //Lines (highlighted event duration)
-            if (custom_mark.type === 'line') {
-                custom_mark.per = custom_mark.per || [nextSettings.seq_col];
-                custom_mark.tooltip = custom_mark.tooltip || `${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
-
-                if (!custom_mark.values) {
-                    custom_mark.values = {};
-                    custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-                }
-            }
-            //Circles (highlighted event start day)
-            else if (custom_mark.type === 'circle') {
-                    custom_mark.per = custom_mark.per || [nextSettings.seq_col, 'wc_value'];
-                    custom_mark.tooltip = custom_mark.tooltip || `${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+                //Lines (highlighted event duration)
+                if (custom_mark.type === 'line') {
+                    custom_mark.per = custom_mark.per || [nextSettings.seq_col];
+                    custom_mark.tooltip = custom_mark.tooltip || `Verbatim Term: [${ nextSettings.term_col }]` + (nextSettings.highlight ? `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` : ``) + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
 
                     if (!custom_mark.values) {
-                        custom_mark.values = { 'wc_category': nextSettings.stdy_col };
-                        custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+                        custom_mark.values = {};
+                        if (nextSettings.highlight) custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
                     }
                 }
+                //Circles (highlighted event start day)
+                else if (custom_mark.type === 'circle') {
+                        custom_mark.per = custom_mark.per || [nextSettings.seq_col, 'wc_value'];
+                        custom_mark.tooltip = custom_mark.tooltip || `Verbatim Term: [${ nextSettings.term_col }]` + (nextSettings.highlight ? `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]` : ``) + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
 
-            nextSettings.marks.push(custom_mark);
-        });
+                        if (!custom_mark.values) {
+                            custom_mark.values = { 'wc_category': nextSettings.stdy_col };
+                            if (nextSettings.highlight) custom_mark.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+                        }
+                    }
+
+                nextSettings.marks.push(custom_mark);
+            });
+        } else nextSettings.highlight = null;
 
         //Define legend order.
         nextSettings.legend.order = nextSettings.color_by_values;
