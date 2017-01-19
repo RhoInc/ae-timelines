@@ -136,7 +136,8 @@ export function syncSettings(preSettings) {
             [   {value_col: nextSettings.color_by, label: nextSettings.legend.label}
             ,   {value_col: nextSettings.id_col, label: 'Subject Identifier'}];
         if (nextSettings.highlight)
-            nextSettings.filters.unshift({value_col: nextSettings.highlight.value_col, label: nextSettings.highlight.label});
+            nextSettings.filters.unshift(
+                {value_col: nextSettings.highlight.value_col, label: nextSettings.highlight.label});
     }
 
   //Default detail listing columns
@@ -167,10 +168,12 @@ export function syncSettings(preSettings) {
 
       //Add settings.filters columns to default details.
         nextSettings.filters
-            .forEach(filter =>
-                defaultDetails.push(
-                    {'value_col': filter.value_col
-                    ,'label': filter.label}));
+            .forEach(filter => {
+                if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col)
+                    defaultDetails.push(
+                        {'value_col': filter.value_col
+                        ,'label': filter.label});
+            });
 
   //Redefine settings.details with defaults.
     if (!nextSettings.details)
@@ -216,9 +219,6 @@ export function syncControlInputs(preControlInputs, preSettings) {
                 ,value_col: d.value_col ? d.value_col : d
                 ,label: d.label ? d.label : d.value_col ? d.value_col : d};
             preControlInputs.unshift(thisFilter);
-            preSettings.details.push(
-                {value_col: d.value_col ? d.value_col : d
-                ,label: d.label ? d.label : d.value_col ? d.value_col : d});
         });
   
     return preControlInputs;

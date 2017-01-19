@@ -153,8 +153,10 @@ var aeTimelines = function (webcharts, d3$1) {
         }
 
         //Add settings.filters columns to default details.
-        nextSettings.filters.forEach(filter => defaultDetails.push({ 'value_col': filter.value_col,
-            'label': filter.label }));
+        nextSettings.filters.forEach(filter => {
+            if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col) defaultDetails.push({ 'value_col': filter.value_col,
+                'label': filter.label });
+        });
 
         //Redefine settings.details with defaults.
         if (!nextSettings.details) nextSettings.details = defaultDetails;else {
@@ -188,8 +190,6 @@ var aeTimelines = function (webcharts, d3$1) {
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d };
             preControlInputs.unshift(thisFilter);
-            preSettings.details.push({ value_col: d.value_col ? d.value_col : d,
-                label: d.label ? d.label : d.value_col ? d.value_col : d });
         });
 
         return preControlInputs;
