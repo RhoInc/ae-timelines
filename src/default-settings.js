@@ -69,7 +69,6 @@ const settings =
         ]
     ,legend:
         {location: 'top'}
-    ,date_format: '%Y-%m-%d'
     ,y_behavior: 'flex'
     ,gridlines: 'y'
     ,no_text_size: false
@@ -85,13 +84,13 @@ export function syncSettings(preSettings) {
 
   //Lines (AE duration)
     nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+    nextSettings.marks[0].tooltip = `Reported Term: [${nextSettings.term_col}]`
         + `\nStart Day: [${nextSettings.stdy_col}]`
         + `\nStop Day: [${nextSettings.endy_col}]`;
 
   //Circles (AE start day)
     nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+    nextSettings.marks[1].tooltip = `Reported Term: [${nextSettings.term_col}]`
         + `\nStart Day: [${nextSettings.stdy_col}]`
         + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[1].values = {wc_category: [nextSettings.stdy_col]};
@@ -102,7 +101,7 @@ export function syncSettings(preSettings) {
         let highlightLine =
             {'type': 'line'
             ,'per': [nextSettings.id_col, nextSettings.seq_col]
-            ,'tooltip': `Verbatim Term: [${nextSettings.term_col}]`
+            ,'tooltip': `Reported Term: [${nextSettings.term_col}]`
                     + `\nStart Day: [${nextSettings.stdy_col}]`
                     + `\nStop Day: [${nextSettings.endy_col}]`
                     + `\n${nextSettings.highlight.label}: [${nextSettings.highlight.detail_col
@@ -118,7 +117,7 @@ export function syncSettings(preSettings) {
         let highlightCircle =
             {'type': 'circle'
             ,'per': [nextSettings.id_col, nextSettings.seq_col, 'wc_value']
-            ,'tooltip': `Verbatim Term: [${nextSettings.term_col}]`
+            ,'tooltip': `Reported Term: [${nextSettings.term_col}]`
                     + `\nStart Day: [${nextSettings.stdy_col}]`
                     + `\nStop Day: [${nextSettings.endy_col}]`
                     + `\n${nextSettings.highlight.label}: [${nextSettings.highlight.detail_col

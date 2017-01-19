@@ -87,7 +87,6 @@ var aeTimelines = function (webcharts, d3$1) {
             , attributes: { 'fill-opacity': .5,
                 'stroke-opacity': .5 } }],
         legend: { location: 'top' },
-        date_format: '%Y-%m-%d',
         y_behavior: 'flex',
         gridlines: 'y',
         no_text_size: false,
@@ -103,11 +102,11 @@ var aeTimelines = function (webcharts, d3$1) {
 
         //Lines (AE duration)
         nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[0].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[0].tooltip = `Reported Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
 
         //Circles (AE start day)
         nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[1].tooltip = `Reported Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
         //Define highlight marks.
@@ -115,7 +114,7 @@ var aeTimelines = function (webcharts, d3$1) {
             //Lines (highlighted event duration)
             let highlightLine = { 'type': 'line',
                 'per': [nextSettings.id_col, nextSettings.seq_col],
-                'tooltip': `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]` + `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]`,
+                'tooltip': `Reported Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]` + `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]`,
                 'values': {},
                 'attributes': nextSettings.highlight.attributes || {} };
             highlightLine.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
@@ -125,7 +124,7 @@ var aeTimelines = function (webcharts, d3$1) {
             //Circles (highlighted event start day)
             let highlightCircle = { 'type': 'circle',
                 'per': [nextSettings.id_col, nextSettings.seq_col, 'wc_value'],
-                'tooltip': `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]` + `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]`,
+                'tooltip': `Reported Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]` + `\n${ nextSettings.highlight.label }: [${ nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col }]`,
                 'values': { 'wc_category': nextSettings.stdy_col },
                 'attributes': nextSettings.highlight.attributes || {} };
             highlightCircle.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
