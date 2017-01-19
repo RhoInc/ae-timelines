@@ -25,16 +25,9 @@ export default function onInit() {
                 .map(d => d[this.config.color_by])
         ).values();
     color_by_values.forEach((color_by_value,i) => {
-        let increment = 25;
-
         if (this.config.legend.order.indexOf(color_by_value) === -1) {
             this.config.legend.order.push(color_by_value);
             this.chart2.config.legend.order.push(color_by_value);
-
-            this.config.colors.push(`rgb(${increment},${increment},${increment})`);
-            this.chart2.config.colors.push(`rgb(${increment},${increment},${increment})`);
-
-            increment += 25;
         }
     });
 
