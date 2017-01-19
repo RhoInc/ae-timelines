@@ -1,23 +1,23 @@
 /*------------------------------------------------------------------------------------------------\
-  Add serious adverse event legend item.
+  Add highlighted adverse event legend item.
 \------------------------------------------------------------------------------------------------*/
 
-export default function addSeriousLegendItem(chart) {
-    chart.wrap.select('.legend li.serious').remove();
-    let seriousLegendItem = chart.wrap.select('.legend').append('li')
-        .attr('class', 'serious')
+export default function addHighlightLegendItem(chart) {
+    chart.wrap.select('.legend li.highlight').remove();
+    let highlightLegendItem = chart.wrap.select('.legend').append('li')
+        .attr('class', 'highlight')
         .style(
             {'list-style-type': 'none'
             ,'margin-right': '1em'
             ,'display': 'inline-block'});
-    let seriousLegendColorBlock = seriousLegendItem.append('svg')
+    let highlightLegendColorBlock = highlightLegendItem.append('svg')
         .attr(
             {width: '1.75em'
             ,height: '1.5em'})
         .style(
             {'position': 'relative'
             ,'top': '0.35em'});
-    seriousLegendColorBlock.append('circle')
+    highlightLegendColorBlock.append('circle')
         .attr(
             {cx: 10
             ,cy: 10
@@ -26,7 +26,7 @@ export default function addSeriousLegendItem(chart) {
             {'stroke': 'black'
             ,'stroke-width': 2
             ,'fill': 'none'});
-    seriousLegendColorBlock.append('line')
+    highlightLegendColorBlock.append('line')
         .attr(
             {x1: 2*3.14*4 - 10
             ,y1: 10
@@ -36,7 +36,7 @@ export default function addSeriousLegendItem(chart) {
             {'stroke': 'black'
             ,'stroke-width': 2
             ,'shape-rendering': 'crispEdges'});
-    seriousLegendItem.append('text')
+    highlightLegendItem.append('text')
         .style('margin-left', '.35em')
-        .text('Serious');
+        .text(chart.config.highlight.label);
 }

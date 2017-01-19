@@ -4,8 +4,8 @@
   "description": "Adverse event timelines for clinical trials",
   "main": "./build/aeTimeline-chf.js",
   "scripts": {
-    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimeline.js",
-    "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/aeTimeline-chf.js"
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimelines.js",
+    "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/aeTimelines-chf.js"
   },
   "author": "Rho, Inc.",
   "license": "MIT",

@@ -2,8 +2,8 @@ import { select, svg }
     from 'd3';
 import syncColors
     from './util/sync-colors';
-import addSeriousLegendItem
-    from './util/add-serious-legend-item';
+import addHighlightLegendItem
+    from './util/add-highlight-legend-item';
 
 export default function onResize() {
     let context = this;
@@ -11,8 +11,9 @@ export default function onResize() {
   //Sync legend and mark colors.
     syncColors(this);
 
-  //Add serious adverse event legend item.
-    addSeriousLegendItem(this);
+  //Add highlight adverse event legend item.
+    if (this.config.highlight)
+        addHighlightLegendItem(this);
 
   //Draw second x-axis at top of chart.
     let x2Axis = svg.axis()
@@ -60,14 +61,8 @@ export default function onResize() {
                 .sort((a,b) => +a[seq_col] < b[seq_col] ? -1 : 1);
 
           //Define listing columns.
-            this.table.config.cols = d3.set(d3.merge(
-                    [Object.keys(context.config.initialSettings)
-                        .filter(di => di.match(/_col(?!s)/) && context.config.initialSettings[di])
-                        .map(di => context.config.initialSettings[di])
-                    ,context.config.detail_cols
-                    ]
-                )).values()
-                    .filter(di => [context.config.id_col].indexOf(di) === -1);
+            this.table.config.cols = d3.set(this.config.details.map(detail => detail.value_col)).values();
+            this.table.config.headers = d3.set(this.config.details.map(detail => detail.label)).values();
             this.table.draw(tableData)
             this.table.wrap.selectAll('th,td')
                 .style(
@@ -99,7 +94,8 @@ export default function onResize() {
           //Sync legend and mark colors.
             syncColors(this);
 
-          //Add serious adverse event legend item.
-            addSeriousLegendItem(this);
+          //Add highlight adverse event legend item.
+            if (this.config.highlight)
+                addHighlightLegendItem(this);
         });
 }
