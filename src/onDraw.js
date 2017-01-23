@@ -3,15 +3,17 @@ import updateSubjectCount
 
 export default function onDraw() {
   //Annotate number of selected participants out of total participants.
-	updateSubjectCount(this, this.config.id_col, '.annote');
+	updateSubjectCount(this, this.config.id_col, '.annote', 'subject ID(s)');
 
   //Sort y-axis based on `Sort IDs` control selection.
     const yAxisSort = this.controls.wrap.selectAll('.control-group')
-        .filter(function(d) {
-            return d.label === 'Sort IDs'; })
-        .selectAll('option:checked')
+        .filter(d => d.option && d.option === 'y.sort')
+        .select('option:checked')
         .text();
+
     if (yAxisSort === 'earliest') {
+      //Redefine filtered data as it defaults to the final mark drawn, which might be filtered in
+      //addition to the current filter selections.
         const filtered_data = this.raw_data
             .filter(d => {
                 let filtered = d[this.config.seq_col] === '';
@@ -23,6 +25,8 @@ export default function onDraw() {
                 });
                 return !filtered;
             });
+
+      //Capture all subject IDs with adverse events with a start day.
         const withStartDay = d3.nest()
             .key(d => d[this.config.id_col])
             .rollup(d => d3.min(d, di => +di[this.config.stdy_col]))
@@ -35,6 +39,8 @@ export default function onDraw() {
                 a.values < b.values ?  2 :
                     a.key > b.key ? -1 : 1)
             .map(d => d.key);
+
+      //Capture all subject IDs with adverse events without a start day.
         const withoutStartDay = d3.set(filtered_data
             .filter(d =>
                 +d[this.config.seq_col] > 0 &&

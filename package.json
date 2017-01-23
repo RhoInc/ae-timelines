@@ -2,16 +2,14 @@
   "name": "ae-timelines",
   "version": "2.0.0",
   "description": "Adverse event timelines for clinical trials",
-  "main": "./build/aeTimeline-chf.js",
+  "main": "./build/aeTimelines.js",
   "scripts": {
-    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimeline.js",
-    "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/aeTimeline-chf.js"
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimelines.js"
   },
   "author": "Rho, Inc.",
   "license": "MIT",
   "dependencies": {
     "d3": "^3.5.14",
-    "react": "^0.14.7",
     "webcharts": "^1.3.2"
   },
   "devDependencies": {
