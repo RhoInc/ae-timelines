@@ -11,14 +11,10 @@
 \------------------------------------------------------------------------------------------------*/
 
 export default function updateSubjectCount(chart, id_col, selector, id_unit) {
-  //count the number of unique ids in the data set
-    const totalObs = d3.set(chart.raw_data
-        .map(d => d[id_col])).values().length;
-
   //count the number of unique ids in the current chart and calculate the percentage
     const filtered_data = chart.raw_data
         .filter(d => {
-            let filtered = d[chart.config.initialSettings.seq_col] === '';
+            let filtered = d[chart.config.seq_col] === '';
             chart.filters
                 .forEach(di => {
                     if (filtered === false && di.val !== 'All')
@@ -31,7 +27,7 @@ export default function updateSubjectCount(chart, id_col, selector, id_unit) {
     const currentObs = d3.set(filtered_data
         .map(d => d[id_col])).values().length;
 
-    const percentage = d3.format('0.1%')(currentObs / totalObs);
+    const percentage = d3.format('0.1%')(currentObs / chart.populationCount);
 
   //clear the annotation
     let annotation = d3.select(selector);
@@ -42,5 +38,5 @@ export default function updateSubjectCount(chart, id_col, selector, id_unit) {
         ? ' ' + id_unit
         : ' participant(s)';
     annotation
-        .text(currentObs + ' of ' + totalObs + units +' shown (' + percentage + ')');
+        .text(currentObs + ' of ' + chart.populationCount + units + ' shown (' + percentage + ')');
 }

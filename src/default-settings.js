@@ -4,19 +4,43 @@ import clone
 const settings =
 
   //Template-specific settings
-    {stdy_col: 'ASTDY'
-    ,endy_col: 'AENDY'
-    ,id_col: 'USUBJID'
+    {id_col: 'USUBJID'
     ,seq_col: 'AESEQ'
-    ,sev_col: 'AESEV'
-    ,sev_vals:
-        ['MILD'
-        ,'MODERATE'
-        ,'SEVERE']
-    ,ser_col: 'AESER'
+    ,stdy_col: 'ASTDY'
+    ,endy_col: 'AENDY'
     ,term_col: 'AETERM'
-    ,filters: []
-    ,detail_cols: []
+
+    ,color:
+        {value_col: 'AESEV'
+        ,label: 'Severity/Intensity'
+        ,values:
+            ['MILD'
+            ,'MODERATE'
+            ,'SEVERE']
+        ,colors:
+            ['#66bd63' // green
+            ,'#fdae61' // sherbet
+            ,'#d73027' // red
+            ,'#377eb8'
+            ,'#984ea3'
+            ,'#ff7f00'
+            ,'#a65628'
+            ,'#f781bf'
+            ,'#999999']}
+
+    ,highlight:
+        {value_col: 'AESER'
+        ,label: 'Serious Event'
+        ,value: 'Y'
+        ,detail_col: null
+        ,attributes:
+            {'stroke': 'black'
+            ,'stroke-width': '2'
+            ,'fill': 'none'}}
+
+    ,filters: null
+    ,details: null
+    ,custom_marks: null
 
   //Standard chart settings
     ,x: {column: 'wc_value'
@@ -42,91 +66,154 @@ const settings =
             ,attributes:
                 {'fill-opacity': .5
                 ,'stroke-opacity': .5}}
-        ,
-            {type: 'line'
-            ,per: null // set in syncSettings()
-            ,values: {} // set in syncSettings()
-            ,tooltip: null // set in syncSettings()
-            ,attributes:
-                {'stroke': 'black'
-                ,'stroke-width': 2}}
-        ,
-            {type: 'circle'
-            ,per: null // set in syncSettings()
-            ,values: {} // set in syncSettings()
-            ,tooltip: null // set in syncSettings()
-            ,attributes:
-                {'class': 'serious'
-                ,'fill': 'none'
-                ,'stroke': 'black'
-                ,'stroke-width': 2}}
         ]
     ,legend:
-        {location: 'top'
-        ,label: 'Severity'}
-    ,color_by: null // set in syncSettings()
-    ,colors:
-        ['#66bd63'
-        ,'#fdae61'
-        ,'#d73027']
-    ,date_format: '%Y-%m-%d'
+        {location: 'top'}
     ,y_behavior: 'flex'
     ,gridlines: 'y'
     ,no_text_size: false
     ,range_band: 15
-    ,margin: {top: 50}
+    ,margin: {top: 50} // for second x-axis
     ,resizable: true
 };
 
 export function syncSettings(preSettings) {
-    const nextSettings = Object.create(preSettings);
-
-    if (!nextSettings.filters || nextSettings.filters.length === 0)
-        nextSettings.filters =
-            [   {value_col: nextSettings.ser_col, label: 'Serious Event'}
-            ,   {value_col: nextSettings.sev_col, label: 'Severity/Intensity'}
-            ,   {value_col: nextSettings.id_col, label: 'Participant ID'}];
+    const nextSettings = clone(preSettings);
 
     nextSettings.y.column = nextSettings.id_col;
 
   //Lines (AE duration)
     nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+    nextSettings.marks[0].tooltip = `Reported Term: [${nextSettings.term_col}]`
         + `\nStart Day: [${nextSettings.stdy_col}]`
         + `\nStop Day: [${nextSettings.endy_col}]`;
 
   //Circles (AE start day)
     nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
+    nextSettings.marks[1].tooltip = `Reported Term: [${nextSettings.term_col}]`
         + `\nStart Day: [${nextSettings.stdy_col}]`
         + `\nStop Day: [${nextSettings.endy_col}]`;
     nextSettings.marks[1].values = {wc_category: [nextSettings.stdy_col]};
 
-  //Lines (SAE duration)
-    nextSettings.marks[2].per = [nextSettings.id_col, nextSettings.seq_col];
-    nextSettings.marks[2].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-    nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
+  //Define highlight marks.
+    if (nextSettings.highlight) {
+      //Lines (highlighted event duration)
+        let highlightLine =
+            {'type': 'line'
+            ,'per': [nextSettings.id_col, nextSettings.seq_col]
+            ,'tooltip': `Reported Term: [${nextSettings.term_col}]`
+                    + `\nStart Day: [${nextSettings.stdy_col}]`
+                    + `\nStop Day: [${nextSettings.endy_col}]`
+                    + `\n${nextSettings.highlight.label}: [${nextSettings.highlight.detail_col
+                        ? nextSettings.highlight.detail_col
+                        : nextSettings.highlight.value_col}]`
+            ,'values': {}
+            ,'attributes': nextSettings.highlight.attributes || {}};
+        highlightLine.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+        highlightLine.attributes.class = 'highlight';
+        nextSettings.marks.push(highlightLine);
 
-  //Circles (SAE start day)
-    nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-    nextSettings.marks[3].values = {wc_category: [nextSettings.stdy_col]};
-    nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
+      //Circles (highlighted event start day)
+        let highlightCircle =
+            {'type': 'circle'
+            ,'per': [nextSettings.id_col, nextSettings.seq_col, 'wc_value']
+            ,'tooltip': `Reported Term: [${nextSettings.term_col}]`
+                    + `\nStart Day: [${nextSettings.stdy_col}]`
+                    + `\nStop Day: [${nextSettings.endy_col}]`
+                    + `\n${nextSettings.highlight.label}: [${nextSettings.highlight.detail_col
+                        ? nextSettings.highlight.detail_col
+                        : nextSettings.highlight.value_col}]`
+            ,'values': {'wc_category': nextSettings.stdy_col}
+            ,'attributes': nextSettings.highlight.attributes || {}};
+        highlightCircle.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+        highlightCircle.attributes.class = 'highlight';
+        nextSettings.marks.push(highlightCircle);
+    }
 
-    nextSettings.legend.order = nextSettings.sev_vals;
+  //Define mark coloring and legend.
+    nextSettings.color_by = nextSettings.color.value_col;
+    nextSettings.colors = nextSettings.color.colors;
+    nextSettings.legend = nextSettings.legend || {location: 'top'};
+    nextSettings.legend.label = nextSettings.color.label;
+    nextSettings.legend.order = nextSettings.color.values;
 
-    nextSettings.color_by = nextSettings.sev_col;
+  //Default filters
+    if (!nextSettings.filters || nextSettings.filters.length === 0) {
+        nextSettings.filters =
+            [   {value_col: nextSettings.color.value_col, label: nextSettings.color.label}
+            ,   {value_col: nextSettings.id_col, label: 'Subject Identifier'}];
+        if (nextSettings.highlight)
+            nextSettings.filters.unshift(
+                {value_col: nextSettings.highlight.value_col, label: nextSettings.highlight.label});
+    }
+
+  //Default detail listing columns
+    const defaultDetails =
+        [   {'value_col': nextSettings.seq_col , label: 'Sequence Number'}
+        ,   {'value_col': nextSettings.stdy_col, label: 'Start Day'}
+        ,   {'value_col': nextSettings.endy_col, label: 'Stop Day'}
+        ,   {'value_col': nextSettings.term_col, label: 'Reported Term'}];
+
+      //Add settings.color.value_col to default details.
+        defaultDetails.push(
+            {'value_col': nextSettings.color.value_col
+            ,'label': nextSettings.color.label});
+
+      //Add settings.highlight.value_col and settings.highlight.detail_col to default details.
+        if (nextSettings.highlight) {
+            defaultDetails.push(
+                {'value_col': nextSettings.highlight.value_col
+                ,'label': nextSettings.highlight.label});
+
+            if (nextSettings.highlight.detail_col)
+                defaultDetails.push(
+                    {'value_col': nextSettings.highlight.detail_col
+                    ,'label': nextSettings.highlight.label + ' Details'});
+        }
+
+      //Add settings.filters columns to default details.
+        nextSettings.filters
+            .forEach(filter => {
+                if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col)
+                    defaultDetails.push(
+                        {'value_col': filter.value_col
+                        ,'label': filter.label});
+            });
+
+  //Redefine settings.details with defaults.
+    if (!nextSettings.details)
+        nextSettings.details = defaultDetails;
+    else {
+      //Allow user to specify an array of columns or an array of objects with a column property
+      //and optionally a column label.
+        nextSettings.details = nextSettings.details
+            .map(d => {
+                return {
+                    value_col: d.value_col ? d.value_col : d,
+                    label: d.label ? d.label : d.value_col ? d.value_col : d}; });
+
+      //Add default details to settings.details.
+        defaultDetails
+            .reverse()
+            .forEach(defaultDetail =>
+                nextSettings.details.unshift(defaultDetail));
+    }
+
+  //Add custom marks to marks array.
+    if (nextSettings.custom_marks)
+        nextSettings.custom_marks
+            .forEach(custom_mark => {
+                custom_mark.attributes = custom_mark.attributes || {};
+                custom_mark.attributes.class = 'custom';
+                nextSettings.marks.push(custom_mark);
+            });
 
     return nextSettings;
 }
 
 export const controlInputs =
     [
-        {type: 'dropdown' , option: 'y.sort', label: 'Sort IDs', values: ['earliest', 'alphabetical-descending'], require: true}
+        {type: 'dropdown' , option: 'y.sort', label: 'Sort Subject IDs', values: ['earliest', 'alphabetical-descending'], require: true}
     ];
 
 export function syncControlInputs(preControlInputs, preSettings) {
@@ -137,56 +224,28 @@ export function syncControlInputs(preControlInputs, preSettings) {
                 ,value_col: d.value_col ? d.value_col : d
                 ,label: d.label ? d.label : d.value_col ? d.value_col : d};
             preControlInputs.unshift(thisFilter);
-            preSettings.detail_cols.push(d.value_col ? d.value_col : d);
         });
   
     return preControlInputs;
 }
 
-//Setting for custom details view
-let cloneSettings = clone(settings);
-    cloneSettings.y.sort = 'alphabetical-descending';
-    cloneSettings.transitions = false;
-    cloneSettings.range_band = settings.range_band*2;
-    cloneSettings.margin = null;
-export const secondSettings = cloneSettings;
-
 export function syncSecondSettings(preSettings) {
-    const nextSettings = Object.create(preSettings);
+    const nextSettings = clone(preSettings);
 
     nextSettings.y.column = nextSettings.seq_col;
+    nextSettings.y.sort = 'alphabetical-descending';
 
-  //Lines (AE duration)
     nextSettings.marks[0].per = [nextSettings.seq_col];
-    nextSettings.marks[0].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-
-  //Circles (AE start day)
     nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[1].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-    nextSettings.marks[1].values = {wc_category: [nextSettings.stdy_col]};
 
-  //Lines (SAE duration)
-    nextSettings.marks[2].per = [nextSettings.seq_col];
-    nextSettings.marks[2].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-    nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
+    if (nextSettings.highlight) {
+        nextSettings.marks[2].per = [nextSettings.seq_col];
+        nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
+    }
 
-  //Circles (SAE start day)
-    nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
-    nextSettings.marks[3].tooltip = `Verbatim Term: [${nextSettings.term_col}]`
-        + `\nStart Day: [${nextSettings.stdy_col}]`
-        + `\nStop Day: [${nextSettings.endy_col}]`;
-    nextSettings.marks[3].values = {wc_category: [nextSettings.stdy_col]};
-    nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
-
-    nextSettings.legend.order = nextSettings.sev_vals;
-
-    nextSettings.color_by = nextSettings.sev_col;
+    nextSettings.range_band = settings.range_band*2;
+    nextSettings.margin = null;
+    nextSettings.transitions = false;
 
     return nextSettings;
 }
