@@ -2,9 +2,9 @@
   "name": "ae-timelines",
   "version": "2.0.0",
   "description": "Adverse event timelines for clinical trials",
-  "main": "./build/aeTimeline.js",
+  "main": "./build/aeTimelines.js",
   "scripts": {
-    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimeline.js"
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/aeTimelines.js"
   },
   "author": "Rho, Inc.",
   "license": "MIT",
