@@ -1,6 +1,125 @@
 var aeTimelines = function (webcharts, d3$1) {
     'use strict';
 
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+        return typeof obj;
+    } : function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+
+    var asyncGenerator = function () {
+        function AwaitValue(value) {
+            this.value = value;
+        }
+
+        function AsyncGenerator(gen) {
+            var front, back;
+
+            function send(key, arg) {
+                return new Promise(function (resolve, reject) {
+                    var request = {
+                        key: key,
+                        arg: arg,
+                        resolve: resolve,
+                        reject: reject,
+                        next: null
+                    };
+
+                    if (back) {
+                        back = back.next = request;
+                    } else {
+                        front = back = request;
+                        resume(key, arg);
+                    }
+                });
+            }
+
+            function resume(key, arg) {
+                try {
+                    var result = gen[key](arg);
+                    var value = result.value;
+
+                    if (value instanceof AwaitValue) {
+                        Promise.resolve(value.value).then(function (arg) {
+                            resume("next", arg);
+                        }, function (arg) {
+                            resume("throw", arg);
+                        });
+                    } else {
+                        settle(result.done ? "return" : "normal", result.value);
+                    }
+                } catch (err) {
+                    settle("throw", err);
+                }
+            }
+
+            function settle(type, value) {
+                switch (type) {
+                    case "return":
+                        front.resolve({
+                            value: value,
+                            done: true
+                        });
+                        break;
+
+                    case "throw":
+                        front.reject(value);
+                        break;
+
+                    default:
+                        front.resolve({
+                            value: value,
+                            done: false
+                        });
+                        break;
+                }
+
+                front = front.next;
+
+                if (front) {
+                    resume(front.key, front.arg);
+                } else {
+                    back = null;
+                }
+            }
+
+            this._invoke = send;
+
+            if (typeof gen.return !== "function") {
+                this.return = undefined;
+            }
+        }
+
+        if (typeof Symbol === "function" && Symbol.asyncIterator) {
+            AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+                return this;
+            };
+        }
+
+        AsyncGenerator.prototype.next = function (arg) {
+            return this._invoke("next", arg);
+        };
+
+        AsyncGenerator.prototype.throw = function (arg) {
+            return this._invoke("throw", arg);
+        };
+
+        AsyncGenerator.prototype.return = function (arg) {
+            return this._invoke("return", arg);
+        };
+
+        return {
+            wrap: function (fn) {
+                return function () {
+                    return new AsyncGenerator(fn.apply(this, arguments));
+                };
+            },
+            await: function (value) {
+                return new AwaitValue(value);
+            }
+        };
+    }();
+
     /*------------------------------------------------------------------------------------------------\
       Clone a variable (http://stackoverflow.com/a/728694).
     \------------------------------------------------------------------------------------------------*/
@@ -9,7 +128,7 @@ var aeTimelines = function (webcharts, d3$1) {
         var copy;
 
         //Handle the 3 simple types, and null or undefined
-        if (null == obj || "object" != typeof obj) return obj;
+        if (null == obj || "object" != (typeof obj === "undefined" ? "undefined" : _typeof(obj))) return obj;
 
         //Handle Date
         if (obj instanceof Date) {
@@ -39,7 +158,7 @@ var aeTimelines = function (webcharts, d3$1) {
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    const settings =
+    var settings =
 
     //Template-specific settings
     { stdy_col: 'ASTDY',
@@ -97,7 +216,7 @@ var aeTimelines = function (webcharts, d3$1) {
     };
 
     function syncSettings(preSettings) {
-        const nextSettings = Object.create(preSettings);
+        var nextSettings = Object.create(preSettings);
 
         if (!nextSettings.filters || nextSettings.filters.length === 0) nextSettings.filters = [{ value_col: nextSettings.ser_col, label: 'Serious Event' }, { value_col: nextSettings.sev_col, label: 'Severity/Intensity' }, { value_col: nextSettings.id_col, label: 'Participant ID' }];
 
@@ -105,21 +224,21 @@ var aeTimelines = function (webcharts, d3$1) {
 
         //Lines (AE duration)
         nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[0].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[0].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
 
         //Circles (AE start day)
         nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[1].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
         //Lines (SAE duration)
         nextSettings.marks[2].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[2].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[2].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
         //Circles (SAE start day)
         nextSettings.marks[3].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[3].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[3].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[3].values = { wc_category: [nextSettings.stdy_col] };
         nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
@@ -130,11 +249,11 @@ var aeTimelines = function (webcharts, d3$1) {
         return nextSettings;
     }
 
-    const controlInputs = [{ type: 'dropdown', option: 'y.sort', label: 'Sort IDs', values: ['earliest', 'alphabetical-descending'], require: true }];
+    var controlInputs = [{ type: 'dropdown', option: 'y.sort', label: 'Sort IDs', values: ['earliest', 'alphabetical-descending'], require: true }];
 
     function syncControlInputs(preControlInputs, preSettings) {
-        preSettings.filters.reverse().forEach((d, i) => {
-            const thisFilter = { type: 'subsetter',
+        preSettings.filters.reverse().forEach(function (d, i) {
+            var thisFilter = { type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d };
             preControlInputs.unshift(thisFilter);
@@ -145,35 +264,35 @@ var aeTimelines = function (webcharts, d3$1) {
     }
 
     //Setting for custom details view
-    let cloneSettings = clone(settings);
+    var cloneSettings = clone(settings);
     cloneSettings.y.sort = 'alphabetical-descending';
     cloneSettings.transitions = false;
     cloneSettings.range_band = settings.range_band * 2;
     cloneSettings.margin = null;
-    const secondSettings = cloneSettings;
+    var secondSettings = cloneSettings;
 
     function syncSecondSettings(preSettings) {
-        const nextSettings = Object.create(preSettings);
+        var nextSettings = Object.create(preSettings);
 
         nextSettings.y.column = nextSettings.seq_col;
 
         //Lines (AE duration)
         nextSettings.marks[0].per = [nextSettings.seq_col];
-        nextSettings.marks[0].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[0].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
 
         //Circles (AE start day)
         nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[1].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
         //Lines (SAE duration)
         nextSettings.marks[2].per = [nextSettings.seq_col];
-        nextSettings.marks[2].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[2].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[2].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
         //Circles (SAE start day)
         nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[3].tooltip = `Verbatim Term: [${ nextSettings.term_col }]` + `\nStart Day: [${ nextSettings.stdy_col }]` + `\nStop Day: [${ nextSettings.endy_col }]`;
+        nextSettings.marks[3].tooltip = 'Verbatim Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[3].values = { wc_category: [nextSettings.stdy_col] };
         nextSettings.marks[3].values[nextSettings.ser_col] = ['Yes', 'Y'];
 
@@ -189,11 +308,11 @@ var aeTimelines = function (webcharts, d3$1) {
     \------------------------------------------------------------------------------------------------*/
 
     function lengthenRaw(data, columns) {
-        let my_data = [];
+        var my_data = [];
 
-        data.forEach(d => {
-            columns.forEach(column => {
-                let obj = Object.assign({}, d);
+        data.forEach(function (d) {
+            columns.forEach(function (column) {
+                var obj = Object.assign({}, d);
                 obj.wc_category = column;
                 obj.wc_value = d[column];
                 my_data.push(obj);
@@ -204,23 +323,25 @@ var aeTimelines = function (webcharts, d3$1) {
     }
 
     function onInit() {
+        var _this = this;
+
         //Raw data manipulation
         this.superRaw = this.raw_data;
-        this.superRaw.forEach(d => {});
+        this.superRaw.forEach(function (d) {});
 
         //Derived data manipulation
         this.raw_data = lengthenRaw(this.raw_data, [this.config.stdy_col, this.config.endy_col]);
-        this.raw_data.forEach(d => {
+        this.raw_data.forEach(function (d) {
             d.wc_value = d.wc_value ? +d.wc_value : NaN;
         });
 
         //Create div for back button and participant ID title.
-        this.chart2.wrap.insert('div', ':first-child').attr('id', 'backButton').insert('button', '.legend').html('&#8592; Back').style('cursor', 'pointer').on('click', () => {
-            this.wrap.style('display', 'block');
-            this.table.draw([]);
-            this.chart2.wrap.style('display', 'none');
-            this.chart2.wrap.select('.id-title').remove();
-            this.controls.wrap.style('display', 'block');
+        this.chart2.wrap.insert('div', ':first-child').attr('id', 'backButton').insert('button', '.legend').html('&#8592; Back').style('cursor', 'pointer').on('click', function () {
+            _this.wrap.style('display', 'block');
+            _this.table.draw([]);
+            _this.chart2.wrap.style('display', 'none');
+            _this.chart2.wrap.select('.id-title').remove();
+            _this.controls.wrap.style('display', 'block');
         });
     }
 
@@ -240,8 +361,8 @@ var aeTimelines = function (webcharts, d3$1) {
     /*------------------------------------------------------------------------------------------------\
       Annotate number of participants based on current filters, number of participants in all, and
       the corresponding percentage.
-       Inputs:
-         chart - a webcharts chart object
+        Inputs:
+          chart - a webcharts chart object
         id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
         id_unit - a text string to label the units in the annotation (default = 'participants')
         selector - css selector for the annotation
@@ -249,48 +370,72 @@ var aeTimelines = function (webcharts, d3$1) {
 
     function updateSubjectCount(chart, id_col, selector, id_unit) {
         //count the number of unique ids in the data set
-        const totalObs = d3.set(chart.raw_data.map(d => d[id_col])).values().length;
+        var totalObs = d3.set(chart.raw_data.map(function (d) {
+            return d[id_col];
+        })).values().length;
 
         //count the number of unique ids in the current chart and calculate the percentage
-        const filtered_data = chart.raw_data.filter(d => {
-            let filtered = d[chart.config.initialSettings.seq_col] === '';
-            chart.filters.forEach(di => {
+        var filtered_data = chart.raw_data.filter(function (d) {
+            var filtered = d[chart.config.initialSettings.seq_col] === '';
+            chart.filters.forEach(function (di) {
                 if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
             });
             return !filtered;
         });
-        const currentObs = d3.set(filtered_data.map(d => d[id_col])).values().length;
+        var currentObs = d3.set(filtered_data.map(function (d) {
+            return d[id_col];
+        })).values().length;
 
-        const percentage = d3.format('0.1%')(currentObs / totalObs);
+        var percentage = d3.format('0.1%')(currentObs / totalObs);
 
         //clear the annotation
-        let annotation = d3.select(selector);
+        var annotation = d3.select(selector);
         annotation.selectAll('*').remove();
 
         //update the annotation
-        const units = id_unit ? ' ' + id_unit : ' participant(s)';
+        var units = id_unit ? ' ' + id_unit : ' participant(s)';
         annotation.text(currentObs + ' of ' + totalObs + units + ' shown (' + percentage + ')');
     }
 
     function onDraw() {
+        var _this = this;
+
         //Annotate number of selected participants out of total participants.
         updateSubjectCount(this, this.config.id_col, '.annote');
 
         //Sort y-axis based on `Sort IDs` control selection.
-        const yAxisSort = this.controls.wrap.selectAll('.control-group').filter(function (d) {
+        var yAxisSort = this.controls.wrap.selectAll('.control-group').filter(function (d) {
             return d.label === 'Sort IDs';
         }).selectAll('option:checked').text();
         if (yAxisSort === 'earliest') {
-            const filtered_data = this.raw_data.filter(d => {
-                let filtered = d[this.config.seq_col] === '';
-                this.filters.forEach(di => {
-                    if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
+            (function () {
+                var filtered_data = _this.raw_data.filter(function (d) {
+                    var filtered = d[_this.config.seq_col] === '';
+                    _this.filters.forEach(function (di) {
+                        if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
+                    });
+                    return !filtered;
                 });
-                return !filtered;
-            });
-            const withStartDay = d3.nest().key(d => d[this.config.id_col]).rollup(d => d3.min(d, di => +di[this.config.stdy_col])).entries(filtered_data.filter(d => !isNaN(parseFloat(d[this.config.stdy_col])) && isFinite(d[this.config.stdy_col]))).sort((a, b) => a.values > b.values ? -2 : a.values < b.values ? 2 : a.key > b.key ? -1 : 1).map(d => d.key);
-            const withoutStartDay = d3.set(filtered_data.filter(d => +d[this.config.seq_col] > 0 && (isNaN(parseFloat(d[this.config.stdy_col])) || !isFinite(d[this.config.stdy_col])) && withStartDay.indexOf(d[this.config.id_col]) === -1).map(d => d[this.config.id_col])).values();
-            this.y_dom = withStartDay.concat(withoutStartDay);
+                var withStartDay = d3.nest().key(function (d) {
+                    return d[_this.config.id_col];
+                }).rollup(function (d) {
+                    return d3.min(d, function (di) {
+                        return +di[_this.config.stdy_col];
+                    });
+                }).entries(filtered_data.filter(function (d) {
+                    return !isNaN(parseFloat(d[_this.config.stdy_col])) && isFinite(d[_this.config.stdy_col]);
+                })).sort(function (a, b) {
+                    return a.values > b.values ? -2 : a.values < b.values ? 2 : a.key > b.key ? -1 : 1;
+                }).map(function (d) {
+                    return d.key;
+                });
+                var withoutStartDay = d3.set(filtered_data.filter(function (d) {
+                    return +d[_this.config.seq_col] > 0 && (isNaN(parseFloat(d[_this.config.stdy_col])) || !isFinite(d[_this.config.stdy_col])) && withStartDay.indexOf(d[_this.config.id_col]) === -1;
+                }).map(function (d) {
+                    return d[_this.config.id_col];
+                })).values();
+                _this.y_dom = withStartDay.concat(withoutStartDay);
+            })();
         } else this.y_dom = this.y_dom.sort(d3.descending);
     }
 
@@ -300,23 +445,23 @@ var aeTimelines = function (webcharts, d3$1) {
 
     function syncColors(chart) {
         //Recolor legend.
-        let legendItems = chart.wrap.selectAll('.legend-item');
+        var legendItems = chart.wrap.selectAll('.legend-item');
         legendItems.each(function (d, i) {
             d3.select(this).select('.legend-mark').style('stroke', chart.config.colors[chart.config.sev_vals.indexOf(d.label)]).style('stroke-width', '25%');
         });
 
         //Recolor circles.
-        let circles = chart.svg.selectAll('circle.wc-data-mark:not(.serious)');
+        var circles = chart.svg.selectAll('circle.wc-data-mark:not(.serious)');
         circles.each(function (d, i) {
-            const sev_val = d.values.raw[0][chart.config.initialSettings.sev_col];
+            var sev_val = d.values.raw[0][chart.config.initialSettings.sev_col];
             d3.select(this).style('stroke', chart.config.colors[chart.config.sev_vals.indexOf(sev_val)]);
             d3.select(this).style('fill', chart.config.colors[chart.config.sev_vals.indexOf(sev_val)]);
         });
 
         //Recolor lines.
-        let lines = chart.svg.selectAll('path.wc-data-mark:not(.serious)');
+        var lines = chart.svg.selectAll('path.wc-data-mark:not(.serious)');
         lines.each(function (d, i) {
-            const sev_val = d.values[0].values.raw[0][chart.config.initialSettings.sev_col];
+            var sev_val = d.values[0].values.raw[0][chart.config.initialSettings.sev_col];
             d3.select(this).style('stroke', chart.config.colors[chart.config.sev_vals.indexOf(sev_val)]);
         });
     }
@@ -327,10 +472,10 @@ var aeTimelines = function (webcharts, d3$1) {
 
     function addSeriousLegendItem(chart) {
         chart.wrap.select('.legend li.serious').remove();
-        let seriousLegendItem = chart.wrap.select('.legend').append('li').attr('class', 'serious').style({ 'list-style-type': 'none',
+        var seriousLegendItem = chart.wrap.select('.legend').append('li').attr('class', 'serious').style({ 'list-style-type': 'none',
             'margin-right': '1em',
             'display': 'inline-block' });
-        let seriousLegendColorBlock = seriousLegendItem.append('svg').attr({ width: '1.75em',
+        var seriousLegendColorBlock = seriousLegendItem.append('svg').attr({ width: '1.75em',
             height: '1.5em' }).style({ 'position': 'relative',
             'top': '0.35em' });
         seriousLegendColorBlock.append('circle').attr({ cx: 10,
@@ -348,7 +493,9 @@ var aeTimelines = function (webcharts, d3$1) {
     }
 
     function onResize() {
-        let context = this;
+        var _this = this;
+
+        var context = this;
 
         //Sync legend and mark colors.
         syncColors(this);
@@ -357,8 +504,8 @@ var aeTimelines = function (webcharts, d3$1) {
         addSeriousLegendItem(this);
 
         //Draw second x-axis at top of chart.
-        let x2Axis = d3$1.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
-        let g_x2_axis = this.svg.select('g.x2.axis').attr('class', 'x2 axis linear');
+        var x2Axis = d3$1.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
+        var g_x2_axis = this.svg.select('g.x2.axis').attr('class', 'x2 axis linear');
         g_x2_axis.call(x2Axis);
         g_x2_axis.select('text.axis-title.top').attr('transform', 'translate(' + this.raw_width / 2 + ',-' + this.config.margin.top + ')');
         g_x2_axis.select('.domain').attr({ 'fill': 'none',
@@ -367,25 +514,37 @@ var aeTimelines = function (webcharts, d3$1) {
         g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
 
         //Draw second chart when y-axis tick label is clicked.
-        this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', d => {
-            let csv2 = this.raw_data.filter(di => di[this.config.id_col] === d);
-            this.chart2.wrap.style('display', 'block');
-            this.chart2.draw(csv2);
-            this.chart2.wrap.select('#backButton').append('strong').attr('class', 'id-title').style('margin-left', '1%').text('Participant: ' + d);
+        this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
+            var csv2 = _this.raw_data.filter(function (di) {
+                return di[_this.config.id_col] === d;
+            });
+            _this.chart2.wrap.style('display', 'block');
+            _this.chart2.draw(csv2);
+            _this.chart2.wrap.select('#backButton').append('strong').attr('class', 'id-title').style('margin-left', '1%').text('Participant: ' + d);
 
             //Sort listing by sequence.
-            const seq_col = context.config.initialSettings.seq_col;
-            let tableData = this.superRaw.filter(di => di[this.config.id_col] === d).sort((a, b) => +a[seq_col] < b[seq_col] ? -1 : 1);
+            var seq_col = context.config.initialSettings.seq_col;
+            var tableData = _this.superRaw.filter(function (di) {
+                return di[_this.config.id_col] === d;
+            }).sort(function (a, b) {
+                return +a[seq_col] < b[seq_col] ? -1 : 1;
+            });
 
             //Define listing columns.
-            this.table.config.cols = d3.set(d3.merge([Object.keys(context.config.initialSettings).filter(di => di.match(/_col(?!s)/) && context.config.initialSettings[di]).map(di => context.config.initialSettings[di]), context.config.detail_cols])).values().filter(di => [context.config.id_col].indexOf(di) === -1);
-            this.table.draw(tableData);
-            this.table.wrap.selectAll('th,td').style({ 'text-align': 'left',
+            _this.table.config.cols = d3.set(d3.merge([Object.keys(context.config.initialSettings).filter(function (di) {
+                return di.match(/_col(?!s)/) && context.config.initialSettings[di];
+            }).map(function (di) {
+                return context.config.initialSettings[di];
+            }), context.config.detail_cols])).values().filter(function (di) {
+                return [context.config.id_col].indexOf(di) === -1;
+            });
+            _this.table.draw(tableData);
+            _this.table.wrap.selectAll('th,td').style({ 'text-align': 'left',
                 'padding-right': '10px' });
 
             //Hide timelines.
-            this.wrap.style('display', 'none');
-            this.controls.wrap.style('display', 'none');
+            _this.wrap.style('display', 'none');
+            _this.controls.wrap.style('display', 'none');
         });
 
         /**-------------------------------------------------------------------------------------------\
@@ -442,25 +601,25 @@ var aeTimelines = function (webcharts, d3$1) {
 
     function aeTimeline(element, settings$$) {
         //Merge default settings with custom settings.
-        const mergedSettings = Object.assign({}, settings, settings$$);
+        var mergedSettings = Object.assign({}, settings, settings$$);
 
         //Sync properties within settings object.
-        const syncedSettings = syncSettings(mergedSettings);
+        var syncedSettings = syncSettings(mergedSettings);
 
         //Sync control inputs with settings object.
-        const syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
+        var syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
 
         //Merge default secondary settings with custom settings.
-        const mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
+        var mergedSecondSettings = Object.assign({}, secondSettings, settings$$);
 
         //Sync properties within secondary settings object.
-        const syncedSecondSettings = syncSecondSettings(mergedSecondSettings);
+        var syncedSecondSettings = syncSecondSettings(mergedSecondSettings);
 
         //Create controls.
-        const controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+        var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
 
         //Create chart.
-        const chart = webcharts.createChart(element, syncedSettings, controls);
+        var chart = webcharts.createChart(element, syncedSettings, controls);
         chart.config.initialSettings = mergedSettings;
         chart.on('init', onInit);
         chart.on('layout', onLayout);
@@ -469,13 +628,13 @@ var aeTimelines = function (webcharts, d3$1) {
         chart.on('resize', onResize);
 
         //Create participant-level chart.
-        const chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
+        var chart2 = webcharts.createChart(element, mergedSecondSettings).init([]);
         chart2.config.initialSettings = mergedSecondSettings;
         chart2.wrap.style('display', 'none');
         chart.chart2 = chart2;
 
         //Create participant-level listing.
-        const table = webcharts.createTable(element, {}).init([]);
+        var table = webcharts.createTable(element, {}).init([]);
         chart.table = table;
 
         return chart;
