@@ -1,8 +1,6 @@
-import clone
-    from './util/clone';
+import clone from './util/clone';
 
-const settings =
-
+export default
   //Template-specific settings
     {id_col: 'USUBJID'
     ,seq_col: 'AESEQ'
@@ -243,11 +241,9 @@ export function syncSecondSettings(preSettings) {
         nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
     }
 
-    nextSettings.range_band = settings.range_band*2;
+    nextSettings.range_band = preSettings.range_band*2;
     nextSettings.margin = null;
     nextSettings.transitions = false;
 
     return nextSettings;
 }
-
-export default settings;

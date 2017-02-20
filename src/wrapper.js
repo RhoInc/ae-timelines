@@ -1,24 +1,20 @@
-import { createChart, createControls, createTable }
-    from 'webcharts';
-import config
-    from './default-settings'
-import { syncSettings, controlInputs, syncControlInputs, syncSecondSettings }
-    from './default-settings'
-import onInit
-    from './onInit';
-import onLayout
-    from './onLayout';
-import onDataTransform
-    from './onDataTransform';
-import onDraw
-    from './onDraw';
-import onResize
-    from './onResize';
 import './util/object-assign';
 
-export default function aeTimeline(element, settings) {
+import defaultSettings, { syncSettings, controlInputs, syncControlInputs, syncSecondSettings }
+    from './defaultSettings'
+
+import { createChart, createControls, createTable }
+    from 'webcharts';
+
+import onInit from './onInit';
+import onLayout from './onLayout';
+import onDataTransform from './onDataTransform';
+import onDraw from './onDraw';
+import onResize from './onResize';
+
+export default function aeTimelines(element, settings) {
   //Merge default settings with custom settings.
-    const mergedSettings = Object.assign({}, config, settings);
+    const mergedSettings = Object.assign({}, defaultSettings, settings);
 
   //Sync properties within settings object.
     const syncedSettings = syncSettings(mergedSettings);

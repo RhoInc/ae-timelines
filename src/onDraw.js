@@ -1,9 +1,8 @@
-import updateSubjectCount
-    from './util/update-subject-count';
+import updateSubjectCount from './util/updateSubjectCount';
 
 export default function onDraw() {
   //Annotate number of selected participants out of total participants.
-	updateSubjectCount(this, this.config.id_col, '.annote', 'subject ID(s)');
+	updateSubjectCount(this, '.annote', 'subject ID(s)');
 
   //Sort y-axis based on `Sort IDs` control selection.
     const yAxisSort = this.controls.wrap.selectAll('.control-group')

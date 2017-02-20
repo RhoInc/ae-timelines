@@ -1,9 +1,7 @@
 import { select, svg }
     from 'd3';
-import syncColors
-    from './util/sync-colors';
-import addHighlightLegendItem
-    from './util/add-highlight-legend-item';
+import syncColors from './util/syncColors';
+import addHighlightLegendItem from './util/addHighlightLegendItem';
 
 export default function onResize() {
     let context = this;

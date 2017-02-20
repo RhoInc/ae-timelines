@@ -1,4 +1,5 @@
-import babel from "rollup-plugin-babel";
+import babel
+    from "rollup-plugin-babel";
 
 module.exports = {
   moduleName: 'aeTimelines',

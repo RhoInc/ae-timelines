@@ -1,5 +1,4 @@
-import lengthenRaw
-    from './util/lengthen-raw';
+import lengthenRaw from './util/lengthenRaw';
 
 export default function onInit() {
   //Count total number of IDs for population count.

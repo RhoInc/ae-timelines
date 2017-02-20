@@ -1,6 +1,35 @@
 var aeTimelines = function (webcharts, d3$1) {
     'use strict';
 
+    /*------------------------------------------------------------------------------------------------\
+      Add assign method to Object if nonexistent.
+    \------------------------------------------------------------------------------------------------*/
+
+    if (typeof Object.assign != 'function') {
+        (function () {
+            Object.assign = function (target) {
+                'use strict';
+
+                if (target === undefined || target === null) {
+                    throw new TypeError('Cannot convert undefined or null to object');
+                }
+
+                var output = Object(target);
+                for (var index = 1; index < arguments.length; index++) {
+                    var source = arguments[index];
+                    if (source !== undefined && source !== null) {
+                        for (var nextKey in source) {
+                            if (source.hasOwnProperty(nextKey)) {
+                                output[nextKey] = source[nextKey];
+                            }
+                        }
+                    }
+                }
+                return output;
+            };
+        })();
+    }
+
     var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
     } : function (obj) {
@@ -158,10 +187,7 @@ var aeTimelines = function (webcharts, d3$1) {
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    var settings =
-
-    //Template-specific settings
-    { id_col: 'USUBJID',
+    var defaultSettings = { id_col: 'USUBJID',
         seq_col: 'AESEQ',
         stdy_col: 'ASTDY',
         endy_col: 'AENDY',
@@ -339,7 +365,7 @@ var aeTimelines = function (webcharts, d3$1) {
             nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
         }
 
-        nextSettings.range_band = settings.range_band * 2;
+        nextSettings.range_band = preSettings.range_band * 2;
         nextSettings.margin = null;
         nextSettings.transitions = false;
 
@@ -430,12 +456,11 @@ var aeTimelines = function (webcharts, d3$1) {
       the corresponding percentage.
         Inputs:
           chart - a webcharts chart object
-        id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
         id_unit - a text string to label the units in the annotation (default = 'participants')
         selector - css selector for the annotation
     \------------------------------------------------------------------------------------------------*/
 
-    function updateSubjectCount(chart, id_col, selector, id_unit) {
+    function updateSubjectCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
         var filtered_data = chart.raw_data.filter(function (d) {
             var filtered = d[chart.config.seq_col] === '';
@@ -445,7 +470,7 @@ var aeTimelines = function (webcharts, d3$1) {
             return !filtered;
         });
         var currentObs = d3.set(filtered_data.map(function (d) {
-            return d[id_col];
+            return d[chart.config.id_col];
         })).values().length;
 
         var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
@@ -463,7 +488,7 @@ var aeTimelines = function (webcharts, d3$1) {
         var _this = this;
 
         //Annotate number of selected participants out of total participants.
-        updateSubjectCount(this, this.config.id_col, '.annote', 'subject ID(s)');
+        updateSubjectCount(this, '.annote', 'subject ID(s)');
 
         //Sort y-axis based on `Sort IDs` control selection.
         var yAxisSort = this.controls.wrap.selectAll('.control-group').filter(function (d) {
@@ -634,38 +659,9 @@ var aeTimelines = function (webcharts, d3$1) {
         });
     }
 
-    /*------------------------------------------------------------------------------------------------\
-      Add assign method to Object if nonexistent.
-    \------------------------------------------------------------------------------------------------*/
-
-    if (typeof Object.assign != 'function') {
-        (function () {
-            Object.assign = function (target) {
-                'use strict';
-
-                if (target === undefined || target === null) {
-                    throw new TypeError('Cannot convert undefined or null to object');
-                }
-
-                var output = Object(target);
-                for (var index = 1; index < arguments.length; index++) {
-                    var source = arguments[index];
-                    if (source !== undefined && source !== null) {
-                        for (var nextKey in source) {
-                            if (source.hasOwnProperty(nextKey)) {
-                                output[nextKey] = source[nextKey];
-                            }
-                        }
-                    }
-                }
-                return output;
-            };
-        })();
-    }
-
-    function aeTimeline(element, settings$$) {
+    function aeTimelines(element, settings) {
         //Merge default settings with custom settings.
-        var mergedSettings = Object.assign({}, settings, settings$$);
+        var mergedSettings = Object.assign({}, defaultSettings, settings);
 
         //Sync properties within settings object.
         var syncedSettings = syncSettings(mergedSettings);
@@ -699,6 +695,6 @@ var aeTimelines = function (webcharts, d3$1) {
         return chart;
     }
 
-    return aeTimeline;
+    return aeTimelines;
 }(webCharts, d3);
 
