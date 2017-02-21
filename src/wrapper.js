@@ -1,46 +1,49 @@
-import { createChart, createControls, createTable } from 'webcharts';
-import { syncSettings, controlInputs, syncControlInputs, secondSettings, syncSecondSettings} from './default-settings'
-import config from './default-settings';
+import './util/object-assign';
+
+import defaultSettings, { syncSettings, controlInputs, syncControlInputs, syncSecondSettings }
+    from './defaultSettings'
+
+import { createChart, createControls, createTable }
+    from 'webcharts';
+
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDataTransform from './onDataTransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
-import './util/object-assign';
 
-export default function aeTimeline(element, settings){
-	//merge user's settings with defaults
-	const initialSettings = Object.assign({}, config, settings);
-// console.log(settings)
-// console.log(Object.create(settings))
-// debugger;
-	//keep settings in sync with the data mappings
-	const mergedSettings = syncSettings(initialSettings);
+export default function aeTimelines(element, settings) {
+  //Merge default settings with custom settings.
+    const mergedSettings = Object.assign({}, defaultSettings, settings);
 
-	//keep settings for secondary chart in sync
-	const initialMergedSecondSettings = Object.assign({}, secondSettings, Object.create(settings));
-	const mergedSecondSettings = syncSecondSettings(initialMergedSecondSettings, mergedSettings);
+  //Sync properties within settings object.
+    const syncedSettings = syncSettings(mergedSettings);
 
-	//keep control inputs settings in sync
-	const syncedControlInputs = syncControlInputs(controlInputs, Object.create(mergedSettings));
+  //Sync control inputs with settings object.
+    const syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
 
-	//create controls now
-	const controls = createControls(element, {location: 'top', inputs: syncedControlInputs});
-	
-	//create chart
-	const chart = createChart(element, mergedSettings, controls);
-	chart.on('init', onInit);
-	chart.on('layout', onLayout);
-	chart.on('datatransform', onDataTransform);
-	chart.on('draw', onDraw);
-	chart.on('resize', onResize);
+  //Sync properties within secondary settings object.
+    const syncedSecondSettings = syncSecondSettings(syncedSettings);
 
-	//set up secondary chart and table
-	const chart2 = createChart(element, mergedSecondSettings).init([]);
-	chart2.wrap.style('display', 'none');
-	chart.chart2 = chart2;
-	const table = createTable(element, {}).init([]);
-	chart.table = table;
+  //Create controls.
+    const controls = createControls(element, {location: 'top', inputs: syncedControlInputs});
 
-	return chart;
+  //Create chart.
+    const chart = createChart(element, syncedSettings, controls);
+    chart.on('init', onInit);
+    chart.on('layout', onLayout);
+    chart.on('datatransform', onDataTransform);
+    chart.on('draw', onDraw);
+    chart.on('resize', onResize);
+
+  //Create participant-level chart.
+    const chart2 = createChart(element, syncedSecondSettings).init([]);
+    chart2.wrap.style('display', 'none');
+    chart.chart2 = chart2;
+
+  //Create participant-level listing.
+    const table = createTable(element, {}).init([]);
+    chart.table = table;
+
+    return chart;
 }
