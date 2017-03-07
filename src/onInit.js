@@ -1,6 +1,8 @@
 import lengthenRaw from './util/lengthenRaw';
 
 export default function onInit() {
+    console.log(this)
+
   //Count total number of IDs for population count.
     this.populationCount = d3.set(
             this.raw_data
@@ -37,6 +39,23 @@ export default function onInit() {
             ? +d.wc_value
             : NaN;
     });
+
+  // Remove filters for variables with 0 or 1 levels
+  var chart = this;
+  console.log(chart)
+
+  this.controls.config.inputs = this.controls.config.inputs
+  .filter(function(d){
+    if(d.type!="subsetter"){
+        return true
+    } else {
+        var levels = d3.set(chart.raw_data.map(f=>f[d.value_col])).values()
+        if(levels.length < 2 ){
+            console.warn(d.value_col + " filter not shown since the variable has less than 2 levels")
+        }
+        return levels.length >=2    
+    }
+  })
 
   //Create div for back button and participant ID title.
     this.chart2.wrap.insert('div', ':first-child')
