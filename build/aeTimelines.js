@@ -394,8 +394,6 @@ var aeTimelines = function (webcharts, d3$1) {
     function onInit() {
         var _this = this;
 
-        console.log(this);
-
         //Count total number of IDs for population count.
         this.populationCount = d3.set(this.raw_data.map(function (d) {
             return d[_this.config.id_col];
@@ -432,7 +430,6 @@ var aeTimelines = function (webcharts, d3$1) {
 
         // Remove filters for variables with 0 or 1 levels
         var chart = this;
-        console.log(chart);
 
         this.controls.config.inputs = this.controls.config.inputs.filter(function (d) {
             if (d.type != "subsetter") {

@@ -1,7 +1,6 @@
 import lengthenRaw from './util/lengthenRaw';
 
 export default function onInit() {
-    console.log(this)
 
   //Count total number of IDs for population count.
     this.populationCount = d3.set(
@@ -42,7 +41,6 @@ export default function onInit() {
 
   // Remove filters for variables with 0 or 1 levels
   var chart = this;
-  console.log(chart)
 
   this.controls.config.inputs = this.controls.config.inputs
   .filter(function(d){
