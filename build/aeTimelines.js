@@ -428,6 +428,23 @@ var aeTimelines = function (webcharts, d3$1) {
             d.wc_value = d.wc_value ? +d.wc_value : NaN;
         });
 
+        // Remove filters for variables with 0 or 1 levels
+        var chart = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function (d) {
+            if (d.type != "subsetter") {
+                return true;
+            } else {
+                var levels = d3.set(chart.raw_data.map(function (f) {
+                    return f[d.value_col];
+                })).values();
+                if (levels.length < 2) {
+                    console.warn(d.value_col + " filter not shown since the variable has less than 2 levels");
+                }
+                return levels.length >= 2;
+            }
+        });
+
         //Create div for back button and participant ID title.
         this.chart2.wrap.insert('div', ':first-child').attr('id', 'backButton').insert('button', '.legend').html('&#8592; Back').style('cursor', 'pointer').on('click', function () {
             _this.wrap.style('display', 'block');
@@ -454,8 +471,8 @@ var aeTimelines = function (webcharts, d3$1) {
     /*------------------------------------------------------------------------------------------------\
       Annotate number of participants based on current filters, number of participants in all, and
       the corresponding percentage.
-        Inputs:
-          chart - a webcharts chart object
+       Inputs:
+         chart - a webcharts chart object
         id_unit - a text string to label the units in the annotation (default = 'participants')
         selector - css selector for the annotation
     \------------------------------------------------------------------------------------------------*/
