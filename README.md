@@ -1,4 +1,3 @@
 # Adverse Event Timelines for Clinical Trials
-The ae-timelines library creates interactive timelines showing when participants had Adverse Events in Clinical trials. The library is build using [Webcharts](https://github.com/RhoInc/Webcharts) and [D3](https://www.d3js.org). 
 
-See the [wiki](https://github.com/RhoInc/ae-timelines/wiki) for more details.
+![alt tag](https://user-images.githubusercontent.com/31038805/31092946-129c8044-a77e-11e7-9f2f-4ba855684cdf.gif)
