@@ -53,7 +53,6 @@ The chart can be configured to facilitate non-standard data formats and to alter
 
 ```
 
-Click [here](https://rhoinc.github.io/viz-library/examples/0008-safetyExplorer-default/ae-timelines/) to open an interactive example of the AE Timelines.
 
 ## Links
 
