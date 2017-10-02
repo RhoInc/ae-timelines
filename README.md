@@ -54,8 +54,6 @@ The chart can be configured to facilitate non-standard data formats and to alter
 
 ## Links
 
-More information is available in the project's [wiki](https://github.com/RhoInc/aeexplorer/wiki): 
-
 - [Interactive Example](https://rhoinc.github.io/viz-library/examples/0008-safetyExplorer-default/ae-timelines/)
 - [Configuration](https://github.com/RhoInc/ae-timelines/wiki/Configuration) 
 - [API](https://github.com/RhoInc/ae-timelines/wiki/API)
