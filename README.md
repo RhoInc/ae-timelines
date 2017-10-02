@@ -59,4 +59,4 @@ The chart can be configured to facilitate non-standard data formats and to alter
 - [API](https://github.com/RhoInc/ae-timelines/wiki/API)
 - [Technical Documentation](https://github.com/RhoInc/ae-timelines/wiki/Technical-Documentation) 
 - [Data Guidelines](https://github.com/RhoInc/ae-timelines/wiki/Data-Guidelines)
-- [ae-timelines using default settings](https://rhoinc.github.io/viz-library/examples/0008-safetyExplorer-default/ae-timelines/)
+
