@@ -1,22 +1,20 @@
 # Adverse Event Timelines 
 
-# Overview
+## Overview
 ![alt tag](https://user-images.githubusercontent.com/31038805/31092946-129c8044-a77e-11e7-9f2f-4ba855684cdf.gif)
 
 
 ae-timelines is a JavaScript library built using Webcharts ([1](https://github.com/RhoInc/Webcharts), [2](https://github.com/RhoInc/webcharts-wrapper-boilerplate)) that creates an adverse event timeline for each participant in a clinical trial. A typical chart created with ae-timelines looks like this:
 
-![Summary View](https://github.com/RhoInc/ae-timelines/wiki/img/summary.png)
-
 Clicking on the y-axis tick labels opens an adverse event-level participant view like this: 
 
-![Detail View](https://github.com/RhoInc/ae-timelines/wiki/img/detail.png)
+
 
 Users can filter and sort the timelines and drill down to each participant; the full functionality is described [here](https://github.com/RhoInc/ae-timelines/wiki/User-Requirements).
 The library expects an [ADaM data structure](https://www.cdisc.org/system/files/members/standard/foundational/adam/ADaM_OCCDS_v1.0.pdf) by default but can be customized to use any dataset that is one record per adverse event.
 Full details about chart configuration are [here](Configuration).
 
-# Typical Usage
+## Typical Usage
 
 Provided the input data matches the ADaM standard, the code to initialize the chart looks like this: 
 
