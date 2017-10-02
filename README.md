@@ -1,9 +1,9 @@
 # Adverse Event Timelines 
 
-## Overview
+
 ![alt tag](https://user-images.githubusercontent.com/31038805/31092946-129c8044-a77e-11e7-9f2f-4ba855684cdf.gif)
 
-
+## Overview
 ae-timelines is a JavaScript library built using Webcharts ([1](https://github.com/RhoInc/Webcharts), [2](https://github.com/RhoInc/webcharts-wrapper-boilerplate)) that creates an adverse event timeline for each participant in a clinical trial. A typical chart created with ae-timelines looks like this:
 
 Clicking on the y-axis tick labels opens an adverse event-level participant view like this: 
