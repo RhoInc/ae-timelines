@@ -49,7 +49,7 @@ export default
         ,label: ''
         ,sort: 'earliest'
         ,behavior: 'flex'}
-    ,marks: 
+    ,marks:
         [
             {type: 'line'
             ,per: null // set in syncSettings()
@@ -215,16 +215,21 @@ export const controlInputs =
     ];
 
 export function syncControlInputs(preControlInputs, preSettings) {
-    preSettings.filters.reverse()
-        .forEach((d,i) => {
-            const thisFilter =
-                {type: 'subsetter'
-                ,value_col: d.value_col ? d.value_col : d
-                ,label: d.label ? d.label : d.value_col ? d.value_col : d};
-            preControlInputs.unshift(thisFilter);
-        });
-  
+console.log(preSettings.filters)
+  preSettings.filters.forEach(function(d,i){
+    const thisFilter ={
+      type: 'subsetter',
+      value_col: d.value_col ? d.value_col : d,
+      label: d.label ? d.label : d.value_col ? d.value_col : d
+  };
+  //add the filter to the control inputs (as long as it isn't already there)
+  var current_value_cols = preControlInputs.filter(f=>f.type=="subsetter").map(m=>m.value_col)
+  if(current_value_cols.indexOf(thisFilter.value_col)==-1)
+    preControlInputs.unshift(thisFilter);
+  });
+
     return preControlInputs;
+
 }
 
 export function syncSecondSettings(preSettings) {
