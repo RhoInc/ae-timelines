@@ -341,11 +341,20 @@ var aeTimelines = function (webcharts, d3$1) {
     var controlInputs = [{ type: 'dropdown', option: 'y.sort', label: 'Sort Subject IDs', values: ['earliest', 'alphabetical-descending'], require: true }];
 
     function syncControlInputs(preControlInputs, preSettings) {
-        preSettings.filters.reverse().forEach(function (d, i) {
-            var thisFilter = { type: 'subsetter',
+        console.log(preSettings.filters);
+        preSettings.filters.forEach(function (d, i) {
+            var thisFilter = {
+                type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
-                label: d.label ? d.label : d.value_col ? d.value_col : d };
-            preControlInputs.unshift(thisFilter);
+                label: d.label ? d.label : d.value_col ? d.value_col : d
+            };
+            //add the filter to the control inputs (as long as it isn't already there)
+            var current_value_cols = preControlInputs.filter(function (f) {
+                return f.type == "subsetter";
+            }).map(function (m) {
+                return m.value_col;
+            });
+            if (current_value_cols.indexOf(thisFilter.value_col) == -1) preControlInputs.unshift(thisFilter);
         });
 
         return preControlInputs;
