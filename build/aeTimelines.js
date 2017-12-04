@@ -281,9 +281,7 @@
                 }
             ],
             legend: { location: 'top' },
-            y_behavior: 'flex',
             gridlines: 'y',
-            no_text_size: false,
             range_band: 15,
             margin: { top: 50 }, // for second x-axis
             resizable: true
@@ -461,7 +459,6 @@
     ];
 
     function syncControlInputs(preControlInputs, preSettings) {
-        console.log(preSettings.filters);
         preSettings.filters.forEach(function(d, i) {
             var thisFilter = {
                 type: 'subsetter',
@@ -591,6 +588,17 @@
                 return levels.length >= 2;
             }
         });
+    }
+
+    function onLayout() {
+        var _this = this;
+
+        //Add div for participant counts.
+        this.wrap
+            .select('.legend')
+            .append('span')
+            .classed('annote', true)
+            .style('float', 'right');
 
         //Create div for back button and participant ID title.
         this.chart2.wrap
@@ -600,21 +608,13 @@
             .html('&#8592; Back')
             .style('cursor', 'pointer')
             .on('click', function() {
-                _this.wrap.style('display', 'block');
-                _this.table.draw([]);
-                _this.chart2.wrap.style('display', 'none');
                 _this.chart2.wrap.select('.id-title').remove();
+                _this.chart2.wrap.style('display', 'none');
+                _this.table.wrap.style('display', 'none');
                 _this.controls.wrap.style('display', 'block');
+                _this.wrap.style('display', 'block');
+                _this.draw();
             });
-    }
-
-    function onLayout() {
-        //Add div for participant counts.
-        this.wrap
-            .select('.legend')
-            .append('span')
-            .classed('annote', true)
-            .style('float', 'right');
 
         //Add top x-axis.
         var x2 = this.svg.append('g').attr('class', 'x2 axis linear');
@@ -931,6 +931,7 @@
                         })
                     )
                     .values();
+                _this.table.wrap.style('display', 'block');
                 _this.table.draw(tableData);
                 _this.table.wrap.selectAll('th,td').style({
                     'text-align': 'left',
@@ -999,6 +1000,9 @@
 
         //Create participant-level listing.
         var table = webcharts.createTable(element, {}).init([]);
+        table.wrap.style('display', 'none');
+        table.table.style('display', 'table');
+        table.table.attr('width', '100%');
         chart.table = table;
 
         return chart;
