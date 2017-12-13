@@ -48,19 +48,4 @@ export default function onInit() {
             return levels.length >= 2;
         }
     });
-
-    //Create div for back button and participant ID title.
-    this.chart2.wrap
-        .insert('div', ':first-child')
-        .attr('id', 'backButton')
-        .insert('button', '.legend')
-        .html('&#8592; Back')
-        .style('cursor', 'pointer')
-        .on('click', () => {
-            this.wrap.style('display', 'block');
-            this.table.draw([]);
-            this.chart2.wrap.style('display', 'none');
-            this.chart2.wrap.select('.id-title').remove();
-            this.controls.wrap.style('display', 'block');
-        });
 }

@@ -46,6 +46,9 @@ export default function aeTimelines(element, settings) {
 
     //Create participant-level listing.
     const table = createTable(element, {}).init([]);
+    table.wrap.style('display', 'none');
+    table.table.style('display', 'table');
+    table.table.attr('width', '100%');
     chart.table = table;
 
     return chart;

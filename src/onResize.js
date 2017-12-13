@@ -61,6 +61,7 @@ export default function onResize() {
             this.table.config.headers = set(
                 this.config.details.map(detail => detail.label)
             ).values();
+            this.table.wrap.style('display', 'block');
             this.table.draw(tableData);
             this.table.wrap.selectAll('th,td').style({
                 'text-align': 'left',
