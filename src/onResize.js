@@ -1,13 +1,9 @@
-import syncColors from './onResize/syncColors';
 import addHighlightLegendItem from './onResize/addHighlightLegendItem';
 import drawTopXaxis from './onResize/drawTopXaxis';
 import addTickClick from './onResize/addTickClick';
 
 export default function onResize() {
     let context = this;
-
-    //Sync legend and mark colors.
-    syncColors(this);
 
     //Add highlight adverse event legend item.
     if (this.config.highlight) addHighlightLegendItem(this);
@@ -22,7 +18,7 @@ export default function onResize() {
       Second chart callbacks.
     \-------------------------------------------------------------------------------------------**/
 
-    this.chart2.on('datatransform', function() {
+    this.chart2.on('preprocess', function() {
         //Define color scale.
         this.config.color_dom = context.colorScale.domain();
     });
@@ -33,9 +29,6 @@ export default function onResize() {
     });
 
     this.chart2.on('resize', function() {
-        //Sync legend and mark colors.
-        syncColors(this);
-
         //Add highlight adverse event legend item.
         if (this.config.highlight) addHighlightLegendItem(this);
     });

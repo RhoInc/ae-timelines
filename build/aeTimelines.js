@@ -637,33 +637,6 @@ function onDraw() {
 }
 
 /*------------------------------------------------------------------------------------------------\
-  Sync colors of legend marks and chart marks.
-\------------------------------------------------------------------------------------------------*/
-
-function syncColors(chart) {
-    //Recolor legend.
-    var legendItems = chart.wrap.selectAll('.legend-item:not(.highlight)');
-    legendItems.each(function (d, i) {
-        d3.select(this).select('.legend-mark').style('stroke', chart.config.colors[chart.config.legend.order.indexOf(d.label)]).style('stroke-width', '25%');
-    });
-
-    //Recolor circles.
-    var circles = chart.svg.selectAll('circle.wc-data-mark:not(.highlight), circle.wc-data-mark:not(.custom)');
-    circles.each(function (d, i) {
-        var color_by_value = d.values.raw[0][chart.config.color_by];
-        d3.select(this).style('stroke', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
-        d3.select(this).style('fill', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
-    });
-
-    //Recolor lines.
-    var lines = chart.svg.selectAll('path.wc-data-mark:not(.highlight), path.wc-data-mark:not(.custom)');
-    lines.each(function (d, i) {
-        var color_by_value = d.values[0].values.raw[0][chart.config.color_by];
-        d3.select(this).style('stroke', chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]);
-    });
-}
-
-/*------------------------------------------------------------------------------------------------\
   Add highlighted adverse event legend item.
 \------------------------------------------------------------------------------------------------*/
 
@@ -711,6 +684,7 @@ function drawTopXaxis() {
 function addTickClick() {
     var _this = this;
 
+    var context = this;
     this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
         var csv2 = _this.raw_data.filter(function (di) {
             return di[_this.config.id_col] === d;
@@ -750,9 +724,6 @@ function addTickClick() {
 function onResize() {
     var context = this;
 
-    //Sync legend and mark colors.
-    syncColors(this);
-
     //Add highlight adverse event legend item.
     if (this.config.highlight) addHighlightLegendItem(this);
 
@@ -766,7 +737,7 @@ function onResize() {
       Second chart callbacks.
     \-------------------------------------------------------------------------------------------**/
 
-    this.chart2.on('datatransform', function () {
+    this.chart2.on('preprocess', function () {
         //Define color scale.
         this.config.color_dom = context.colorScale.domain();
     });
@@ -777,9 +748,6 @@ function onResize() {
     });
 
     this.chart2.on('resize', function () {
-        //Sync legend and mark colors.
-        syncColors(this);
-
         //Add highlight adverse event legend item.
         if (this.config.highlight) addHighlightLegendItem(this);
     });

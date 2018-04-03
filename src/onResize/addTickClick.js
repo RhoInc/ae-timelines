@@ -1,6 +1,7 @@
 import { set } from 'd3';
 
 export default function addTickClick() {
+    const context = this;
     this.svg
         .select('.y.axis')
         .selectAll('.tick')
