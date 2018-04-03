@@ -8,6 +8,8 @@ import defaultSettings, {
     syncControlInputs,
     syncSecondSettings
 } from './defaultSettings';
+import clone from './util/clone';
+import deepMerge from './util/deepMerge';
 
 //webcharts
 import { createChart, createControls, createTable } from 'webcharts';
@@ -20,7 +22,7 @@ import onResize from './onResize';
 
 export default function aeTimelines(element, settings) {
     //Merge default settings with custom settings.
-    const mergedSettings = Object.assign({}, defaultSettings, settings);
+    const mergedSettings = deepMerge(defaultSettings, settings);
 
     //Sync properties within settings object.
     const syncedSettings = syncSettings(mergedSettings);
