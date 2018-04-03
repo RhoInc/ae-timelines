@@ -1,5 +1,7 @@
-import './util/object-assign';
+// polyfills
+import './polyfills/object-assign';
 
+//settings
 import defaultSettings, {
     syncSettings,
     controlInputs,
@@ -7,8 +9,8 @@ import defaultSettings, {
     syncSecondSettings
 } from './defaultSettings';
 
+//webcharts
 import { createChart, createControls, createTable } from 'webcharts';
-
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onDataTransform from './onDataTransform';
