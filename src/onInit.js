@@ -1,4 +1,5 @@
 import { set } from 'd3';
+import defineColorDomain from './onInit/defineColorDomain';
 import lengthenRaw from './onInit/lengthenRaw';
 
 export default function onInit() {
@@ -18,13 +19,7 @@ export default function onInit() {
 
     //Append unspecified settings.color_by values to settings.legend.order and define a shade of
     //gray for each.
-    const color_by_values = set(this.superRaw.map(d => d[this.config.color_by])).values();
-    color_by_values.forEach((color_by_value, i) => {
-        if (this.config.legend.order.indexOf(color_by_value) === -1) {
-            this.config.legend.order.push(color_by_value);
-            this.chart2.config.legend.order.push(color_by_value);
-        }
-    });
+    defineColorDomain.call(this);
 
     //Derived data manipulation
     this.raw_data = lengthenRaw(this.superRaw, [this.config.stdy_col, this.config.endy_col]);
