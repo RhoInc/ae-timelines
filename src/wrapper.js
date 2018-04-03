@@ -22,7 +22,9 @@ import onResize from './onResize';
 
 export default function aeTimelines(element, settings) {
     //Merge default settings with custom settings.
-    const mergedSettings = deepMerge(defaultSettings, settings);
+    const mergedSettings = deepMerge(defaultSettings, settings, {
+        arrayMerge: (destination, source) => source
+    });
 
     //Sync properties within settings object.
     const syncedSettings = syncSettings(mergedSettings);
