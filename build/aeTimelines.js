@@ -901,6 +901,7 @@
     function addTickClick() {
         var _this = this;
 
+        var context = this;
         this.svg
             .select('.y.axis')
             .selectAll('.tick')
