@@ -368,7 +368,7 @@
         nextSettings.legend = nextSettings.legend || { location: 'top' };
         nextSettings.legend.label = nextSettings.color.label;
         nextSettings.legend.order = nextSettings.color.values;
-        nextSettings.legend.color_dom = nextSettings.color.values;
+        nextSettings.color_dom = nextSettings.color.values;
 
         //Default filters
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
@@ -516,7 +516,7 @@
             if (_this.config.legend.order.indexOf(color_by_value) === -1) {
                 _this.config.color_dom.push(color_by_value);
                 _this.config.legend.order.push(color_by_value);
-                _this.chart2.color_dom.push(color_by_value);
+                _this.chart2.config.color_dom.push(color_by_value);
                 _this.chart2.config.legend.order.push(color_by_value);
             }
         });
