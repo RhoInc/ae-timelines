@@ -152,6 +152,7 @@ export function syncSettings(preSettings) {
     nextSettings.legend = nextSettings.legend || { location: 'top' };
     nextSettings.legend.label = nextSettings.color.label;
     nextSettings.legend.order = nextSettings.color.values;
+    nextSettings.color_dom = nextSettings.color.values;
 
     //Default filters
     if (!nextSettings.filters || nextSettings.filters.length === 0) {

@@ -369,6 +369,7 @@
         nextSettings.legend = nextSettings.legend || { location: 'top' };
         nextSettings.legend.label = nextSettings.color.label;
         nextSettings.legend.order = nextSettings.color.values;
+        nextSettings.color_dom = nextSettings.color.values;
 
         //Default filters
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
@@ -502,6 +503,26 @@
         return nextSettings;
     }
 
+    function defineColorDomain() {
+        var _this = this;
+
+        var color_by_values = d3
+            .set(
+                this.superRaw.map(function(d) {
+                    return d[_this.config.color_by];
+                })
+            )
+            .values();
+        color_by_values.forEach(function(color_by_value, i) {
+            if (_this.config.legend.order.indexOf(color_by_value) === -1) {
+                _this.config.color_dom.push(color_by_value);
+                _this.config.legend.order.push(color_by_value);
+                _this.chart2.config.color_dom.push(color_by_value);
+                _this.chart2.config.legend.order.push(color_by_value);
+            }
+        });
+    }
+
     /*------------------------------------------------------------------------------------------------\
   Expand a data array to one item per original item per specified column.
 \------------------------------------------------------------------------------------------------*/
@@ -547,19 +568,7 @@
 
         //Append unspecified settings.color_by values to settings.legend.order and define a shade of
         //gray for each.
-        var color_by_values = d3
-            .set(
-                this.superRaw.map(function(d) {
-                    return d[_this.config.color_by];
-                })
-            )
-            .values();
-        color_by_values.forEach(function(color_by_value, i) {
-            if (_this.config.legend.order.indexOf(color_by_value) === -1) {
-                _this.config.legend.order.push(color_by_value);
-                _this.chart2.config.legend.order.push(color_by_value);
-            }
-        });
+        defineColorDomain.call(this);
 
         //Derived data manipulation
         this.raw_data = lengthenRaw(this.superRaw, [this.config.stdy_col, this.config.endy_col]);
@@ -776,56 +785,6 @@
     }
 
     /*------------------------------------------------------------------------------------------------\
-  Sync colors of legend marks and chart marks.
-\------------------------------------------------------------------------------------------------*/
-
-    function syncColors(chart) {
-        //Recolor legend.
-        var legendItems = chart.wrap.selectAll('.legend-item:not(.highlight)');
-        legendItems.each(function(d, i) {
-            d3
-                .select(this)
-                .select('.legend-mark')
-                .style('stroke', chart.config.colors[chart.config.legend.order.indexOf(d.label)])
-                .style('stroke-width', '25%');
-        });
-
-        //Recolor circles.
-        var circles = chart.svg.selectAll(
-            'circle.wc-data-mark:not(.highlight), circle.wc-data-mark:not(.custom)'
-        );
-        circles.each(function(d, i) {
-            var color_by_value = d.values.raw[0][chart.config.color_by];
-            d3
-                .select(this)
-                .style(
-                    'stroke',
-                    chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]
-                );
-            d3
-                .select(this)
-                .style(
-                    'fill',
-                    chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]
-                );
-        });
-
-        //Recolor lines.
-        var lines = chart.svg.selectAll(
-            'path.wc-data-mark:not(.highlight), path.wc-data-mark:not(.custom)'
-        );
-        lines.each(function(d, i) {
-            var color_by_value = d.values[0].values.raw[0][chart.config.color_by];
-            d3
-                .select(this)
-                .style(
-                    'stroke',
-                    chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]
-                );
-        });
-    }
-
-    /*------------------------------------------------------------------------------------------------\
   Add highlighted adverse event legend item.
 \------------------------------------------------------------------------------------------------*/
 
@@ -961,9 +920,6 @@
     function onResize() {
         var context = this;
 
-        //Sync legend and mark colors.
-        syncColors(this);
-
         //Add highlight adverse event legend item.
         if (this.config.highlight) addHighlightLegendItem(this);
 
@@ -977,7 +933,7 @@
       Second chart callbacks.
     \-------------------------------------------------------------------------------------------**/
 
-        this.chart2.on('datatransform', function() {
+        this.chart2.on('preprocess', function() {
             //Define color scale.
             this.config.color_dom = context.colorScale.domain();
         });
@@ -988,9 +944,6 @@
         });
 
         this.chart2.on('resize', function() {
-            //Sync legend and mark colors.
-            syncColors(this);
-
             //Add highlight adverse event legend item.
             if (this.config.highlight) addHighlightLegendItem(this);
         });
