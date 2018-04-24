@@ -205,87 +205,88 @@
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    var defaultSettings =
-        //Template-specific settings
-        {
-            id_col: 'USUBJID',
-            seq_col: 'AESEQ',
-            stdy_col: 'ASTDY',
-            endy_col: 'AENDY',
-            term_col: 'AETERM',
+    var rendererSpecificSettings = {
+        id_col: 'USUBJID',
+        seq_col: 'AESEQ',
+        stdy_col: 'ASTDY',
+        endy_col: 'AENDY',
+        term_col: 'AETERM',
 
-            color: {
-                value_col: 'AESEV',
-                label: 'Severity/Intensity',
-                values: ['MILD', 'MODERATE', 'SEVERE'],
-                colors: [
-                    '#66bd63', // green
-                    '#fdae61', // sherbet
-                    '#d73027', // red
-                    '#377eb8',
-                    '#984ea3',
-                    '#ff7f00',
-                    '#a65628',
-                    '#f781bf',
-                    '#999999'
-                ]
-            },
+        color: {
+            value_col: 'AESEV',
+            label: 'Severity/Intensity',
+            values: ['MILD', 'MODERATE', 'SEVERE'],
+            colors: [
+                '#66bd63', // green
+                '#fdae61', // sherbet
+                '#d73027', // red
+                '#377eb8',
+                '#984ea3',
+                '#ff7f00',
+                '#a65628',
+                '#f781bf',
+                '#999999'
+            ]
+        },
 
-            highlight: {
-                value_col: 'AESER',
-                label: 'Serious Event',
-                value: 'Y',
-                detail_col: null,
+        highlight: {
+            value_col: 'AESER',
+            label: 'Serious Event',
+            value: 'Y',
+            detail_col: null,
+            attributes: {
+                stroke: 'black',
+                'stroke-width': '2',
+                fill: 'none'
+            }
+        },
+
+        filters: null,
+        details: null,
+        custom_marks: null
+    };
+
+    var webchartsSettings = {
+        x: {
+            column: 'wc_value',
+            type: 'linear',
+            label: null
+        },
+        y: {
+            column: null, // set in syncSettings()
+            type: 'ordinal',
+            label: '',
+            sort: 'earliest',
+            behavior: 'flex'
+        },
+        marks: [
+            {
+                type: 'line',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
                 attributes: {
-                    stroke: 'black',
-                    'stroke-width': '2',
-                    fill: 'none'
+                    'stroke-width': 5,
+                    'stroke-opacity': 0.5
                 }
             },
-
-            filters: null,
-            details: null,
-            custom_marks: null,
-
-            //Standard chart settings
-            x: {
-                column: 'wc_value',
-                type: 'linear',
-                label: null
-            },
-            y: {
-                column: null, // set in syncSettings()
-                type: 'ordinal',
-                label: '',
-                sort: 'earliest',
-                behavior: 'flex'
-            },
-            marks: [
-                {
-                    type: 'line',
-                    per: null, // set in syncSettings()
-                    tooltip: null, // set in syncSettings()
-                    attributes: {
-                        'stroke-width': 5,
-                        'stroke-opacity': 0.5
-                    }
-                },
-                {
-                    type: 'circle',
-                    per: null, // set in syncSettings()
-                    tooltip: null, // set in syncSettings()
-                    attributes: {
-                        'fill-opacity': 0.5,
-                        'stroke-opacity': 0.5
-                    }
+            {
+                type: 'circle',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
+                attributes: {
+                    'fill-opacity': 0.5,
+                    'stroke-opacity': 0.5
                 }
-            ],
-            legend: { location: 'top' },
-            gridlines: 'y',
-            range_band: 15,
-            margin: { top: 50 }, // for second x-axis
-            resizable: true
-        };
+            }
+        ],
+        legend: { location: 'top' },
+        gridlines: 'y',
+        range_band: 15,
+        margin: { top: 50 }, // for second x-axis
+        resizable: true
+    };
+
+    var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
     function syncSettings(preSettings) {
         var nextSettings = clone(preSettings);
