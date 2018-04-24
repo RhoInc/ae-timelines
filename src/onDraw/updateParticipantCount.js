@@ -11,7 +11,7 @@
 
 import { set, format, select } from 'd3';
 
-export default function updateSubjectCount(chart, selector, id_unit) {
+export default function updateParticipantCount(chart, selector, id_unit) {
     //count the number of unique ids in the current chart and calculate the percentage
     const filtered_data = chart.raw_data.filter(d => {
         let filtered = d[chart.config.seq_col] === '';

@@ -1,23 +1,30 @@
-import './util/object-assign';
+// polyfills
+import './polyfills/object-assign';
 
+//settings
 import defaultSettings, {
     syncSettings,
     controlInputs,
     syncControlInputs,
     syncSecondSettings
 } from './defaultSettings';
+import clone from './util/clone';
+import deepMerge from './util/deepMerge';
 
+//webcharts
 import { createChart, createControls, createTable } from 'webcharts';
-
 import onInit from './onInit';
 import onLayout from './onLayout';
-import onDataTransform from './onDataTransform';
+import onPreprocess from './onPreprocess';
+import onDatatransform from './onDatatransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
 
 export default function aeTimelines(element, settings) {
     //Merge default settings with custom settings.
-    const mergedSettings = Object.assign({}, defaultSettings, settings);
+    const mergedSettings = deepMerge(defaultSettings, settings, {
+        arrayMerge: (destination, source) => source
+    });
 
     //Sync properties within settings object.
     const syncedSettings = syncSettings(mergedSettings);
@@ -35,7 +42,8 @@ export default function aeTimelines(element, settings) {
     const chart = createChart(element, syncedSettings, controls);
     chart.on('init', onInit);
     chart.on('layout', onLayout);
-    chart.on('datatransform', onDataTransform);
+    chart.on('preprocess', onPreprocess);
+    chart.on('datatransform', onDatatransform);
     chart.on('draw', onDraw);
     chart.on('resize', onResize);
 

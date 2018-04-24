@@ -205,87 +205,88 @@
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
-    var defaultSettings =
-        //Template-specific settings
-        {
-            id_col: 'USUBJID',
-            seq_col: 'AESEQ',
-            stdy_col: 'ASTDY',
-            endy_col: 'AENDY',
-            term_col: 'AETERM',
+    var rendererSpecificSettings = {
+        id_col: 'USUBJID',
+        seq_col: 'AESEQ',
+        stdy_col: 'ASTDY',
+        endy_col: 'AENDY',
+        term_col: 'AETERM',
 
-            color: {
-                value_col: 'AESEV',
-                label: 'Severity/Intensity',
-                values: ['MILD', 'MODERATE', 'SEVERE'],
-                colors: [
-                    '#66bd63', // green
-                    '#fdae61', // sherbet
-                    '#d73027', // red
-                    '#377eb8',
-                    '#984ea3',
-                    '#ff7f00',
-                    '#a65628',
-                    '#f781bf',
-                    '#999999'
-                ]
-            },
+        color: {
+            value_col: 'AESEV',
+            label: 'Severity/Intensity',
+            values: ['MILD', 'MODERATE', 'SEVERE'],
+            colors: [
+                '#66bd63', // green
+                '#fdae61', // sherbet
+                '#d73027', // red
+                '#377eb8',
+                '#984ea3',
+                '#ff7f00',
+                '#a65628',
+                '#f781bf',
+                '#999999'
+            ]
+        },
 
-            highlight: {
-                value_col: 'AESER',
-                label: 'Serious Event',
-                value: 'Y',
-                detail_col: null,
+        highlight: {
+            value_col: 'AESER',
+            label: 'Serious Event',
+            value: 'Y',
+            detail_col: null,
+            attributes: {
+                stroke: 'black',
+                'stroke-width': '2',
+                fill: 'none'
+            }
+        },
+
+        filters: null,
+        details: null,
+        custom_marks: null
+    };
+
+    var webchartsSettings = {
+        x: {
+            column: 'wc_value',
+            type: 'linear',
+            label: null
+        },
+        y: {
+            column: null, // set in syncSettings()
+            type: 'ordinal',
+            label: '',
+            sort: 'earliest',
+            behavior: 'flex'
+        },
+        marks: [
+            {
+                type: 'line',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
                 attributes: {
-                    stroke: 'black',
-                    'stroke-width': '2',
-                    fill: 'none'
+                    'stroke-width': 5,
+                    'stroke-opacity': 0.5
                 }
             },
-
-            filters: null,
-            details: null,
-            custom_marks: null,
-
-            //Standard chart settings
-            x: {
-                column: 'wc_value',
-                type: 'linear',
-                label: null
-            },
-            y: {
-                column: null, // set in syncSettings()
-                type: 'ordinal',
-                label: '',
-                sort: 'earliest',
-                behavior: 'flex'
-            },
-            marks: [
-                {
-                    type: 'line',
-                    per: null, // set in syncSettings()
-                    tooltip: null, // set in syncSettings()
-                    attributes: {
-                        'stroke-width': 5,
-                        'stroke-opacity': 0.5
-                    }
-                },
-                {
-                    type: 'circle',
-                    per: null, // set in syncSettings()
-                    tooltip: null, // set in syncSettings()
-                    attributes: {
-                        'fill-opacity': 0.5,
-                        'stroke-opacity': 0.5
-                    }
+            {
+                type: 'circle',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
+                attributes: {
+                    'fill-opacity': 0.5,
+                    'stroke-opacity': 0.5
                 }
-            ],
-            legend: { location: 'top' },
-            gridlines: 'y',
-            range_band: 15,
-            margin: { top: 50 }, // for second x-axis
-            resizable: true
-        };
+            }
+        ],
+        legend: { location: 'top' },
+        gridlines: 'y',
+        range_band: 15,
+        margin: { top: 50 }, // for second x-axis
+        resizable: true
+    };
+
+    var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
     function syncSettings(preSettings) {
         var nextSettings = clone(preSettings);
@@ -368,6 +369,7 @@
         nextSettings.legend = nextSettings.legend || { location: 'top' };
         nextSettings.legend.label = nextSettings.color.label;
         nextSettings.legend.order = nextSettings.color.values;
+        nextSettings.color_dom = nextSettings.color.values;
 
         //Default filters
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
@@ -501,6 +503,124 @@
         return nextSettings;
     }
 
+    var isMergeableObject = function isMergeableObject(value) {
+        return isNonNullObject(value) && !isSpecial(value);
+    };
+
+    function isNonNullObject(value) {
+        return (
+            !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object'
+        );
+    }
+
+    function isSpecial(value) {
+        var stringValue = Object.prototype.toString.call(value);
+
+        return (
+            stringValue === '[object RegExp]' ||
+            stringValue === '[object Date]' ||
+            isReactElement(value)
+        );
+    }
+
+    // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+    var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+    var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+
+    function isReactElement(value) {
+        return value.$$typeof === REACT_ELEMENT_TYPE;
+    }
+
+    function emptyTarget(val) {
+        return Array.isArray(val) ? [] : {};
+    }
+
+    function cloneUnlessOtherwiseSpecified(value, options) {
+        return options.clone !== false && options.isMergeableObject(value)
+            ? deepmerge(emptyTarget(value), value, options)
+            : value;
+    }
+
+    function defaultArrayMerge(target, source, options) {
+        return target.concat(source).map(function(element) {
+            return cloneUnlessOtherwiseSpecified(element, options);
+        });
+    }
+
+    function mergeObject(target, source, options) {
+        var destination = {};
+
+        if (options.isMergeableObject(target)) {
+            Object.keys(target).forEach(function(key) {
+                destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+            });
+        }
+
+        Object.keys(source).forEach(function(key) {
+            if (!options.isMergeableObject(source[key]) || !target[key]) {
+                destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+            } else {
+                destination[key] = deepmerge(target[key], source[key], options);
+            }
+        });
+
+        return destination;
+    }
+
+    function deepmerge(target, source, options) {
+        options = options || {};
+
+        options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+
+        options.isMergeableObject = options.isMergeableObject || isMergeableObject;
+
+        var sourceIsArray = Array.isArray(source);
+
+        var targetIsArray = Array.isArray(target);
+
+        var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+        if (!sourceAndTargetTypesMatch) {
+            return cloneUnlessOtherwiseSpecified(source, options);
+        } else if (sourceIsArray) {
+            return options.arrayMerge(target, source, options);
+        } else {
+            return mergeObject(target, source, options);
+        }
+    }
+
+    deepmerge.all = function deepmergeAll(array, options) {
+        if (!Array.isArray(array)) {
+            throw new Error('first argument should be an array');
+        }
+
+        return array.reduce(function(prev, next) {
+            return deepmerge(prev, next, options);
+        }, {});
+    };
+
+    var deepmerge_1 = deepmerge;
+
+    function defineColorDomain() {
+        var _this = this;
+
+        var color_by_values = d3
+            .set(
+                this.superRaw.map(function(d) {
+                    return d[_this.config.color_by];
+                })
+            )
+            .values();
+        color_by_values.forEach(function(color_by_value, i) {
+            if (_this.config.legend.order.indexOf(color_by_value) === -1) {
+                _this.config.color_dom.push(color_by_value);
+                _this.config.legend.order.push(color_by_value);
+                _this.chart2.config.color_dom.push(color_by_value);
+                _this.chart2.config.legend.order.push(color_by_value);
+            }
+        });
+    }
+
     /*------------------------------------------------------------------------------------------------\
   Expand a data array to one item per original item per specified column.
 \------------------------------------------------------------------------------------------------*/
@@ -546,19 +666,7 @@
 
         //Append unspecified settings.color_by values to settings.legend.order and define a shade of
         //gray for each.
-        var color_by_values = d3
-            .set(
-                this.superRaw.map(function(d) {
-                    return d[_this.config.color_by];
-                })
-            )
-            .values();
-        color_by_values.forEach(function(color_by_value, i) {
-            if (_this.config.legend.order.indexOf(color_by_value) === -1) {
-                _this.config.legend.order.push(color_by_value);
-                _this.chart2.config.legend.order.push(color_by_value);
-            }
-        });
+        defineColorDomain.call(this);
 
         //Derived data manipulation
         this.raw_data = lengthenRaw(this.superRaw, [this.config.stdy_col, this.config.endy_col]);
@@ -590,17 +698,31 @@
         });
     }
 
-    function onLayout() {
-        var _this = this;
-
-        //Add div for participant counts.
+    function addParticipantCountContainer() {
         this.wrap
             .select('.legend')
             .append('span')
             .classed('annote', true)
-            .style('float', 'right');
+            .style('float', 'right')
+            .style('font-style', 'italic');
+    }
 
-        //Create div for back button and participant ID title.
+    function addTopXaxis() {
+        this.svg
+            .append('g')
+            .attr('class', 'x2 axis linear')
+            .append('text')
+            .attr({
+                class: 'axis-title top',
+                dy: '2em',
+                'text-anchor': 'middle'
+            })
+            .text(this.config.x_label);
+    }
+
+    function addBackButton() {
+        var _this = this;
+
         this.chart2.wrap
             .insert('div', ':first-child')
             .attr('id', 'backButton')
@@ -615,20 +737,22 @@
                 _this.wrap.style('display', 'block');
                 _this.draw();
             });
-
-        //Add top x-axis.
-        var x2 = this.svg.append('g').attr('class', 'x2 axis linear');
-        x2
-            .append('text')
-            .attr({
-                class: 'axis-title top',
-                dy: '2em',
-                'text-anchor': 'middle'
-            })
-            .text(this.config.x_label);
     }
 
-    function onDataTransform() {}
+    function onLayout() {
+        //Add div for participant counts.
+        addParticipantCountContainer.call(this);
+
+        //Add top x-axis.
+        addTopXaxis.call(this);
+
+        //Create div for back button and participant ID title.
+        addBackButton.call(this);
+    }
+
+    function onPreprocess() {}
+
+    function onDatatransform() {}
 
     /*------------------------------------------------------------------------------------------------\
   Annotate number of participants based on current filters, number of participants in all, and
@@ -641,7 +765,7 @@
     selector - css selector for the annotation
 \------------------------------------------------------------------------------------------------*/
 
-    function updateSubjectCount(chart, selector, id_unit) {
+    function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
         var filtered_data = chart.raw_data.filter(function(d) {
             var filtered = d[chart.config.seq_col] === '';
@@ -675,13 +799,9 @@
         );
     }
 
-    function onDraw() {
+    function sortYdomain() {
         var _this = this;
 
-        //Annotate number of selected participants out of total participants.
-        updateSubjectCount(this, '.annote', 'subject ID(s)');
-
-        //Sort y-axis based on `Sort IDs` control selection.
         var yAxisSort = this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
@@ -754,54 +874,12 @@
         } else this.y_dom = this.y_dom.sort(d3.descending);
     }
 
-    /*------------------------------------------------------------------------------------------------\
-  Sync colors of legend marks and chart marks.
-\------------------------------------------------------------------------------------------------*/
+    function onDraw() {
+        //Annotate number of selected participants out of total participants.
+        updateParticipantCount(this, '.annote', 'participant ID(s)');
 
-    function syncColors(chart) {
-        //Recolor legend.
-        var legendItems = chart.wrap.selectAll('.legend-item:not(.highlight)');
-        legendItems.each(function(d, i) {
-            d3
-                .select(this)
-                .select('.legend-mark')
-                .style('stroke', chart.config.colors[chart.config.legend.order.indexOf(d.label)])
-                .style('stroke-width', '25%');
-        });
-
-        //Recolor circles.
-        var circles = chart.svg.selectAll(
-            'circle.wc-data-mark:not(.highlight), circle.wc-data-mark:not(.custom)'
-        );
-        circles.each(function(d, i) {
-            var color_by_value = d.values.raw[0][chart.config.color_by];
-            d3
-                .select(this)
-                .style(
-                    'stroke',
-                    chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]
-                );
-            d3
-                .select(this)
-                .style(
-                    'fill',
-                    chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]
-                );
-        });
-
-        //Recolor lines.
-        var lines = chart.svg.selectAll(
-            'path.wc-data-mark:not(.highlight), path.wc-data-mark:not(.custom)'
-        );
-        lines.each(function(d, i) {
-            var color_by_value = d.values[0].values.raw[0][chart.config.color_by];
-            d3
-                .select(this)
-                .style(
-                    'stroke',
-                    chart.config.colors[chart.config.legend.order.indexOf(color_by_value)]
-                );
-        });
+        //Sort y-axis based on `Sort IDs` control selection.
+        sortYdomain.call(this);
     }
 
     /*------------------------------------------------------------------------------------------------\
@@ -853,18 +931,7 @@
             .text(chart.config.highlight.label);
     }
 
-    function onResize() {
-        var _this = this;
-
-        var context = this;
-
-        //Sync legend and mark colors.
-        syncColors(this);
-
-        //Add highlight adverse event legend item.
-        if (this.config.highlight) addHighlightLegendItem(this);
-
-        //Draw second x-axis at top of chart.
+    function drawTopXaxis() {
         var x2Axis = d3.svg
             .axis()
             .scale(this.x)
@@ -887,8 +954,12 @@
             'shape-rendering': 'crispEdges'
         });
         g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+    }
 
-        //Draw second chart when y-axis tick label is clicked.
+    function addTickClick() {
+        var _this = this;
+
+        var context = this;
         this.svg
             .select('.y.axis')
             .selectAll('.tick')
@@ -942,12 +1013,25 @@
                 _this.wrap.style('display', 'none');
                 _this.controls.wrap.style('display', 'none');
             });
+    }
+
+    function onResize() {
+        var context = this;
+
+        //Add highlight adverse event legend item.
+        if (this.config.highlight) addHighlightLegendItem(this);
+
+        //Draw second x-axis at top of chart.
+        drawTopXaxis.call(this);
+
+        //Draw second chart when y-axis tick label is clicked.
+        addTickClick.call(this);
 
         /**-------------------------------------------------------------------------------------------\
       Second chart callbacks.
     \-------------------------------------------------------------------------------------------**/
 
-        this.chart2.on('datatransform', function() {
+        this.chart2.on('preprocess', function() {
             //Define color scale.
             this.config.color_dom = context.colorScale.domain();
         });
@@ -958,17 +1042,21 @@
         });
 
         this.chart2.on('resize', function() {
-            //Sync legend and mark colors.
-            syncColors(this);
-
             //Add highlight adverse event legend item.
             if (this.config.highlight) addHighlightLegendItem(this);
         });
     }
 
+    // polyfills
+    //settings
+    //webcharts
     function aeTimelines(element, settings) {
         //Merge default settings with custom settings.
-        var mergedSettings = Object.assign({}, defaultSettings, settings);
+        var mergedSettings = deepmerge_1(defaultSettings, settings, {
+            arrayMerge: function arrayMerge(destination, source) {
+                return source;
+            }
+        });
 
         //Sync properties within settings object.
         var syncedSettings = syncSettings(mergedSettings);
@@ -989,7 +1077,8 @@
         var chart = webcharts.createChart(element, syncedSettings, controls);
         chart.on('init', onInit);
         chart.on('layout', onLayout);
-        chart.on('datatransform', onDataTransform);
+        chart.on('preprocess', onPreprocess);
+        chart.on('datatransform', onDatatransform);
         chart.on('draw', onDraw);
         chart.on('resize', onResize);
 
