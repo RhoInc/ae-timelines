@@ -1,5 +1,5 @@
 import { set } from 'd3';
-import lengthenRaw from './util/lengthenRaw';
+import lengthenRaw from './onInit/lengthenRaw';
 
 export default function onInit() {
     //Count total number of IDs for population count.

@@ -591,17 +591,31 @@
         });
     }
 
-    function onLayout() {
-        var _this = this;
-
-        //Add div for participant counts.
+    function addParticipantCountContainer() {
         this.wrap
             .select('.legend')
             .append('span')
             .classed('annote', true)
-            .style('float', 'right');
+            .style('float', 'right')
+            .style('font-style', 'italic');
+    }
 
-        //Create div for back button and participant ID title.
+    function addTopXaxis() {
+        this.svg
+            .append('g')
+            .attr('class', 'x2 axis linear')
+            .append('text')
+            .attr({
+                class: 'axis-title top',
+                dy: '2em',
+                'text-anchor': 'middle'
+            })
+            .text(this.config.x_label);
+    }
+
+    function addBackButton() {
+        var _this = this;
+
         this.chart2.wrap
             .insert('div', ':first-child')
             .attr('id', 'backButton')
@@ -616,20 +630,22 @@
                 _this.wrap.style('display', 'block');
                 _this.draw();
             });
-
-        //Add top x-axis.
-        var x2 = this.svg.append('g').attr('class', 'x2 axis linear');
-        x2
-            .append('text')
-            .attr({
-                class: 'axis-title top',
-                dy: '2em',
-                'text-anchor': 'middle'
-            })
-            .text(this.config.x_label);
     }
 
-    function onDataTransform() {}
+    function onLayout() {
+        //Add div for participant counts.
+        addParticipantCountContainer.call(this);
+
+        //Add top x-axis.
+        addTopXaxis.call(this);
+
+        //Create div for back button and participant ID title.
+        addBackButton.call(this);
+    }
+
+    function onPreprocess() {}
+
+    function onDatatransform() {}
 
     /*------------------------------------------------------------------------------------------------\
   Annotate number of participants based on current filters, number of participants in all, and
@@ -642,7 +658,7 @@
     selector - css selector for the annotation
 \------------------------------------------------------------------------------------------------*/
 
-    function updateSubjectCount(chart, selector, id_unit) {
+    function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
         var filtered_data = chart.raw_data.filter(function(d) {
             var filtered = d[chart.config.seq_col] === '';
@@ -676,13 +692,9 @@
         );
     }
 
-    function onDraw() {
+    function sortYdomain() {
         var _this = this;
 
-        //Annotate number of selected participants out of total participants.
-        updateSubjectCount(this, '.annote', 'subject ID(s)');
-
-        //Sort y-axis based on `Sort IDs` control selection.
         var yAxisSort = this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
@@ -753,6 +765,14 @@
                 .values();
             this.y_dom = withStartDay.concat(withoutStartDay);
         } else this.y_dom = this.y_dom.sort(d3.descending);
+    }
+
+    function onDraw() {
+        //Annotate number of selected participants out of total participants.
+        updateParticipantCount(this, '.annote', 'participant ID(s)');
+
+        //Sort y-axis based on `Sort IDs` control selection.
+        sortYdomain.call(this);
     }
 
     /*------------------------------------------------------------------------------------------------\
@@ -854,18 +874,7 @@
             .text(chart.config.highlight.label);
     }
 
-    function onResize() {
-        var _this = this;
-
-        var context = this;
-
-        //Sync legend and mark colors.
-        syncColors(this);
-
-        //Add highlight adverse event legend item.
-        if (this.config.highlight) addHighlightLegendItem(this);
-
-        //Draw second x-axis at top of chart.
+    function drawTopXaxis() {
         var x2Axis = d3.svg
             .axis()
             .scale(this.x)
@@ -888,8 +897,12 @@
             'shape-rendering': 'crispEdges'
         });
         g_x2_axis.selectAll('.tick line').attr('stroke', '#eee');
+    }
 
-        //Draw second chart when y-axis tick label is clicked.
+    function addTickClick() {
+        var _this = this;
+
+        var context = this;
         this.svg
             .select('.y.axis')
             .selectAll('.tick')
@@ -943,6 +956,22 @@
                 _this.wrap.style('display', 'none');
                 _this.controls.wrap.style('display', 'none');
             });
+    }
+
+    function onResize() {
+        var context = this;
+
+        //Sync legend and mark colors.
+        syncColors(this);
+
+        //Add highlight adverse event legend item.
+        if (this.config.highlight) addHighlightLegendItem(this);
+
+        //Draw second x-axis at top of chart.
+        drawTopXaxis.call(this);
+
+        //Draw second chart when y-axis tick label is clicked.
+        addTickClick.call(this);
 
         /**-------------------------------------------------------------------------------------------\
       Second chart callbacks.
@@ -967,6 +996,9 @@
         });
     }
 
+    // polyfills
+    //settings
+    //webcharts
     function aeTimelines(element, settings) {
         //Merge default settings with custom settings.
         var mergedSettings = Object.assign({}, defaultSettings, settings);
@@ -990,7 +1022,8 @@
         var chart = webcharts.createChart(element, syncedSettings, controls);
         chart.on('init', onInit);
         chart.on('layout', onLayout);
-        chart.on('datatransform', onDataTransform);
+        chart.on('preprocess', onPreprocess);
+        chart.on('datatransform', onDatatransform);
         chart.on('draw', onDraw);
         chart.on('resize', onResize);
 
