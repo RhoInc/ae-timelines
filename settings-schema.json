@@ -1,0 +1,225 @@
+{
+    "title": "settings",
+    "description": "JSON schema for the configuration of the ae-timelines",
+    "overview": "The most straightforward way to customize the AE Timelines is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the AE Timelines is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/ae-timelines/blob/master/src/defaultSettings.js) as [described below](#Webcharts-Settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the AE Timelines to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users.",
+    "version": "2.1.0",
+    "type": "object",
+    "properties": {
+        "id_col": {
+            "type": "string",
+            "title": "ID",
+            "description": "unique identifier variable name",
+            "default": "USUBJID"
+        },
+        "seq_col": {
+            "type": "string",
+            "title": "Sequence Number",
+            "description": "event sequence number variable name",
+            "default": "AESEQ"
+        },
+        "stdy_col": {
+            "type": "string",
+            "title": "Start Day",
+            "description": "event start day variable name",
+            "default": "ASTDY"
+        },
+        "endy_col": {
+            "type": "string",
+            "title": "End Day",
+            "description": "event end day variable name",
+            "default": "AENDY"
+        },
+        "term_col": {
+            "type": "string",
+            "title": "Adverse Event",
+            "description": "verbatim adverse event text variable name",
+            "default": "AETERM"
+        },
+        "color": {
+            "type": "object",
+            "title": "Color Scheme",
+            "description": "an object that defines the event color stratification variable, its label, its levels, and their corresponding colors",
+            "properties": {
+                "value_col": {
+                    "type": "string",
+                    "title": "Color Stratification",
+                    "description": "color stratification variable name, usually set to event severity",
+                    "default": "AESEV"
+                },
+                "label": {
+                    "type": "string",
+                    "title": "Legend Label",
+                    "description": "color stratification variable label",
+                    "default": "Severity/Intensity"
+                },
+                "values": {
+                    "type": "array",
+                    "title": "Stratification Levels",
+                    "description": "an array of stratification values",
+                    "items": {
+                        "type": "string"
+                    },
+                    "defaultObject": [
+                        "MILD",
+                        "MODERATE",
+                        "SEVERE"
+                    ]
+                },
+                "colors": {
+                    "type": "array",
+                    "title": "Colors",
+                    "description": "an array of stratification colors",
+                    "items": {
+                        "type": "string"
+                    },
+                    "defaultObject": [
+                        "#66bd63",
+                        "#fdae61",
+                        "#d73027",
+                        "#377eb8",
+                        "#984ea3",
+                        "#ff7f00",
+                        "#a65628",
+                        "#f781bf",
+                        "#999999"
+                    ]
+                }
+            }
+        },
+        "highlight": {
+            "type": "object",
+            "title": "Event Highlighting",
+            "description": "an object that defines what events to highlight and how to highlight them",
+            "properties": {
+                "value_col": {
+                    "type": "string",
+                    "title": "Highlight Flag",
+                    "description": "event highlighting variable name",
+                    "default": "AESER"
+                },
+                "label": {
+                    "type": "string",
+                    "title": "Highlight Label",
+                    "description": "a description of the highlighted event",
+                    "default": "Serious Event"
+                },
+                "value": {
+                    "type": "string",
+                    "title": "Highlight Flag Value",
+                    "description": "value of `highlight.value_col` that identifies events to highlight",
+                    "default": "Y"
+                },
+                "detail_col": {
+                    "type": "string",
+                    "title": "Highlight Detail",
+                    "description": "detail of highlighted event variable name"
+                },
+                "attributes": {
+                    "type": "object",
+                    "title": "Highlighting",
+                    "description": "an object of attributes that define highlighted marks",
+                    "properties": {
+                        "stroke": {
+                            "type": "string",
+                            "title": "Color",
+                            "description": "color of highlighted marks",
+                            "default": "black"
+                        },
+                        "stroke-width": {
+                            "type": "string",
+                            "title": "Width",
+                            "description": "line width of highlighted marks",
+                            "default": "2"
+                        },
+                        "fill": {
+                            "type": "string",
+                            "title": "Circle Fill",
+                            "description": "the fill of the circle that begins the highlighted mark",
+                            "default": "none"
+                        }
+                    }
+                }
+            }
+        },
+        "filters": {
+            "type": "array",
+            "title": "Filters",
+            "description": "an array of filter variables and associated metadata",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "value_col": {
+                        "type": "string",
+                        "title": "Variable Name",
+                        "description": "the name of the filter variable"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Variable Label",
+                        "description": "a description of the filter variable"
+                    }
+                }
+            }
+        },
+        "details": {
+            "type": "array",
+            "title": "Event Details",
+            "description": "an array of detail listing variables and associated metadata",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "value_col": {
+                        "type": "string",
+                        "title": "Variable Name",
+                        "description": "the name of the detail variable"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Variable Label",
+                        "description": "a description of the detail variable"
+                    }
+                }
+            }
+        },
+        "custom_marks": {
+            "type": "array",
+            "title": "Custom Marks",
+            "description": "an array of custom Webcharts marks",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "title": "Mark Type",
+                        "description": "a Webcharts mark type: point, bar, line, or text"
+                    },
+                    "per": {
+                        "type": "array",
+                        "title": "Mark Grouping",
+                        "description": "an array of variables for each value combination of which a mark is drawn",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "tooltip": {
+                        "type": "string",
+                        "title": "Mark Tooltip",
+                        "description": "the tooltip of the custom mark"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "title": "Mark Attributes",
+                        "description": "the attributes of the custom mark",
+                        "properties": {
+                            "clip-path": {
+                                "type": "string",
+                                "title": "Clipping Region",
+                                "description": "defines a region with which to contain the mark visually"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

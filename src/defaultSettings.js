@@ -1,7 +1,6 @@
 import clone from './util/clone';
 
-export default //Template-specific settings
-{
+export const rendererSpecificSettings = {
     id_col: 'USUBJID',
     seq_col: 'AESEQ',
     stdy_col: 'ASTDY',
@@ -39,9 +38,10 @@ export default //Template-specific settings
 
     filters: null,
     details: null,
-    custom_marks: null,
+    custom_marks: null
+};
 
-    //Standard chart settings
+export const webchartsSettings = {
     x: {
         column: 'wc_value',
         type: 'linear',
@@ -80,6 +80,8 @@ export default //Template-specific settings
     margin: { top: 50 }, // for second x-axis
     resizable: true
 };
+
+export default Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
 export function syncSettings(preSettings) {
     const nextSettings = clone(preSettings);
@@ -150,6 +152,7 @@ export function syncSettings(preSettings) {
     nextSettings.legend = nextSettings.legend || { location: 'top' };
     nextSettings.legend.label = nextSettings.color.label;
     nextSettings.legend.order = nextSettings.color.values;
+    nextSettings.color_dom = nextSettings.color.values;
 
     //Default filters
     if (!nextSettings.filters || nextSettings.filters.length === 0) {
