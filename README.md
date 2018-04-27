@@ -8,9 +8,9 @@ AE-timelines is a JavaScript library built using Webcharts ([1](https://github.c
 
 
 
-Users can filter and sort the timelines and drill down to each participant; the full functionality is described [here](https://github.com/RhoInc/ae-timelines/wiki/User-Requirements).
+Users can filter and sort the timelines and drill down to each participant; the full functionality is described [here](https://github.com/RhoInc/ae-timelines/wiki/Technical-Documentation).
 The library expects an [ADaM data structure](https://www.cdisc.org/system/files/members/standard/foundational/adam/ADaM_OCCDS_v1.0.pdf) by default but can be customized to use any dataset that is one record per adverse event.
-Full details about chart configuration are [here](Configuration).
+Full details about chart configuration are [here](https://github.com/RhoInc/ae-timelines/wiki/Configuration).
 
 ## Typical Usage
 
@@ -54,7 +54,7 @@ The chart can be configured to facilitate non-standard data formats and to alter
 
 ## Links
 
-- [Interactive Example](https://rhoinc.github.io/viz-library/examples/0008-safetyExplorer-default/ae-timelines/)
+- [Interactive Example](https://rhoinc.github.io/ae-timelines/build/test-page/)
 - [Configuration](https://github.com/RhoInc/ae-timelines/wiki/Configuration) 
 - [API](https://github.com/RhoInc/ae-timelines/wiki/API)
 - [Technical Documentation](https://github.com/RhoInc/ae-timelines/wiki/Technical-Documentation) 
