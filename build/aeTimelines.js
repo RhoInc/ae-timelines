@@ -1,21 +1,19 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
-          ? define(['webcharts', 'd3'], factory)
-          : (global.aeTimelines = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3) {
+          ? define(['d3', 'webcharts'], factory)
+          : (global.aeTimelines = factory(global.d3, global.webCharts));
+})(this, function(d3, webcharts) {
     'use strict';
 
     /*------------------------------------------------------------------------------------------------\
-  Add assign method to Object if nonexistent.
-\------------------------------------------------------------------------------------------------*/
+    Add assign method to Object if nonexistent.
+  \------------------------------------------------------------------------------------------------*/
 
     if (typeof Object.assign != 'function') {
         (function() {
             Object.assign = function(target) {
-                'use strict';
-
                 if (target === undefined || target === null) {
                     throw new TypeError('Cannot convert undefined or null to object');
                 }
@@ -50,125 +48,9 @@
                       : typeof obj;
               };
 
-    var asyncGenerator = (function() {
-        function AwaitValue(value) {
-            this.value = value;
-        }
-
-        function AsyncGenerator(gen) {
-            var front, back;
-
-            function send(key, arg) {
-                return new Promise(function(resolve, reject) {
-                    var request = {
-                        key: key,
-                        arg: arg,
-                        resolve: resolve,
-                        reject: reject,
-                        next: null
-                    };
-
-                    if (back) {
-                        back = back.next = request;
-                    } else {
-                        front = back = request;
-                        resume(key, arg);
-                    }
-                });
-            }
-
-            function resume(key, arg) {
-                try {
-                    var result = gen[key](arg);
-                    var value = result.value;
-
-                    if (value instanceof AwaitValue) {
-                        Promise.resolve(value.value).then(
-                            function(arg) {
-                                resume('next', arg);
-                            },
-                            function(arg) {
-                                resume('throw', arg);
-                            }
-                        );
-                    } else {
-                        settle(result.done ? 'return' : 'normal', result.value);
-                    }
-                } catch (err) {
-                    settle('throw', err);
-                }
-            }
-
-            function settle(type, value) {
-                switch (type) {
-                    case 'return':
-                        front.resolve({
-                            value: value,
-                            done: true
-                        });
-                        break;
-
-                    case 'throw':
-                        front.reject(value);
-                        break;
-
-                    default:
-                        front.resolve({
-                            value: value,
-                            done: false
-                        });
-                        break;
-                }
-
-                front = front.next;
-
-                if (front) {
-                    resume(front.key, front.arg);
-                } else {
-                    back = null;
-                }
-            }
-
-            this._invoke = send;
-
-            if (typeof gen.return !== 'function') {
-                this.return = undefined;
-            }
-        }
-
-        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
-            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
-                return this;
-            };
-        }
-
-        AsyncGenerator.prototype.next = function(arg) {
-            return this._invoke('next', arg);
-        };
-
-        AsyncGenerator.prototype.throw = function(arg) {
-            return this._invoke('throw', arg);
-        };
-
-        AsyncGenerator.prototype.return = function(arg) {
-            return this._invoke('return', arg);
-        };
-
-        return {
-            wrap: function(fn) {
-                return function() {
-                    return new AsyncGenerator(fn.apply(this, arguments));
-                };
-            },
-            await: function(value) {
-                return new AwaitValue(value);
-            }
-        };
-    })();
-
     /*------------------------------------------------------------------------------------------------\
-  Clone a variable (http://stackoverflow.com/a/728694).
-\------------------------------------------------------------------------------------------------*/
+    Clone a variable (http://stackoverflow.com/a/728694).
+  \------------------------------------------------------------------------------------------------*/
 
     function clone(obj) {
         var copy;
@@ -622,8 +504,8 @@
     }
 
     /*------------------------------------------------------------------------------------------------\
-  Expand a data array to one item per original item per specified column.
-\------------------------------------------------------------------------------------------------*/
+    Expand a data array to one item per original item per specified column.
+  \------------------------------------------------------------------------------------------------*/
 
     function lengthenRaw(data, columns) {
         var my_data = [];
@@ -755,15 +637,15 @@
     function onDatatransform() {}
 
     /*------------------------------------------------------------------------------------------------\
-  Annotate number of participants based on current filters, number of participants in all, and
-  the corresponding percentage.
+    Annotate number of participants based on current filters, number of participants in all, and
+    the corresponding percentage.
 
-  Inputs:
+    Inputs:
 
-    chart - a webcharts chart object
-    id_unit - a text string to label the units in the annotation (default = 'participants')
-    selector - css selector for the annotation
-\------------------------------------------------------------------------------------------------*/
+      chart - a webcharts chart object
+      id_unit - a text string to label the units in the annotation (default = 'participants')
+      selector - css selector for the annotation
+  \------------------------------------------------------------------------------------------------*/
 
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
@@ -883,8 +765,8 @@
     }
 
     /*------------------------------------------------------------------------------------------------\
-  Add highlighted adverse event legend item.
-\------------------------------------------------------------------------------------------------*/
+    Add highlighted adverse event legend item.
+  \------------------------------------------------------------------------------------------------*/
 
     function addHighlightLegendItem(chart) {
         chart.wrap.select('.legend li.highlight').remove();
@@ -1028,8 +910,8 @@
         addTickClick.call(this);
 
         /**-------------------------------------------------------------------------------------------\
-      Second chart callbacks.
-    \-------------------------------------------------------------------------------------------**/
+        Second chart callbacks.
+      \-------------------------------------------------------------------------------------------**/
 
         this.chart2.on('preprocess', function() {
             //Define color scale.
@@ -1048,8 +930,7 @@
     }
 
     // polyfills
-    //settings
-    //webcharts
+
     function aeTimelines(element, settings) {
         //Merge default settings with custom settings.
         var mergedSettings = deepmerge_1(defaultSettings, settings, {
