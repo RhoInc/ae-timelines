@@ -12,15 +12,15 @@ export const rendererSpecificSettings = {
         label: 'Severity/Intensity',
         values: ['MILD', 'MODERATE', 'SEVERE'],
         colors: [
-            '#66bd63', // green
-            '#fdae61', // sherbet
-            '#d73027', // red
+            '#66bd63', // mild
+            '#fdae61', // moderate
+            '#d73027', // severe
             '#377eb8',
             '#984ea3',
             '#ff7f00',
             '#a65628',
             '#f781bf',
-            '#999999'
+            '#999999', // N/A, e.g. ungraded
         ]
     },
 
@@ -74,7 +74,7 @@ export const webchartsSettings = {
             }
         }
     ],
-    legend: { location: 'top' },
+    legend: { location: 'top', mark: 'circle' },
     gridlines: 'y',
     range_band: 15,
     margin: { top: 50 }, // for second x-axis
