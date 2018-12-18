@@ -19,8 +19,7 @@ export const rendererSpecificSettings = {
             '#984ea3',
             '#ff7f00',
             '#a65628',
-            '#f781bf',
-            '#999999', // N/A, e.g. ungraded
+            '#f781bf'
         ]
     },
 

@@ -5,4 +5,7 @@ export default function checkColorBy() {
                 ? d[this.config.color_by]
                 : 'N/A')
     );
+
+    //Flag NAs
+    if (this.superRaw.some(d => d[this.config.color_by] === 'N/A')) this.na = true;
 }

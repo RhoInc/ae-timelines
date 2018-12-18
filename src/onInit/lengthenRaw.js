@@ -4,10 +4,7 @@
 
 export default function lengthenRaw() {
     const data = this.superRaw;
-    const columns = [
-        this.config.stdy_col,
-        this.config.endy_col,
-    ];
+    const columns = [this.config.stdy_col, this.config.endy_col];
     const my_data = [];
 
     data.forEach(d => {
