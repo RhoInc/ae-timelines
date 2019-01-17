@@ -157,7 +157,7 @@ export function syncSettings(preSettings) {
     if (!nextSettings.filters || nextSettings.filters.length === 0) {
         nextSettings.filters = [
             { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
-            { value_col: nextSettings.id_col, label: 'Subject Identifier' }
+            { value_col: nextSettings.id_col, label: 'Participant Identifier' }
         ];
         if (nextSettings.highlight)
             nextSettings.filters.unshift({
@@ -236,7 +236,7 @@ export const controlInputs = [
     {
         type: 'dropdown',
         option: 'y.sort',
-        label: 'Sort Subject IDs',
+        label: 'Sort Participant IDs',
         values: ['earliest', 'alphabetical-descending'],
         require: true
     }

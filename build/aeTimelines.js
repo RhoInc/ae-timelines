@@ -446,7 +446,7 @@
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
             nextSettings.filters = [
                 { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
-                { value_col: nextSettings.id_col, label: 'Subject Identifier' }
+                { value_col: nextSettings.id_col, label: 'Participant Identifier' }
             ];
             if (nextSettings.highlight)
                 nextSettings.filters.unshift({
@@ -525,7 +525,7 @@
         {
             type: 'dropdown',
             option: 'y.sort',
-            label: 'Sort Subject IDs',
+            label: 'Sort Participant IDs',
             values: ['earliest', 'alphabetical-descending'],
             require: true
         }
@@ -864,7 +864,7 @@
                 return !filtered;
             });
 
-            //Capture all subject IDs with adverse events with a start day.
+            //Capture all participant IDs with adverse events with a start day.
             var withStartDay = d3
                 .nest()
                 .key(function(d) {
@@ -892,7 +892,7 @@
                     return d.key;
                 });
 
-            //Capture all subject IDs with adverse events without a start day.
+            //Capture all participant IDs with adverse events without a start day.
             var withoutStartDay = d3
                 .set(
                     filtered_data
