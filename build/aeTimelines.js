@@ -594,7 +594,7 @@
 
         //Remove records with empty verbatim terms.
         this.superRaw = this.superRaw.filter(function(d) {
-            return /[^\s]/.test(d[_this.config.term_col]);
+            return /[^\s*$]/.test(d[_this.config.term_col]);
         });
         var n1 = this.superRaw.length;
         var diff1 = N - n1;

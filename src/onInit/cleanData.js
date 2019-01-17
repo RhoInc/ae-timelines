@@ -3,7 +3,7 @@ export default function cleanData() {
     const N = this.superRaw.length;
 
     //Remove records with empty verbatim terms.
-    this.superRaw = this.superRaw.filter(d => /[^\s]/.test(d[this.config.term_col]));
+    this.superRaw = this.superRaw.filter(d => /[^\s*$]/.test(d[this.config.term_col]));
     const n1 = this.superRaw.length;
     const diff1 = N - n1;
     if (diff1) console.warn(`${diff1} records without [ ${this.config.term_col} ] removed.`);
