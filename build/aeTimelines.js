@@ -7,31 +7,123 @@
 })(this, function(d3, webcharts) {
     'use strict';
 
-    /*------------------------------------------------------------------------------------------------\
-    Add assign method to Object if nonexistent.
-  \------------------------------------------------------------------------------------------------*/
-
     if (typeof Object.assign != 'function') {
-        (function() {
-            Object.assign = function(target) {
-                if (target === undefined || target === null) {
+        Object.defineProperty(Object, 'assign', {
+            value: function assign(target, varArgs) {
+                if (target == null) {
+                    // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
                 }
 
-                var output = Object(target);
+                var to = Object(target);
+
                 for (var index = 1; index < arguments.length; index++) {
-                    var source = arguments[index];
-                    if (source !== undefined && source !== null) {
-                        for (var nextKey in source) {
-                            if (source.hasOwnProperty(nextKey)) {
-                                output[nextKey] = source[nextKey];
+                    var nextSource = arguments[index];
+
+                    if (nextSource != null) {
+                        // Skip over if undefined or null
+                        for (var nextKey in nextSource) {
+                            // Avoid bugs when hasOwnProperty is shadowed
+                            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                                to[nextKey] = nextSource[nextKey];
                             }
                         }
                     }
                 }
-                return output;
-            };
-        })();
+
+                return to;
+            },
+            writable: true,
+            configurable: true
+        });
+    }
+
+    if (!Array.prototype.find) {
+        Object.defineProperty(Array.prototype, 'find', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, 'length')).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return kValue.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return kValue;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return undefined.
+                return undefined;
+            }
+        });
+    }
+
+    if (!Array.prototype.findIndex) {
+        Object.defineProperty(Array.prototype, 'findIndex', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return k.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return k;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return -1.
+                return -1;
+            }
+        });
     }
 
     var _typeof =
@@ -49,8 +141,8 @@
               };
 
     /*------------------------------------------------------------------------------------------------\
-    Clone a variable (http://stackoverflow.com/a/728694).
-  \------------------------------------------------------------------------------------------------*/
+      Clone a variable (http://stackoverflow.com/a/728694).
+    \------------------------------------------------------------------------------------------------*/
 
     function clone(obj) {
         var copy;
@@ -85,304 +177,6 @@
         }
 
         throw new Error("Unable to copy obj! Its type isn't supported.");
-    }
-
-    var rendererSpecificSettings = {
-        id_col: 'USUBJID',
-        seq_col: 'AESEQ',
-        stdy_col: 'ASTDY',
-        endy_col: 'AENDY',
-        term_col: 'AETERM',
-
-        color: {
-            value_col: 'AESEV',
-            label: 'Severity/Intensity',
-            values: ['MILD', 'MODERATE', 'SEVERE'],
-            colors: [
-                '#66bd63', // green
-                '#fdae61', // sherbet
-                '#d73027', // red
-                '#377eb8',
-                '#984ea3',
-                '#ff7f00',
-                '#a65628',
-                '#f781bf',
-                '#999999'
-            ]
-        },
-
-        highlight: {
-            value_col: 'AESER',
-            label: 'Serious Event',
-            value: 'Y',
-            detail_col: null,
-            attributes: {
-                stroke: 'black',
-                'stroke-width': '2',
-                fill: 'none'
-            }
-        },
-
-        filters: null,
-        details: null,
-        custom_marks: null
-    };
-
-    var webchartsSettings = {
-        x: {
-            column: 'wc_value',
-            type: 'linear',
-            label: null
-        },
-        y: {
-            column: null, // set in syncSettings()
-            type: 'ordinal',
-            label: '',
-            sort: 'earliest',
-            behavior: 'flex'
-        },
-        marks: [
-            {
-                type: 'line',
-                per: null, // set in syncSettings()
-                tooltip: null, // set in syncSettings()
-                attributes: {
-                    'stroke-width': 5,
-                    'stroke-opacity': 0.5
-                }
-            },
-            {
-                type: 'circle',
-                per: null, // set in syncSettings()
-                tooltip: null, // set in syncSettings()
-                attributes: {
-                    'fill-opacity': 0.5,
-                    'stroke-opacity': 0.5
-                }
-            }
-        ],
-        legend: { location: 'top' },
-        gridlines: 'y',
-        range_band: 15,
-        margin: { top: 50 }, // for second x-axis
-        resizable: true
-    };
-
-    var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
-
-    function syncSettings(preSettings) {
-        var nextSettings = clone(preSettings);
-
-        nextSettings.y.column = nextSettings.id_col;
-
-        //Lines (AE duration)
-        nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[0].tooltip =
-            'Reported Term: [' +
-            nextSettings.term_col +
-            ']' +
-            ('\nStart Day: [' + nextSettings.stdy_col + ']') +
-            ('\nStop Day: [' + nextSettings.endy_col + ']');
-
-        //Circles (AE start day)
-        nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip =
-            'Reported Term: [' +
-            nextSettings.term_col +
-            ']' +
-            ('\nStart Day: [' + nextSettings.stdy_col + ']') +
-            ('\nStop Day: [' + nextSettings.endy_col + ']');
-        nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
-
-        //Define highlight marks.
-        if (nextSettings.highlight) {
-            //Lines (highlighted event duration)
-            var highlightLine = {
-                type: 'line',
-                per: [nextSettings.id_col, nextSettings.seq_col],
-                tooltip:
-                    'Reported Term: [' +
-                    nextSettings.term_col +
-                    ']' +
-                    ('\nStart Day: [' + nextSettings.stdy_col + ']') +
-                    ('\nStop Day: [' + nextSettings.endy_col + ']') +
-                    ('\n' +
-                        nextSettings.highlight.label +
-                        ': [' +
-                        (nextSettings.highlight.detail_col
-                            ? nextSettings.highlight.detail_col
-                            : nextSettings.highlight.value_col) +
-                        ']'),
-                values: {},
-                attributes: nextSettings.highlight.attributes || {}
-            };
-            highlightLine.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-            highlightLine.attributes.class = 'highlight';
-            nextSettings.marks.push(highlightLine);
-
-            //Circles (highlighted event start day)
-            var highlightCircle = {
-                type: 'circle',
-                per: [nextSettings.id_col, nextSettings.seq_col, 'wc_value'],
-                tooltip:
-                    'Reported Term: [' +
-                    nextSettings.term_col +
-                    ']' +
-                    ('\nStart Day: [' + nextSettings.stdy_col + ']') +
-                    ('\nStop Day: [' + nextSettings.endy_col + ']') +
-                    ('\n' +
-                        nextSettings.highlight.label +
-                        ': [' +
-                        (nextSettings.highlight.detail_col
-                            ? nextSettings.highlight.detail_col
-                            : nextSettings.highlight.value_col) +
-                        ']'),
-                values: { wc_category: nextSettings.stdy_col },
-                attributes: nextSettings.highlight.attributes || {}
-            };
-            highlightCircle.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
-            highlightCircle.attributes.class = 'highlight';
-            nextSettings.marks.push(highlightCircle);
-        }
-
-        //Define mark coloring and legend.
-        nextSettings.color_by = nextSettings.color.value_col;
-        nextSettings.colors = nextSettings.color.colors;
-        nextSettings.legend = nextSettings.legend || { location: 'top' };
-        nextSettings.legend.label = nextSettings.color.label;
-        nextSettings.legend.order = nextSettings.color.values;
-        nextSettings.color_dom = nextSettings.color.values;
-
-        //Default filters
-        if (!nextSettings.filters || nextSettings.filters.length === 0) {
-            nextSettings.filters = [
-                { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
-                { value_col: nextSettings.id_col, label: 'Subject Identifier' }
-            ];
-            if (nextSettings.highlight)
-                nextSettings.filters.unshift({
-                    value_col: nextSettings.highlight.value_col,
-                    label: nextSettings.highlight.label
-                });
-        }
-
-        //Default detail listing columns
-        var defaultDetails = [
-            { value_col: nextSettings.seq_col, label: 'Sequence Number' },
-            { value_col: nextSettings.stdy_col, label: 'Start Day' },
-            { value_col: nextSettings.endy_col, label: 'Stop Day' },
-            { value_col: nextSettings.term_col, label: 'Reported Term' }
-        ];
-
-        //Add settings.color.value_col to default details.
-        defaultDetails.push({
-            value_col: nextSettings.color.value_col,
-            label: nextSettings.color.label
-        });
-
-        //Add settings.highlight.value_col and settings.highlight.detail_col to default details.
-        if (nextSettings.highlight) {
-            defaultDetails.push({
-                value_col: nextSettings.highlight.value_col,
-                label: nextSettings.highlight.label
-            });
-
-            if (nextSettings.highlight.detail_col)
-                defaultDetails.push({
-                    value_col: nextSettings.highlight.detail_col,
-                    label: nextSettings.highlight.label + ' Details'
-                });
-        }
-
-        //Add settings.filters columns to default details.
-        nextSettings.filters.forEach(function(filter) {
-            if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col)
-                defaultDetails.push({
-                    value_col: filter.value_col,
-                    label: filter.label
-                });
-        });
-
-        //Redefine settings.details with defaults.
-        if (!nextSettings.details) nextSettings.details = defaultDetails;
-        else {
-            //Allow user to specify an array of columns or an array of objects with a column property
-            //and optionally a column label.
-            nextSettings.details = nextSettings.details.map(function(d) {
-                return {
-                    value_col: d.value_col ? d.value_col : d,
-                    label: d.label ? d.label : d.value_col ? d.value_col : d
-                };
-            });
-
-            //Add default details to settings.details.
-            defaultDetails.reverse().forEach(function(defaultDetail) {
-                return nextSettings.details.unshift(defaultDetail);
-            });
-        }
-
-        //Add custom marks to marks array.
-        if (nextSettings.custom_marks)
-            nextSettings.custom_marks.forEach(function(custom_mark) {
-                custom_mark.attributes = custom_mark.attributes || {};
-                custom_mark.attributes.class = 'custom';
-                nextSettings.marks.push(custom_mark);
-            });
-
-        return nextSettings;
-    }
-
-    var controlInputs = [
-        {
-            type: 'dropdown',
-            option: 'y.sort',
-            label: 'Sort Subject IDs',
-            values: ['earliest', 'alphabetical-descending'],
-            require: true
-        }
-    ];
-
-    function syncControlInputs(preControlInputs, preSettings) {
-        preSettings.filters.forEach(function(d, i) {
-            var thisFilter = {
-                type: 'subsetter',
-                value_col: d.value_col ? d.value_col : d,
-                label: d.label ? d.label : d.value_col ? d.value_col : d
-            };
-            //add the filter to the control inputs (as long as it isn't already there)
-            var current_value_cols = preControlInputs
-                .filter(function(f) {
-                    return f.type == 'subsetter';
-                })
-                .map(function(m) {
-                    return m.value_col;
-                });
-            if (current_value_cols.indexOf(thisFilter.value_col) == -1)
-                preControlInputs.unshift(thisFilter);
-        });
-
-        return preControlInputs;
-    }
-
-    function syncSecondSettings(preSettings) {
-        var nextSettings = clone(preSettings);
-
-        nextSettings.y.column = nextSettings.seq_col;
-        nextSettings.y.sort = 'alphabetical-descending';
-
-        nextSettings.marks[0].per = [nextSettings.seq_col];
-        nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
-
-        if (nextSettings.highlight) {
-            nextSettings.marks[2].per = [nextSettings.seq_col];
-            nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
-        }
-
-        nextSettings.range_band = preSettings.range_band * 2;
-        nextSettings.margin = null;
-        nextSettings.transitions = false;
-
-        return nextSettings;
     }
 
     var isMergeableObject = function isMergeableObject(value) {
@@ -483,6 +277,385 @@
 
     var deepmerge_1 = deepmerge;
 
+    var rendererSpecificSettings = {
+        id_col: 'USUBJID',
+        seq_col: 'AESEQ',
+        stdy_col: 'ASTDY',
+        endy_col: 'AENDY',
+        term_col: 'AETERM',
+
+        color: {
+            value_col: 'AESEV',
+            label: 'Severity/Intensity',
+            values: ['MILD', 'MODERATE', 'SEVERE'],
+            colors: [
+                '#66bd63', // mild
+                '#fdae61', // moderate
+                '#d73027', // severe
+                '#377eb8',
+                '#984ea3',
+                '#ff7f00',
+                '#a65628',
+                '#f781bf'
+            ]
+        },
+
+        highlight: {
+            value_col: 'AESER',
+            label: 'Serious Event',
+            value: 'Y',
+            detail_col: null,
+            attributes: {
+                stroke: 'black',
+                'stroke-width': '2',
+                fill: 'none'
+            }
+        },
+
+        filters: null,
+        details: null,
+        custom_marks: null
+    };
+
+    var webchartsSettings = {
+        x: {
+            column: 'wc_value',
+            type: 'linear',
+            label: null
+        },
+        y: {
+            column: null, // set in syncSettings()
+            type: 'ordinal',
+            label: '',
+            sort: 'earliest',
+            behavior: 'flex'
+        },
+        marks: [
+            {
+                type: 'line',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
+                attributes: {
+                    'stroke-width': 5,
+                    'stroke-opacity': 0.5
+                }
+            },
+            {
+                type: 'circle',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
+                attributes: {
+                    'fill-opacity': 0.5,
+                    'stroke-opacity': 0.5
+                }
+            }
+        ],
+        legend: { location: 'top', mark: 'circle' },
+        gridlines: 'y',
+        range_band: 15,
+        margin: { top: 50 }, // for second x-axis
+        resizable: true
+    };
+
+    var defaultSettings = Object.assign({}, rendererSpecificSettings, webchartsSettings);
+
+    function syncSettings(preSettings) {
+        var nextSettings = clone(preSettings);
+
+        nextSettings.y.column = nextSettings.id_col;
+
+        //Lines (AE duration)
+        nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
+        nextSettings.marks[0].tooltip =
+            'Reported Term: [' +
+            nextSettings.term_col +
+            ']' +
+            ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+            ('\nStop Day: [' + nextSettings.endy_col + ']');
+
+        //Circles (AE start day)
+        nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
+        nextSettings.marks[1].tooltip =
+            'Reported Term: [' +
+            nextSettings.term_col +
+            ']' +
+            ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+            ('\nStop Day: [' + nextSettings.endy_col + ']');
+        nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
+
+        //Define highlight marks.
+        if (nextSettings.highlight) {
+            //Lines (highlighted event duration)
+            var highlightLine = {
+                type: 'line',
+                per: [nextSettings.id_col, nextSettings.seq_col],
+                tooltip:
+                    'Reported Term: [' +
+                    nextSettings.term_col +
+                    ']' +
+                    ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+                    ('\nStop Day: [' + nextSettings.endy_col + ']') +
+                    ('\n' +
+                        nextSettings.highlight.label +
+                        ': [' +
+                        (nextSettings.highlight.detail_col
+                            ? nextSettings.highlight.detail_col
+                            : nextSettings.highlight.value_col) +
+                        ']'),
+                values: {},
+                attributes: nextSettings.highlight.attributes || {}
+            };
+            highlightLine.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+            highlightLine.attributes.class = 'highlight';
+            nextSettings.marks.push(highlightLine);
+
+            //Circles (highlighted event start day)
+            var highlightCircle = {
+                type: 'circle',
+                per: [nextSettings.id_col, nextSettings.seq_col, 'wc_value'],
+                tooltip:
+                    'Reported Term: [' +
+                    nextSettings.term_col +
+                    ']' +
+                    ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+                    ('\nStop Day: [' + nextSettings.endy_col + ']') +
+                    ('\n' +
+                        nextSettings.highlight.label +
+                        ': [' +
+                        (nextSettings.highlight.detail_col
+                            ? nextSettings.highlight.detail_col
+                            : nextSettings.highlight.value_col) +
+                        ']'),
+                values: { wc_category: nextSettings.stdy_col },
+                attributes: nextSettings.highlight.attributes || {}
+            };
+            highlightCircle.values[nextSettings.highlight.value_col] = nextSettings.highlight.value;
+            highlightCircle.attributes.class = 'highlight';
+            nextSettings.marks.push(highlightCircle);
+        }
+
+        //Define mark coloring and legend.
+        nextSettings.color_by = nextSettings.color.value_col;
+        nextSettings.colors = nextSettings.color.colors;
+        nextSettings.legend = nextSettings.legend || { location: 'top' };
+        nextSettings.legend.label = nextSettings.color.label;
+        nextSettings.legend.order = nextSettings.color.values;
+        nextSettings.color_dom = nextSettings.color.values;
+
+        //Default filters
+        if (!nextSettings.filters || nextSettings.filters.length === 0) {
+            nextSettings.filters = [
+                { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
+                { value_col: nextSettings.id_col, label: 'Participant Identifier' }
+            ];
+            if (nextSettings.highlight)
+                nextSettings.filters.unshift({
+                    value_col: nextSettings.highlight.value_col,
+                    label: nextSettings.highlight.label
+                });
+        }
+
+        //Default detail listing columns
+        var defaultDetails = [
+            { value_col: nextSettings.seq_col, label: 'Sequence Number' },
+            { value_col: nextSettings.stdy_col, label: 'Start Day' },
+            { value_col: nextSettings.endy_col, label: 'Stop Day' },
+            { value_col: nextSettings.term_col, label: 'Reported Term' }
+        ];
+
+        //Add settings.color.value_col to default details.
+        defaultDetails.push({
+            value_col: nextSettings.color.value_col,
+            label: nextSettings.color.label
+        });
+
+        //Add settings.highlight.value_col and settings.highlight.detail_col to default details.
+        if (nextSettings.highlight) {
+            defaultDetails.push({
+                value_col: nextSettings.highlight.value_col,
+                label: nextSettings.highlight.label
+            });
+
+            if (nextSettings.highlight.detail_col)
+                defaultDetails.push({
+                    value_col: nextSettings.highlight.detail_col,
+                    label: nextSettings.highlight.label + ' Details'
+                });
+        }
+
+        //Add settings.filters columns to default details.
+        nextSettings.filters.forEach(function(filter) {
+            if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col)
+                defaultDetails.push({
+                    value_col: filter.value_col,
+                    label: filter.label
+                });
+        });
+
+        //Redefine settings.details with defaults.
+        if (!nextSettings.details) nextSettings.details = defaultDetails;
+        else {
+            //Allow user to specify an array of columns or an array of objects with a column property
+            //and optionally a column label.
+            nextSettings.details = nextSettings.details.map(function(d) {
+                return {
+                    value_col: d.value_col ? d.value_col : d,
+                    label: d.label ? d.label : d.value_col ? d.value_col : d
+                };
+            });
+
+            //Add default details to settings.details.
+            defaultDetails.reverse().forEach(function(defaultDetail) {
+                return nextSettings.details.unshift(defaultDetail);
+            });
+        }
+
+        //Add custom marks to marks array.
+        if (nextSettings.custom_marks)
+            nextSettings.custom_marks.forEach(function(custom_mark) {
+                custom_mark.attributes = custom_mark.attributes || {};
+                custom_mark.attributes.class = 'custom';
+                nextSettings.marks.push(custom_mark);
+            });
+
+        return nextSettings;
+    }
+
+    var controlInputs = [
+        {
+            type: 'dropdown',
+            option: 'y.sort',
+            label: 'Sort Participant IDs',
+            values: ['earliest', 'alphabetical-descending'],
+            require: true
+        }
+    ];
+
+    function syncControlInputs(preControlInputs, preSettings) {
+        preSettings.filters.forEach(function(d, i) {
+            var thisFilter = {
+                type: 'subsetter',
+                value_col: d.value_col ? d.value_col : d,
+                label: d.label ? d.label : d.value_col ? d.value_col : d
+            };
+            //add the filter to the control inputs (as long as it isn't already there)
+            var current_value_cols = preControlInputs
+                .filter(function(f) {
+                    return f.type == 'subsetter';
+                })
+                .map(function(m) {
+                    return m.value_col;
+                });
+            if (current_value_cols.indexOf(thisFilter.value_col) == -1)
+                preControlInputs.unshift(thisFilter);
+        });
+
+        return preControlInputs;
+    }
+
+    function syncSecondSettings(preSettings) {
+        var nextSettings = clone(preSettings);
+
+        nextSettings.y.column = nextSettings.seq_col;
+        nextSettings.y.sort = 'alphabetical-descending';
+
+        nextSettings.marks[0].per = [nextSettings.seq_col];
+        nextSettings.marks[1].per = [nextSettings.seq_col, 'wc_value'];
+
+        if (nextSettings.highlight) {
+            nextSettings.marks[2].per = [nextSettings.seq_col];
+            nextSettings.marks[3].per = [nextSettings.seq_col, 'wc_value'];
+        }
+
+        nextSettings.range_band = preSettings.range_band * 2;
+        nextSettings.margin = null;
+        nextSettings.transitions = false;
+
+        return nextSettings;
+    }
+
+    function calculatePopulationSize() {
+        var _this = this;
+
+        this.populationCount = d3
+            .set(
+                this.raw_data.map(function(d) {
+                    return d[_this.config.id_col];
+                })
+            )
+            .values().length;
+    }
+
+    function cleanData() {
+        var _this = this;
+
+        this.superRaw = this.raw_data;
+        var N = this.superRaw.length;
+
+        //Remove records with empty verbatim terms.
+        this.superRaw = this.superRaw.filter(function(d) {
+            return /[^\s*$]/.test(d[_this.config.term_col]);
+        });
+        var n1 = this.superRaw.length;
+        var diff1 = N - n1;
+        if (diff1)
+            console.warn(diff1 + ' records without [ ' + this.config.term_col + ' ] removed.');
+
+        //Remove records with non-integer start days.
+        this.superRaw = this.superRaw.filter(function(d) {
+            return /^\d+$/.test(d[_this.config.stdy_col]);
+        });
+        var n2 = this.superRaw.length;
+        var diff2 = n1 - n2;
+        if (diff2)
+            console.warn(diff2 + ' records without [ ' + this.config.stdy_col + ' ] removed.');
+    }
+
+    function checkFilters() {
+        var _this = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+            if (input.type !== 'subsetter') return true;
+            else {
+                var levels = d3
+                    .set(
+                        _this.superRaw.map(function(d) {
+                            return d[input.value_col];
+                        })
+                    )
+                    .values();
+                if (levels.length < 2) {
+                    console.warn(
+                        'The [ ' +
+                            input.value_col +
+                            ' ] filter was removed because the variable has only one level.'
+                    );
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    function checkColorBy() {
+        var _this = this;
+
+        this.superRaw.forEach(function(d) {
+            return (d[_this.config.color_by] = /[^\s*$]/.test(d[_this.config.color_by])
+                ? d[_this.config.color_by]
+                : 'N/A');
+        });
+
+        //Flag NAs
+        if (
+            this.superRaw.some(function(d) {
+                return d[_this.config.color_by] === 'N/A';
+            })
+        )
+            this.na = true;
+    }
+
     function defineColorDomain() {
         var _this = this;
 
@@ -492,9 +665,24 @@
                     return d[_this.config.color_by];
                 })
             )
-            .values();
+            .values()
+            .sort(function(a, b) {
+                var aIndex = _this.config.color.values.indexOf(a);
+                var bIndex = _this.config.color.values.indexOf(b);
+                var diff = aIndex > -1 && bIndex > -1 ? aIndex - bIndex : 0;
+
+                return diff
+                    ? diff
+                    : aIndex > -1
+                      ? -1
+                      : bIndex > -1
+                        ? 1
+                        : a === 'N/A'
+                          ? 1
+                          : b === 'N/A' ? -1 : a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+            });
         color_by_values.forEach(function(color_by_value, i) {
-            if (_this.config.legend.order.indexOf(color_by_value) === -1) {
+            if (_this.config.color.values.indexOf(color_by_value) < 0) {
                 _this.config.color_dom.push(color_by_value);
                 _this.config.legend.order.push(color_by_value);
                 _this.chart2.config.color_dom.push(color_by_value);
@@ -504,80 +692,47 @@
     }
 
     /*------------------------------------------------------------------------------------------------\
-    Expand a data array to one item per original item per specified column.
-  \------------------------------------------------------------------------------------------------*/
+      Expand a data array to one item per original item per specified column.
+    \------------------------------------------------------------------------------------------------*/
 
-    function lengthenRaw(data, columns) {
+    function lengthenRaw() {
+        var data = this.superRaw;
+        var columns = [this.config.stdy_col, this.config.endy_col];
         var my_data = [];
 
         data.forEach(function(d) {
             columns.forEach(function(column) {
                 var obj = Object.assign({}, d);
                 obj.wc_category = column;
-                obj.wc_value = d[column];
+                obj.wc_value = parseFloat(d[column]);
                 my_data.push(obj);
             });
         });
 
-        return my_data;
+        this.raw_data = my_data;
     }
 
     function onInit() {
+        calculatePopulationSize.call(this);
+        cleanData.call(this);
+        checkFilters.call(this);
+        checkColorBy.call(this);
+        defineColorDomain.call(this);
+        lengthenRaw.call(this);
+    }
+
+    function sortLegendFilter() {
         var _this = this;
 
-        //Count total number of IDs for population count.
-        this.populationCount = d3
-            .set(
-                this.raw_data.map(function(d) {
-                    return d[_this.config.id_col];
-                })
-            )
-            .values().length;
-
-        //Remove non-AE records.
-        this.superRaw = this.raw_data.filter(function(d) {
-            return /[^\s]/.test(d[_this.config.term_col]);
-        });
-
-        //Set empty settings.color_by values to 'N/A'.
-        this.superRaw.forEach(function(d) {
-            return (d[_this.config.color_by] = /[^\s]/.test(d[_this.config.color_by])
-                ? d[_this.config.color_by]
-                : 'N/A');
-        });
-
-        //Append unspecified settings.color_by values to settings.legend.order and define a shade of
-        //gray for each.
-        defineColorDomain.call(this);
-
-        //Derived data manipulation
-        this.raw_data = lengthenRaw(this.superRaw, [this.config.stdy_col, this.config.endy_col]);
-        this.raw_data.forEach(function(d) {
-            d.wc_value = d.wc_value ? +d.wc_value : NaN;
-        });
-
-        // Remove filters for variables with 0 or 1 levels
-        var chart = this;
-
-        this.controls.config.inputs = this.controls.config.inputs.filter(function(d) {
-            if (d.type != 'subsetter') {
-                return true;
-            } else {
-                var levels = d3
-                    .set(
-                        chart.raw_data.map(function(f) {
-                            return f[d.value_col];
-                        })
-                    )
-                    .values();
-                if (levels.length < 2) {
-                    console.warn(
-                        d.value_col + ' filter not shown since the variable has less than 2 levels'
-                    );
-                }
-                return levels.length >= 2;
-            }
-        });
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.value_col === _this.config.color.value_col;
+            })
+            .selectAll('option')
+            .sort(function(a, b) {
+                return _this.config.legend.order.indexOf(a) - _this.config.legend.order.indexOf(b);
+            });
     }
 
     function addParticipantCountContainer() {
@@ -622,13 +777,9 @@
     }
 
     function onLayout() {
-        //Add div for participant counts.
+        sortLegendFilter.call(this);
         addParticipantCountContainer.call(this);
-
-        //Add top x-axis.
         addTopXaxis.call(this);
-
-        //Create div for back button and participant ID title.
         addBackButton.call(this);
     }
 
@@ -636,16 +787,22 @@
 
     function onDatatransform() {}
 
+    function addNAToColorScale() {
+        if (this.na)
+            // defined in ../onInit/checkColorBy
+            this.colorScale.range().splice(this.colorScale.domain().indexOf('N/A'), 1, '#999999');
+    }
+
     /*------------------------------------------------------------------------------------------------\
-    Annotate number of participants based on current filters, number of participants in all, and
-    the corresponding percentage.
+      Annotate number of participants based on current filters, number of participants in all, and
+      the corresponding percentage.
 
-    Inputs:
+      Inputs:
 
-      chart - a webcharts chart object
-      id_unit - a text string to label the units in the annotation (default = 'participants')
-      selector - css selector for the annotation
-  \------------------------------------------------------------------------------------------------*/
+        chart - a webcharts chart object
+        id_unit - a text string to label the units in the annotation (default = 'participants')
+        selector - css selector for the annotation
+    \------------------------------------------------------------------------------------------------*/
 
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
@@ -707,7 +864,7 @@
                 return !filtered;
             });
 
-            //Capture all subject IDs with adverse events with a start day.
+            //Capture all participant IDs with adverse events with a start day.
             var withStartDay = d3
                 .nest()
                 .key(function(d) {
@@ -735,7 +892,7 @@
                     return d.key;
                 });
 
-            //Capture all subject IDs with adverse events without a start day.
+            //Capture all participant IDs with adverse events without a start day.
             var withoutStartDay = d3
                 .set(
                     filtered_data
@@ -757,16 +914,14 @@
     }
 
     function onDraw() {
-        //Annotate number of selected participants out of total participants.
+        addNAToColorScale.call(this);
         updateParticipantCount(this, '.annote', 'participant ID(s)');
-
-        //Sort y-axis based on `Sort IDs` control selection.
         sortYdomain.call(this);
     }
 
     /*------------------------------------------------------------------------------------------------\
-    Add highlighted adverse event legend item.
-  \------------------------------------------------------------------------------------------------*/
+      Add highlighted adverse event legend item.
+    \------------------------------------------------------------------------------------------------*/
 
     function addHighlightLegendItem(chart) {
         chart.wrap.select('.legend li.highlight').remove();
@@ -910,8 +1065,8 @@
         addTickClick.call(this);
 
         /**-------------------------------------------------------------------------------------------\
-        Second chart callbacks.
-      \-------------------------------------------------------------------------------------------**/
+          Second chart callbacks.
+        \-------------------------------------------------------------------------------------------**/
 
         this.chart2.on('preprocess', function() {
             //Define color scale.
@@ -929,7 +1084,7 @@
         });
     }
 
-    // polyfills
+    // utilities
 
     function aeTimelines(element, settings) {
         //Merge default settings with custom settings.
