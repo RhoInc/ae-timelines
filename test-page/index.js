@@ -1,5 +1,5 @@
 d3.csv(
-    'https://rawgit.com/RhoInc/viz-library/master/data/safetyData/ADAE.csv',
+    'https://raw.githubusercontent.com/RhoInc/viz-library/master/data/safetyData/ADAE.csv',
     function(d) {
         return d;
     },
