@@ -7,31 +7,123 @@
 })(this, function(d3, webcharts) {
     'use strict';
 
-    /*------------------------------------------------------------------------------------------------\
-    Add assign method to Object if nonexistent.
-  \------------------------------------------------------------------------------------------------*/
-
     if (typeof Object.assign != 'function') {
-        (function() {
-            Object.assign = function(target) {
-                if (target === undefined || target === null) {
+        Object.defineProperty(Object, 'assign', {
+            value: function assign(target, varArgs) {
+                if (target == null) {
+                    // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
                 }
 
-                var output = Object(target);
+                var to = Object(target);
+
                 for (var index = 1; index < arguments.length; index++) {
-                    var source = arguments[index];
-                    if (source !== undefined && source !== null) {
-                        for (var nextKey in source) {
-                            if (source.hasOwnProperty(nextKey)) {
-                                output[nextKey] = source[nextKey];
+                    var nextSource = arguments[index];
+
+                    if (nextSource != null) {
+                        // Skip over if undefined or null
+                        for (var nextKey in nextSource) {
+                            // Avoid bugs when hasOwnProperty is shadowed
+                            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                                to[nextKey] = nextSource[nextKey];
                             }
                         }
                     }
                 }
-                return output;
-            };
-        })();
+
+                return to;
+            },
+            writable: true,
+            configurable: true
+        });
+    }
+
+    if (!Array.prototype.find) {
+        Object.defineProperty(Array.prototype, 'find', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, 'length')).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return kValue.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return kValue;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return undefined.
+                return undefined;
+            }
+        });
+    }
+
+    if (!Array.prototype.findIndex) {
+        Object.defineProperty(Array.prototype, 'findIndex', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return k.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return k;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return -1.
+                return -1;
+            }
+        });
     }
 
     var _typeof =
@@ -49,8 +141,8 @@
               };
 
     /*------------------------------------------------------------------------------------------------\
-    Clone a variable (http://stackoverflow.com/a/728694).
-  \------------------------------------------------------------------------------------------------*/
+      Clone a variable (http://stackoverflow.com/a/728694).
+    \------------------------------------------------------------------------------------------------*/
 
     function clone(obj) {
         var copy;
@@ -86,6 +178,104 @@
 
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
+
+    var isMergeableObject = function isMergeableObject(value) {
+        return isNonNullObject(value) && !isSpecial(value);
+    };
+
+    function isNonNullObject(value) {
+        return (
+            !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object'
+        );
+    }
+
+    function isSpecial(value) {
+        var stringValue = Object.prototype.toString.call(value);
+
+        return (
+            stringValue === '[object RegExp]' ||
+            stringValue === '[object Date]' ||
+            isReactElement(value)
+        );
+    }
+
+    // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+    var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+    var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+
+    function isReactElement(value) {
+        return value.$$typeof === REACT_ELEMENT_TYPE;
+    }
+
+    function emptyTarget(val) {
+        return Array.isArray(val) ? [] : {};
+    }
+
+    function cloneUnlessOtherwiseSpecified(value, options) {
+        return options.clone !== false && options.isMergeableObject(value)
+            ? deepmerge(emptyTarget(value), value, options)
+            : value;
+    }
+
+    function defaultArrayMerge(target, source, options) {
+        return target.concat(source).map(function(element) {
+            return cloneUnlessOtherwiseSpecified(element, options);
+        });
+    }
+
+    function mergeObject(target, source, options) {
+        var destination = {};
+
+        if (options.isMergeableObject(target)) {
+            Object.keys(target).forEach(function(key) {
+                destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+            });
+        }
+
+        Object.keys(source).forEach(function(key) {
+            if (!options.isMergeableObject(source[key]) || !target[key]) {
+                destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+            } else {
+                destination[key] = deepmerge(target[key], source[key], options);
+            }
+        });
+
+        return destination;
+    }
+
+    function deepmerge(target, source, options) {
+        options = options || {};
+
+        options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+
+        options.isMergeableObject = options.isMergeableObject || isMergeableObject;
+
+        var sourceIsArray = Array.isArray(source);
+
+        var targetIsArray = Array.isArray(target);
+
+        var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+        if (!sourceAndTargetTypesMatch) {
+            return cloneUnlessOtherwiseSpecified(source, options);
+        } else if (sourceIsArray) {
+            return options.arrayMerge(target, source, options);
+        } else {
+            return mergeObject(target, source, options);
+        }
+    }
+
+    deepmerge.all = function deepmergeAll(array, options) {
+        if (!Array.isArray(array)) {
+            throw new Error('first argument should be an array');
+        }
+
+        return array.reduce(function(prev, next) {
+            return deepmerge(prev, next, options);
+        }, {});
+    };
+
+    var deepmerge_1 = deepmerge;
 
     var rendererSpecificSettings = {
         id_col: 'USUBJID',
@@ -385,104 +575,6 @@
         return nextSettings;
     }
 
-    var isMergeableObject = function isMergeableObject(value) {
-        return isNonNullObject(value) && !isSpecial(value);
-    };
-
-    function isNonNullObject(value) {
-        return (
-            !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object'
-        );
-    }
-
-    function isSpecial(value) {
-        var stringValue = Object.prototype.toString.call(value);
-
-        return (
-            stringValue === '[object RegExp]' ||
-            stringValue === '[object Date]' ||
-            isReactElement(value)
-        );
-    }
-
-    // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
-    var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
-    var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
-
-    function isReactElement(value) {
-        return value.$$typeof === REACT_ELEMENT_TYPE;
-    }
-
-    function emptyTarget(val) {
-        return Array.isArray(val) ? [] : {};
-    }
-
-    function cloneUnlessOtherwiseSpecified(value, options) {
-        return options.clone !== false && options.isMergeableObject(value)
-            ? deepmerge(emptyTarget(value), value, options)
-            : value;
-    }
-
-    function defaultArrayMerge(target, source, options) {
-        return target.concat(source).map(function(element) {
-            return cloneUnlessOtherwiseSpecified(element, options);
-        });
-    }
-
-    function mergeObject(target, source, options) {
-        var destination = {};
-
-        if (options.isMergeableObject(target)) {
-            Object.keys(target).forEach(function(key) {
-                destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
-            });
-        }
-
-        Object.keys(source).forEach(function(key) {
-            if (!options.isMergeableObject(source[key]) || !target[key]) {
-                destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
-            } else {
-                destination[key] = deepmerge(target[key], source[key], options);
-            }
-        });
-
-        return destination;
-    }
-
-    function deepmerge(target, source, options) {
-        options = options || {};
-
-        options.arrayMerge = options.arrayMerge || defaultArrayMerge;
-
-        options.isMergeableObject = options.isMergeableObject || isMergeableObject;
-
-        var sourceIsArray = Array.isArray(source);
-
-        var targetIsArray = Array.isArray(target);
-
-        var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
-
-        if (!sourceAndTargetTypesMatch) {
-            return cloneUnlessOtherwiseSpecified(source, options);
-        } else if (sourceIsArray) {
-            return options.arrayMerge(target, source, options);
-        } else {
-            return mergeObject(target, source, options);
-        }
-    }
-
-    deepmerge.all = function deepmergeAll(array, options) {
-        if (!Array.isArray(array)) {
-            throw new Error('first argument should be an array');
-        }
-
-        return array.reduce(function(prev, next) {
-            return deepmerge(prev, next, options);
-        }, {});
-    };
-
-    var deepmerge_1 = deepmerge;
-
     function defineColorDomain() {
         var _this = this;
 
@@ -504,8 +596,8 @@
     }
 
     /*------------------------------------------------------------------------------------------------\
-    Expand a data array to one item per original item per specified column.
-  \------------------------------------------------------------------------------------------------*/
+      Expand a data array to one item per original item per specified column.
+    \------------------------------------------------------------------------------------------------*/
 
     function lengthenRaw(data, columns) {
         var my_data = [];
@@ -637,15 +729,15 @@
     function onDatatransform() {}
 
     /*------------------------------------------------------------------------------------------------\
-    Annotate number of participants based on current filters, number of participants in all, and
-    the corresponding percentage.
+      Annotate number of participants based on current filters, number of participants in all, and
+      the corresponding percentage.
 
-    Inputs:
+      Inputs:
 
-      chart - a webcharts chart object
-      id_unit - a text string to label the units in the annotation (default = 'participants')
-      selector - css selector for the annotation
-  \------------------------------------------------------------------------------------------------*/
+        chart - a webcharts chart object
+        id_unit - a text string to label the units in the annotation (default = 'participants')
+        selector - css selector for the annotation
+    \------------------------------------------------------------------------------------------------*/
 
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
@@ -765,8 +857,8 @@
     }
 
     /*------------------------------------------------------------------------------------------------\
-    Add highlighted adverse event legend item.
-  \------------------------------------------------------------------------------------------------*/
+      Add highlighted adverse event legend item.
+    \------------------------------------------------------------------------------------------------*/
 
     function addHighlightLegendItem(chart) {
         chart.wrap.select('.legend li.highlight').remove();
@@ -910,8 +1002,8 @@
         addTickClick.call(this);
 
         /**-------------------------------------------------------------------------------------------\
-        Second chart callbacks.
-      \-------------------------------------------------------------------------------------------**/
+          Second chart callbacks.
+        \-------------------------------------------------------------------------------------------**/
 
         this.chart2.on('preprocess', function() {
             //Define color scale.
@@ -929,7 +1021,7 @@
         });
     }
 
-    // polyfills
+    // utilities
 
     function aeTimelines(element, settings) {
         //Merge default settings with custom settings.

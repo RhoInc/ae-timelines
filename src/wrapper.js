@@ -1,5 +1,7 @@
-// polyfills
-import './polyfills/object-assign';
+// utilities
+import './util/polyfills';
+import './util/clone';
+import deepMerge from './util/deepMerge';
 
 //settings
 import defaultSettings, {
@@ -8,8 +10,6 @@ import defaultSettings, {
     syncControlInputs,
     syncSecondSettings
 } from './defaultSettings';
-import clone from './util/clone';
-import deepMerge from './util/deepMerge';
 
 //webcharts
 import { createChart, createControls, createTable } from 'webcharts';
