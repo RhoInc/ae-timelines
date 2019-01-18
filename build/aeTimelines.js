@@ -289,15 +289,14 @@
             label: 'Severity/Intensity',
             values: ['MILD', 'MODERATE', 'SEVERE'],
             colors: [
-                '#66bd63', // green
-                '#fdae61', // sherbet
-                '#d73027', // red
+                '#66bd63', // mild
+                '#fdae61', // moderate
+                '#d73027', // severe
                 '#377eb8',
                 '#984ea3',
                 '#ff7f00',
                 '#a65628',
-                '#f781bf',
-                '#999999'
+                '#f781bf'
             ]
         },
 
@@ -351,7 +350,7 @@
                 }
             }
         ],
-        legend: { location: 'top' },
+        legend: { location: 'top', mark: 'circle' },
         gridlines: 'y',
         range_band: 15,
         margin: { top: 50 }, // for second x-axis
@@ -447,7 +446,7 @@
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
             nextSettings.filters = [
                 { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
-                { value_col: nextSettings.id_col, label: 'Subject Identifier' }
+                { value_col: nextSettings.id_col, label: 'Participant Identifier' }
             ];
             if (nextSettings.highlight)
                 nextSettings.filters.unshift({
@@ -526,7 +525,7 @@
         {
             type: 'dropdown',
             option: 'y.sort',
-            label: 'Sort Subject IDs',
+            label: 'Sort Participant IDs',
             values: ['earliest', 'alphabetical-descending'],
             require: true
         }
@@ -575,6 +574,88 @@
         return nextSettings;
     }
 
+    function calculatePopulationSize() {
+        var _this = this;
+
+        this.populationCount = d3
+            .set(
+                this.raw_data.map(function(d) {
+                    return d[_this.config.id_col];
+                })
+            )
+            .values().length;
+    }
+
+    function cleanData() {
+        var _this = this;
+
+        this.superRaw = this.raw_data;
+        var N = this.superRaw.length;
+
+        //Remove records with empty verbatim terms.
+        this.superRaw = this.superRaw.filter(function(d) {
+            return /[^\s*$]/.test(d[_this.config.term_col]);
+        });
+        var n1 = this.superRaw.length;
+        var diff1 = N - n1;
+        if (diff1)
+            console.warn(diff1 + ' records without [ ' + this.config.term_col + ' ] removed.');
+
+        //Remove records with non-integer start days.
+        this.superRaw = this.superRaw.filter(function(d) {
+            return /^\d+$/.test(d[_this.config.stdy_col]);
+        });
+        var n2 = this.superRaw.length;
+        var diff2 = n1 - n2;
+        if (diff2)
+            console.warn(diff2 + ' records without [ ' + this.config.stdy_col + ' ] removed.');
+    }
+
+    function checkFilters() {
+        var _this = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+            if (input.type !== 'subsetter') return true;
+            else {
+                var levels = d3
+                    .set(
+                        _this.superRaw.map(function(d) {
+                            return d[input.value_col];
+                        })
+                    )
+                    .values();
+                if (levels.length < 2) {
+                    console.warn(
+                        'The [ ' +
+                            input.value_col +
+                            ' ] filter was removed because the variable has only one level.'
+                    );
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    function checkColorBy() {
+        var _this = this;
+
+        this.superRaw.forEach(function(d) {
+            return (d[_this.config.color_by] = /[^\s*$]/.test(d[_this.config.color_by])
+                ? d[_this.config.color_by]
+                : 'N/A');
+        });
+
+        //Flag NAs
+        if (
+            this.superRaw.some(function(d) {
+                return d[_this.config.color_by] === 'N/A';
+            })
+        )
+            this.na = true;
+    }
+
     function defineColorDomain() {
         var _this = this;
 
@@ -584,9 +665,24 @@
                     return d[_this.config.color_by];
                 })
             )
-            .values();
+            .values()
+            .sort(function(a, b) {
+                var aIndex = _this.config.color.values.indexOf(a);
+                var bIndex = _this.config.color.values.indexOf(b);
+                var diff = aIndex > -1 && bIndex > -1 ? aIndex - bIndex : 0;
+
+                return diff
+                    ? diff
+                    : aIndex > -1
+                      ? -1
+                      : bIndex > -1
+                        ? 1
+                        : a === 'N/A'
+                          ? 1
+                          : b === 'N/A' ? -1 : a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+            });
         color_by_values.forEach(function(color_by_value, i) {
-            if (_this.config.legend.order.indexOf(color_by_value) === -1) {
+            if (_this.config.color.values.indexOf(color_by_value) < 0) {
                 _this.config.color_dom.push(color_by_value);
                 _this.config.legend.order.push(color_by_value);
                 _this.chart2.config.color_dom.push(color_by_value);
@@ -599,77 +695,44 @@
       Expand a data array to one item per original item per specified column.
     \------------------------------------------------------------------------------------------------*/
 
-    function lengthenRaw(data, columns) {
+    function lengthenRaw() {
+        var data = this.superRaw;
+        var columns = [this.config.stdy_col, this.config.endy_col];
         var my_data = [];
 
         data.forEach(function(d) {
             columns.forEach(function(column) {
                 var obj = Object.assign({}, d);
                 obj.wc_category = column;
-                obj.wc_value = d[column];
+                obj.wc_value = parseFloat(d[column]);
                 my_data.push(obj);
             });
         });
 
-        return my_data;
+        this.raw_data = my_data;
     }
 
     function onInit() {
+        calculatePopulationSize.call(this);
+        cleanData.call(this);
+        checkFilters.call(this);
+        checkColorBy.call(this);
+        defineColorDomain.call(this);
+        lengthenRaw.call(this);
+    }
+
+    function sortLegendFilter() {
         var _this = this;
 
-        //Count total number of IDs for population count.
-        this.populationCount = d3
-            .set(
-                this.raw_data.map(function(d) {
-                    return d[_this.config.id_col];
-                })
-            )
-            .values().length;
-
-        //Remove non-AE records.
-        this.superRaw = this.raw_data.filter(function(d) {
-            return /[^\s]/.test(d[_this.config.term_col]);
-        });
-
-        //Set empty settings.color_by values to 'N/A'.
-        this.superRaw.forEach(function(d) {
-            return (d[_this.config.color_by] = /[^\s]/.test(d[_this.config.color_by])
-                ? d[_this.config.color_by]
-                : 'N/A');
-        });
-
-        //Append unspecified settings.color_by values to settings.legend.order and define a shade of
-        //gray for each.
-        defineColorDomain.call(this);
-
-        //Derived data manipulation
-        this.raw_data = lengthenRaw(this.superRaw, [this.config.stdy_col, this.config.endy_col]);
-        this.raw_data.forEach(function(d) {
-            d.wc_value = d.wc_value ? +d.wc_value : NaN;
-        });
-
-        // Remove filters for variables with 0 or 1 levels
-        var chart = this;
-
-        this.controls.config.inputs = this.controls.config.inputs.filter(function(d) {
-            if (d.type != 'subsetter') {
-                return true;
-            } else {
-                var levels = d3
-                    .set(
-                        chart.raw_data.map(function(f) {
-                            return f[d.value_col];
-                        })
-                    )
-                    .values();
-                if (levels.length < 2) {
-                    console.warn(
-                        d.value_col + ' filter not shown since the variable has less than 2 levels'
-                    );
-                }
-                return levels.length >= 2;
-            }
-        });
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.value_col === _this.config.color.value_col;
+            })
+            .selectAll('option')
+            .sort(function(a, b) {
+                return _this.config.legend.order.indexOf(a) - _this.config.legend.order.indexOf(b);
+            });
     }
 
     function addParticipantCountContainer() {
@@ -714,19 +777,21 @@
     }
 
     function onLayout() {
-        //Add div for participant counts.
+        sortLegendFilter.call(this);
         addParticipantCountContainer.call(this);
-
-        //Add top x-axis.
         addTopXaxis.call(this);
-
-        //Create div for back button and participant ID title.
         addBackButton.call(this);
     }
 
     function onPreprocess() {}
 
     function onDatatransform() {}
+
+    function addNAToColorScale() {
+        if (this.na)
+            // defined in ../onInit/checkColorBy
+            this.colorScale.range().splice(this.colorScale.domain().indexOf('N/A'), 1, '#999999');
+    }
 
     /*------------------------------------------------------------------------------------------------\
       Annotate number of participants based on current filters, number of participants in all, and
@@ -799,7 +864,7 @@
                 return !filtered;
             });
 
-            //Capture all subject IDs with adverse events with a start day.
+            //Capture all participant IDs with adverse events with a start day.
             var withStartDay = d3
                 .nest()
                 .key(function(d) {
@@ -827,7 +892,7 @@
                     return d.key;
                 });
 
-            //Capture all subject IDs with adverse events without a start day.
+            //Capture all participant IDs with adverse events without a start day.
             var withoutStartDay = d3
                 .set(
                     filtered_data
@@ -849,10 +914,8 @@
     }
 
     function onDraw() {
-        //Annotate number of selected participants out of total participants.
+        addNAToColorScale.call(this);
         updateParticipantCount(this, '.annote', 'participant ID(s)');
-
-        //Sort y-axis based on `Sort IDs` control selection.
         sortYdomain.call(this);
     }
 

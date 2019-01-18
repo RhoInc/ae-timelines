@@ -12,15 +12,14 @@ export const rendererSpecificSettings = {
         label: 'Severity/Intensity',
         values: ['MILD', 'MODERATE', 'SEVERE'],
         colors: [
-            '#66bd63', // green
-            '#fdae61', // sherbet
-            '#d73027', // red
+            '#66bd63', // mild
+            '#fdae61', // moderate
+            '#d73027', // severe
             '#377eb8',
             '#984ea3',
             '#ff7f00',
             '#a65628',
-            '#f781bf',
-            '#999999'
+            '#f781bf'
         ]
     },
 
@@ -74,7 +73,7 @@ export const webchartsSettings = {
             }
         }
     ],
-    legend: { location: 'top' },
+    legend: { location: 'top', mark: 'circle' },
     gridlines: 'y',
     range_band: 15,
     margin: { top: 50 }, // for second x-axis
@@ -158,7 +157,7 @@ export function syncSettings(preSettings) {
     if (!nextSettings.filters || nextSettings.filters.length === 0) {
         nextSettings.filters = [
             { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
-            { value_col: nextSettings.id_col, label: 'Subject Identifier' }
+            { value_col: nextSettings.id_col, label: 'Participant Identifier' }
         ];
         if (nextSettings.highlight)
             nextSettings.filters.unshift({
@@ -237,7 +236,7 @@ export const controlInputs = [
     {
         type: 'dropdown',
         option: 'y.sort',
-        label: 'Sort Subject IDs',
+        label: 'Sort Participant IDs',
         values: ['earliest', 'alphabetical-descending'],
         require: true
     }

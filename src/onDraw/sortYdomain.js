@@ -22,7 +22,7 @@ export default function sortYdomain() {
             return !filtered;
         });
 
-        //Capture all subject IDs with adverse events with a start day.
+        //Capture all participant IDs with adverse events with a start day.
         const withStartDay = nest()
             .key(d => d[this.config.id_col])
             .rollup(d => min(d, di => +di[this.config.stdy_col]))
@@ -39,7 +39,7 @@ export default function sortYdomain() {
             )
             .map(d => d.key);
 
-        //Capture all subject IDs with adverse events without a start day.
+        //Capture all participant IDs with adverse events without a start day.
         const withoutStartDay = set(
             filtered_data
                 .filter(
