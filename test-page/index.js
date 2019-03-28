@@ -1,5 +1,5 @@
 d3.csv(
-    'https://raw.githubusercontent.com/RhoInc/viz-library/master/data/safetyData/ADAE.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adae.csv',
     function(d,i) {
         return d;
     },
