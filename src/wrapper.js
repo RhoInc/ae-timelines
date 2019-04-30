@@ -20,7 +20,7 @@ import onDatatransform from './onDatatransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
 
-export default function aeTimelines(element, settings) {
+export default function aeTimelines(element = 'body', settings = {}) {
     //Merge default settings with custom settings.
     const mergedSettings = deepMerge(defaultSettings, settings, {
         arrayMerge: (destination, source) => source

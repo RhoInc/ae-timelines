@@ -1,16 +1,14 @@
 d3.csv(
-    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adae.csv',
+    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/adam/adae.csv',
+    '../../data-library/data/clinical-trials/adam/adae.csv',
     function(d,i) {
         return d;
     },
-    function(error,data) {
-        if (error)
-            console.log(error);
-
-        var settings = {};
+    function(data) {
         var instance = aeTimelines(
-            '#container',
-            settings
+            '#container', // element
+            {
+            } // settings
         );
         instance.init(data);
     }
