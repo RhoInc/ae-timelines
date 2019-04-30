@@ -603,7 +603,7 @@
 
         //Remove records with non-integer start days.
         this.superRaw = this.superRaw.filter(function(d) {
-            return /^\d+$/.test(d[_this.config.stdy_col]);
+            return /^-?\d+$/.test(d[_this.config.stdy_col]);
         });
         var n2 = this.superRaw.length;
         var diff2 = n1 - n2;
