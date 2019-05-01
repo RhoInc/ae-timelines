@@ -9,7 +9,7 @@ export default function cleanData() {
     if (diff1) console.warn(`${diff1} records without [ ${this.config.term_col} ] removed.`);
 
     //Remove records with non-integer start days.
-    this.superRaw = this.superRaw.filter(d => /^\d+$/.test(d[this.config.stdy_col]));
+    this.superRaw = this.superRaw.filter(d => /^-?\d+$/.test(d[this.config.stdy_col]));
     const n2 = this.superRaw.length;
     const diff2 = n1 - n2;
     if (diff2) console.warn(`${diff2} records without [ ${this.config.stdy_col} ] removed.`);
