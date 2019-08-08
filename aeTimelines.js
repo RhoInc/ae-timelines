@@ -1,13 +1,15 @@
-(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('webcharts')) :
-    typeof define === 'function' && define.amd ? define(['d3', 'webcharts'], factory) :
-    (global.aeTimelines = factory(global.d3,global.webCharts));
-}(this, (function (d3,webcharts) { 'use strict';
+(function(global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined'
+        ? (module.exports = factory(require('d3'), require('webcharts')))
+        : typeof define === 'function' && define.amd
+          ? define(['d3', 'webcharts'], factory)
+          : (global.aeTimelines = factory(global.d3, global.webCharts));
+})(this, function(d3, webcharts) {
+    'use strict';
 
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
             value: function assign(target, varArgs) {
-
                 if (target == null) {
                     // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
@@ -124,11 +126,19 @@
         });
     }
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-      return typeof obj;
-    } : function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
+    var _typeof =
+        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
+            ? function(obj) {
+                  return typeof obj;
+              }
+            : function(obj) {
+                  return obj &&
+                      typeof Symbol === 'function' &&
+                      obj.constructor === Symbol &&
+                      obj !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj;
+              };
 
     /*------------------------------------------------------------------------------------------------\
       Clone a variable (http://stackoverflow.com/a/728694).
@@ -138,7 +148,8 @@
         var copy;
 
         //Handle the 3 simple types, and null or undefined
-        if (null == obj || 'object' != (typeof obj === "undefined" ? "undefined" : _typeof(obj))) return obj;
+        if (null == obj || 'object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)))
+            return obj;
 
         //Handle Date
         if (obj instanceof Date) {
@@ -173,13 +184,19 @@
     };
 
     function isNonNullObject(value) {
-        return !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object';
+        return (
+            !!value && (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object'
+        );
     }
 
     function isSpecial(value) {
         var stringValue = Object.prototype.toString.call(value);
 
-        return stringValue === '[object RegExp]' || stringValue === '[object Date]' || isReactElement(value);
+        return (
+            stringValue === '[object RegExp]' ||
+            stringValue === '[object Date]' ||
+            isReactElement(value)
+        );
     }
 
     // see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
@@ -195,11 +212,13 @@
     }
 
     function cloneUnlessOtherwiseSpecified(value, options) {
-        return options.clone !== false && options.isMergeableObject(value) ? deepmerge(emptyTarget(value), value, options) : value;
+        return options.clone !== false && options.isMergeableObject(value)
+            ? deepmerge(emptyTarget(value), value, options)
+            : value;
     }
 
     function defaultArrayMerge(target, source, options) {
-        return target.concat(source).map(function (element) {
+        return target.concat(source).map(function(element) {
             return cloneUnlessOtherwiseSpecified(element, options);
         });
     }
@@ -208,12 +227,12 @@
         var destination = {};
 
         if (options.isMergeableObject(target)) {
-            Object.keys(target).forEach(function (key) {
+            Object.keys(target).forEach(function(key) {
                 destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
             });
         }
 
-        Object.keys(source).forEach(function (key) {
+        Object.keys(source).forEach(function(key) {
             if (!options.isMergeableObject(source[key]) || !target[key]) {
                 destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
             } else {
@@ -251,7 +270,7 @@
             throw new Error('first argument should be an array');
         }
 
-        return array.reduce(function (prev, next) {
+        return array.reduce(function(prev, next) {
             return deepmerge(prev, next, options);
         }, {});
     };
@@ -269,10 +288,16 @@
             value_col: 'AESEV',
             label: 'Severity/Intensity',
             values: ['MILD', 'MODERATE', 'SEVERE'],
-            colors: ['#66bd63', // mild
-            '#fdae61', // moderate
-            '#d73027', // severe
-            '#377eb8', '#984ea3', '#ff7f00', '#a65628', '#f781bf']
+            colors: [
+                '#66bd63', // mild
+                '#fdae61', // moderate
+                '#d73027', // severe
+                '#377eb8',
+                '#984ea3',
+                '#ff7f00',
+                '#a65628',
+                '#f781bf'
+            ]
         },
 
         highlight: {
@@ -305,23 +330,26 @@
             sort: 'earliest',
             behavior: 'flex'
         },
-        marks: [{
-            type: 'line',
-            per: null, // set in syncSettings()
-            tooltip: null, // set in syncSettings()
-            attributes: {
-                'stroke-width': 5,
-                'stroke-opacity': 0.5
+        marks: [
+            {
+                type: 'line',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
+                attributes: {
+                    'stroke-width': 5,
+                    'stroke-opacity': 0.5
+                }
+            },
+            {
+                type: 'circle',
+                per: null, // set in syncSettings()
+                tooltip: null, // set in syncSettings()
+                attributes: {
+                    'fill-opacity': 0.5,
+                    'stroke-opacity': 0.5
+                }
             }
-        }, {
-            type: 'circle',
-            per: null, // set in syncSettings()
-            tooltip: null, // set in syncSettings()
-            attributes: {
-                'fill-opacity': 0.5,
-                'stroke-opacity': 0.5
-            }
-        }],
+        ],
         legend: { location: 'top', mark: 'circle' },
         gridlines: 'y',
         range_band: 15,
@@ -338,11 +366,21 @@
 
         //Lines (AE duration)
         nextSettings.marks[0].per = [nextSettings.id_col, nextSettings.seq_col];
-        nextSettings.marks[0].tooltip = 'Reported Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
+        nextSettings.marks[0].tooltip =
+            'Reported Term: [' +
+            nextSettings.term_col +
+            ']' +
+            ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+            ('\nStop Day: [' + nextSettings.endy_col + ']');
 
         //Circles (AE start day)
         nextSettings.marks[1].per = [nextSettings.id_col, nextSettings.seq_col, 'wc_value'];
-        nextSettings.marks[1].tooltip = 'Reported Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']');
+        nextSettings.marks[1].tooltip =
+            'Reported Term: [' +
+            nextSettings.term_col +
+            ']' +
+            ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+            ('\nStop Day: [' + nextSettings.endy_col + ']');
         nextSettings.marks[1].values = { wc_category: [nextSettings.stdy_col] };
 
         //Define highlight marks.
@@ -351,7 +389,19 @@
             var highlightLine = {
                 type: 'line',
                 per: [nextSettings.id_col, nextSettings.seq_col],
-                tooltip: 'Reported Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']') + ('\n' + nextSettings.highlight.label + ': [' + (nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col) + ']'),
+                tooltip:
+                    'Reported Term: [' +
+                    nextSettings.term_col +
+                    ']' +
+                    ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+                    ('\nStop Day: [' + nextSettings.endy_col + ']') +
+                    ('\n' +
+                        nextSettings.highlight.label +
+                        ': [' +
+                        (nextSettings.highlight.detail_col
+                            ? nextSettings.highlight.detail_col
+                            : nextSettings.highlight.value_col) +
+                        ']'),
                 values: {},
                 attributes: nextSettings.highlight.attributes || {}
             };
@@ -363,7 +413,19 @@
             var highlightCircle = {
                 type: 'circle',
                 per: [nextSettings.id_col, nextSettings.seq_col, 'wc_value'],
-                tooltip: 'Reported Term: [' + nextSettings.term_col + ']' + ('\nStart Day: [' + nextSettings.stdy_col + ']') + ('\nStop Day: [' + nextSettings.endy_col + ']') + ('\n' + nextSettings.highlight.label + ': [' + (nextSettings.highlight.detail_col ? nextSettings.highlight.detail_col : nextSettings.highlight.value_col) + ']'),
+                tooltip:
+                    'Reported Term: [' +
+                    nextSettings.term_col +
+                    ']' +
+                    ('\nStart Day: [' + nextSettings.stdy_col + ']') +
+                    ('\nStop Day: [' + nextSettings.endy_col + ']') +
+                    ('\n' +
+                        nextSettings.highlight.label +
+                        ': [' +
+                        (nextSettings.highlight.detail_col
+                            ? nextSettings.highlight.detail_col
+                            : nextSettings.highlight.value_col) +
+                        ']'),
                 values: { wc_category: nextSettings.stdy_col },
                 attributes: nextSettings.highlight.attributes || {}
             };
@@ -382,15 +444,24 @@
 
         //Default filters
         if (!nextSettings.filters || nextSettings.filters.length === 0) {
-            nextSettings.filters = [{ value_col: nextSettings.color.value_col, label: nextSettings.color.label }, { value_col: nextSettings.id_col, label: 'Participant Identifier' }];
-            if (nextSettings.highlight) nextSettings.filters.unshift({
-                value_col: nextSettings.highlight.value_col,
-                label: nextSettings.highlight.label
-            });
+            nextSettings.filters = [
+                { value_col: nextSettings.color.value_col, label: nextSettings.color.label },
+                { value_col: nextSettings.id_col, label: 'Participant Identifier' }
+            ];
+            if (nextSettings.highlight)
+                nextSettings.filters.unshift({
+                    value_col: nextSettings.highlight.value_col,
+                    label: nextSettings.highlight.label
+                });
         }
 
         //Default detail listing columns
-        var defaultDetails = [{ value_col: nextSettings.seq_col, label: 'Sequence Number' }, { value_col: nextSettings.stdy_col, label: 'Start Day' }, { value_col: nextSettings.endy_col, label: 'Stop Day' }, { value_col: nextSettings.term_col, label: 'Reported Term' }];
+        var defaultDetails = [
+            { value_col: nextSettings.seq_col, label: 'Sequence Number' },
+            { value_col: nextSettings.stdy_col, label: 'Start Day' },
+            { value_col: nextSettings.endy_col, label: 'Stop Day' },
+            { value_col: nextSettings.term_col, label: 'Reported Term' }
+        ];
 
         //Add settings.color.value_col to default details.
         defaultDetails.push({
@@ -405,25 +476,28 @@
                 label: nextSettings.highlight.label
             });
 
-            if (nextSettings.highlight.detail_col) defaultDetails.push({
-                value_col: nextSettings.highlight.detail_col,
-                label: nextSettings.highlight.label + ' Details'
-            });
+            if (nextSettings.highlight.detail_col)
+                defaultDetails.push({
+                    value_col: nextSettings.highlight.detail_col,
+                    label: nextSettings.highlight.label + ' Details'
+                });
         }
 
         //Add settings.filters columns to default details.
-        nextSettings.filters.forEach(function (filter) {
-            if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col) defaultDetails.push({
-                value_col: filter.value_col,
-                label: filter.label
-            });
+        nextSettings.filters.forEach(function(filter) {
+            if (filter !== nextSettings.id_col && filter.value_col !== nextSettings.id_col)
+                defaultDetails.push({
+                    value_col: filter.value_col,
+                    label: filter.label
+                });
         });
 
         //Redefine settings.details with defaults.
-        if (!nextSettings.details) nextSettings.details = defaultDetails;else {
+        if (!nextSettings.details) nextSettings.details = defaultDetails;
+        else {
             //Allow user to specify an array of columns or an array of objects with a column property
             //and optionally a column label.
-            nextSettings.details = nextSettings.details.map(function (d) {
+            nextSettings.details = nextSettings.details.map(function(d) {
                 return {
                     value_col: d.value_col ? d.value_col : d,
                     label: d.label ? d.label : d.value_col ? d.value_col : d
@@ -431,43 +505,49 @@
             });
 
             //Add default details to settings.details.
-            defaultDetails.reverse().forEach(function (defaultDetail) {
+            defaultDetails.reverse().forEach(function(defaultDetail) {
                 return nextSettings.details.unshift(defaultDetail);
             });
         }
 
         //Add custom marks to marks array.
-        if (nextSettings.custom_marks) nextSettings.custom_marks.forEach(function (custom_mark) {
-            custom_mark.attributes = custom_mark.attributes || {};
-            custom_mark.attributes.class = 'custom';
-            nextSettings.marks.push(custom_mark);
-        });
+        if (nextSettings.custom_marks)
+            nextSettings.custom_marks.forEach(function(custom_mark) {
+                custom_mark.attributes = custom_mark.attributes || {};
+                custom_mark.attributes.class = 'custom';
+                nextSettings.marks.push(custom_mark);
+            });
 
         return nextSettings;
     }
 
-    var controlInputs = [{
-        type: 'dropdown',
-        option: 'y.sort',
-        label: 'Sort Participant IDs',
-        values: ['earliest', 'alphabetical-descending'],
-        require: true
-    }];
+    var controlInputs = [
+        {
+            type: 'dropdown',
+            option: 'y.sort',
+            label: 'Sort Participant IDs',
+            values: ['earliest', 'alphabetical-descending'],
+            require: true
+        }
+    ];
 
     function syncControlInputs(preControlInputs, preSettings) {
-        preSettings.filters.forEach(function (d, i) {
+        preSettings.filters.forEach(function(d, i) {
             var thisFilter = {
                 type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d
             };
             //add the filter to the control inputs (as long as it isn't already there)
-            var current_value_cols = preControlInputs.filter(function (f) {
-                return f.type == 'subsetter';
-            }).map(function (m) {
-                return m.value_col;
-            });
-            if (current_value_cols.indexOf(thisFilter.value_col) == -1) preControlInputs.unshift(thisFilter);
+            var current_value_cols = preControlInputs
+                .filter(function(f) {
+                    return f.type == 'subsetter';
+                })
+                .map(function(m) {
+                    return m.value_col;
+                });
+            if (current_value_cols.indexOf(thisFilter.value_col) == -1)
+                preControlInputs.unshift(thisFilter);
         });
 
         return preControlInputs;
@@ -497,9 +577,13 @@
     function calculatePopulationSize() {
         var _this = this;
 
-        this.populationCount = d3.set(this.raw_data.map(function (d) {
-            return d[_this.config.id_col];
-        })).values().length;
+        this.populationCount = d3
+            .set(
+                this.raw_data.map(function(d) {
+                    return d[_this.config.id_col];
+                })
+            )
+            .values().length;
     }
 
     function cleanData() {
@@ -509,34 +593,43 @@
         var N = this.superRaw.length;
 
         //Remove records with empty verbatim terms.
-        this.superRaw = this.superRaw.filter(function (d) {
-            return (/[^\s*$]/.test(d[_this.config.term_col])
-            );
+        this.superRaw = this.superRaw.filter(function(d) {
+            return /[^\s*$]/.test(d[_this.config.term_col]);
         });
         var n1 = this.superRaw.length;
         var diff1 = N - n1;
-        if (diff1) console.warn(diff1 + " records without [ " + this.config.term_col + " ] removed.");
+        if (diff1)
+            console.warn(diff1 + ' records without [ ' + this.config.term_col + ' ] removed.');
 
         //Remove records with non-integer start days.
-        this.superRaw = this.superRaw.filter(function (d) {
-            return (/^-?\d+$/.test(d[_this.config.stdy_col])
-            );
+        this.superRaw = this.superRaw.filter(function(d) {
+            return /^-?\d+$/.test(d[_this.config.stdy_col]);
         });
         var n2 = this.superRaw.length;
         var diff2 = n1 - n2;
-        if (diff2) console.warn(diff2 + " records without [ " + this.config.stdy_col + " ] removed.");
+        if (diff2)
+            console.warn(diff2 + ' records without [ ' + this.config.stdy_col + ' ] removed.');
     }
 
     function checkFilters() {
         var _this = this;
 
-        this.controls.config.inputs = this.controls.config.inputs.filter(function (input) {
-            if (input.type !== 'subsetter') return true;else {
-                var levels = d3.set(_this.superRaw.map(function (d) {
-                    return d[input.value_col];
-                })).values();
+        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+            if (input.type !== 'subsetter') return true;
+            else {
+                var levels = d3
+                    .set(
+                        _this.superRaw.map(function(d) {
+                            return d[input.value_col];
+                        })
+                    )
+                    .values();
                 if (levels.length < 2) {
-                    console.warn('The [ ' + input.value_col + ' ] filter was removed because the variable has only one level.');
+                    console.warn(
+                        'The [ ' +
+                            input.value_col +
+                            ' ] filter was removed because the variable has only one level.'
+                    );
                     return false;
                 }
 
@@ -548,29 +641,47 @@
     function checkColorBy() {
         var _this = this;
 
-        this.superRaw.forEach(function (d) {
-            return d[_this.config.color_by] = /[^\s*$]/.test(d[_this.config.color_by]) ? d[_this.config.color_by] : 'N/A';
+        this.superRaw.forEach(function(d) {
+            return (d[_this.config.color_by] = /[^\s*$]/.test(d[_this.config.color_by])
+                ? d[_this.config.color_by]
+                : 'N/A');
         });
 
         //Flag NAs
-        if (this.superRaw.some(function (d) {
-            return d[_this.config.color_by] === 'N/A';
-        })) this.na = true;
+        if (
+            this.superRaw.some(function(d) {
+                return d[_this.config.color_by] === 'N/A';
+            })
+        )
+            this.na = true;
     }
 
     function defineColorDomain() {
         var _this = this;
 
-        var color_by_values = d3.set(this.superRaw.map(function (d) {
-            return d[_this.config.color_by];
-        })).values().sort(function (a, b) {
-            var aIndex = _this.config.color.values.indexOf(a);
-            var bIndex = _this.config.color.values.indexOf(b);
-            var diff = aIndex > -1 && bIndex > -1 ? aIndex - bIndex : 0;
+        var color_by_values = d3
+            .set(
+                this.superRaw.map(function(d) {
+                    return d[_this.config.color_by];
+                })
+            )
+            .values()
+            .sort(function(a, b) {
+                var aIndex = _this.config.color.values.indexOf(a);
+                var bIndex = _this.config.color.values.indexOf(b);
+                var diff = aIndex > -1 && bIndex > -1 ? aIndex - bIndex : 0;
 
-            return diff ? diff : aIndex > -1 ? -1 : bIndex > -1 ? 1 : a === 'N/A' ? 1 : b === 'N/A' ? -1 : a.toLowerCase() < b.toLowerCase() ? -1 : 1;
-        });
-        color_by_values.forEach(function (color_by_value, i) {
+                return diff
+                    ? diff
+                    : aIndex > -1
+                      ? -1
+                      : bIndex > -1
+                        ? 1
+                        : a === 'N/A'
+                          ? 1
+                          : b === 'N/A' ? -1 : a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+            });
+        color_by_values.forEach(function(color_by_value, i) {
             if (_this.config.color.values.indexOf(color_by_value) < 0) {
                 _this.config.color_dom.push(color_by_value);
                 _this.config.legend.order.push(color_by_value);
@@ -589,8 +700,8 @@
         var columns = [this.config.stdy_col, this.config.endy_col];
         var my_data = [];
 
-        data.forEach(function (d) {
-            columns.forEach(function (column) {
+        data.forEach(function(d) {
+            columns.forEach(function(column) {
                 var obj = Object.assign({}, d);
                 obj.wc_category = column;
                 obj.wc_value = parseFloat(d[column]);
@@ -613,36 +724,56 @@
     function sortLegendFilter() {
         var _this = this;
 
-        this.controls.wrap.selectAll('.control-group').filter(function (d) {
-            return d.value_col === _this.config.color.value_col;
-        }).selectAll('option').sort(function (a, b) {
-            return _this.config.legend.order.indexOf(a) - _this.config.legend.order.indexOf(b);
-        });
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.value_col === _this.config.color.value_col;
+            })
+            .selectAll('option')
+            .sort(function(a, b) {
+                return _this.config.legend.order.indexOf(a) - _this.config.legend.order.indexOf(b);
+            });
     }
 
     function addParticipantCountContainer() {
-        this.wrap.select('.legend').append('span').classed('annote', true).style('float', 'right').style('font-style', 'italic');
+        this.wrap
+            .select('.legend')
+            .append('span')
+            .classed('annote', true)
+            .style('float', 'right')
+            .style('font-style', 'italic');
     }
 
     function addTopXaxis() {
-        this.svg.append('g').attr('class', 'x2 axis linear').append('text').attr({
-            class: 'axis-title top',
-            dy: '2em',
-            'text-anchor': 'middle'
-        }).text(this.config.x_label);
+        this.svg
+            .append('g')
+            .attr('class', 'x2 axis linear')
+            .append('text')
+            .attr({
+                class: 'axis-title top',
+                dy: '2em',
+                'text-anchor': 'middle'
+            })
+            .text(this.config.x_label);
     }
 
     function addBackButton() {
         var _this = this;
 
-        this.chart2.wrap.insert('div', ':first-child').attr('id', 'backButton').insert('button', '.legend').html('&#8592; Back').style('cursor', 'pointer').on('click', function () {
-            _this.chart2.wrap.select('.id-title').remove();
-            _this.chart2.wrap.style('display', 'none');
-            _this.table.wrap.style('display', 'none');
-            _this.controls.wrap.style('display', 'block');
-            _this.wrap.style('display', 'block');
-            _this.draw();
-        });
+        this.chart2.wrap
+            .insert('div', ':first-child')
+            .attr('id', 'backButton')
+            .insert('button', '.legend')
+            .html('&#8592; Back')
+            .style('cursor', 'pointer')
+            .on('click', function() {
+                _this.chart2.wrap.select('.id-title').remove();
+                _this.chart2.wrap.style('display', 'none');
+                _this.table.wrap.style('display', 'none');
+                _this.controls.wrap.style('display', 'block');
+                _this.wrap.style('display', 'block');
+                _this.draw();
+            });
     }
 
     function onLayout() {
@@ -675,16 +806,24 @@
 
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var filtered_data = chart.raw_data.filter(function (d) {
+        var filtered_data = chart.raw_data.filter(function(d) {
             var filtered = d[chart.config.seq_col] === '';
-            chart.filters.forEach(function (di) {
-                if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
+            chart.filters.forEach(function(di) {
+                if (filtered === false && di.val !== 'All')
+                    filtered =
+                        Object.prototype.toString.call(di.val) === '[object Array]'
+                            ? di.val.indexOf(d[di.col]) === -1
+                            : di.val !== d[di.col];
             });
             return !filtered;
         });
-        var currentObs = d3.set(filtered_data.map(function (d) {
-            return d[chart.config.id_col];
-        })).values().length;
+        var currentObs = d3
+            .set(
+                filtered_data.map(function(d) {
+                    return d[chart.config.id_col];
+                })
+            )
+            .values().length;
 
         var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
 
@@ -694,48 +833,82 @@
 
         //update the annotation
         var units = id_unit ? ' ' + id_unit : ' participant(s)';
-        annotation.text(currentObs + ' of ' + chart.populationCount + units + ' shown (' + percentage + ')');
+        annotation.text(
+            currentObs + ' of ' + chart.populationCount + units + ' shown (' + percentage + ')'
+        );
     }
 
     function sortYdomain() {
         var _this = this;
 
-        var yAxisSort = this.controls.wrap.selectAll('.control-group').filter(function (d) {
-            return d.option && d.option === 'y.sort';
-        }).select('option:checked').text();
+        var yAxisSort = this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return d.option && d.option === 'y.sort';
+            })
+            .select('option:checked')
+            .text();
 
         if (yAxisSort === 'earliest') {
             //Redefine filtered data as it defaults to the final mark drawn, which might be filtered in
             //addition to the current filter selections.
-            var filtered_data = this.raw_data.filter(function (d) {
+            var filtered_data = this.raw_data.filter(function(d) {
                 var filtered = d[_this.config.seq_col] === '';
-                _this.filters.forEach(function (di) {
-                    if (filtered === false && di.val !== 'All') filtered = Object.prototype.toString.call(di.val) === '[object Array]' ? di.val.indexOf(d[di.col]) === -1 : di.val !== d[di.col];
+                _this.filters.forEach(function(di) {
+                    if (filtered === false && di.val !== 'All')
+                        filtered =
+                            Object.prototype.toString.call(di.val) === '[object Array]'
+                                ? di.val.indexOf(d[di.col]) === -1
+                                : di.val !== d[di.col];
                 });
                 return !filtered;
             });
 
             //Capture all participant IDs with adverse events with a start day.
-            var withStartDay = d3.nest().key(function (d) {
-                return d[_this.config.id_col];
-            }).rollup(function (d) {
-                return d3.min(d, function (di) {
-                    return +di[_this.config.stdy_col];
+            var withStartDay = d3
+                .nest()
+                .key(function(d) {
+                    return d[_this.config.id_col];
+                })
+                .rollup(function(d) {
+                    return d3.min(d, function(di) {
+                        return +di[_this.config.stdy_col];
+                    });
+                })
+                .entries(
+                    filtered_data.filter(function(d) {
+                        return (
+                            !isNaN(parseFloat(d[_this.config.stdy_col])) &&
+                            isFinite(d[_this.config.stdy_col])
+                        );
+                    })
+                )
+                .sort(function(a, b) {
+                    return a.values > b.values
+                        ? -2
+                        : a.values < b.values ? 2 : a.key > b.key ? -1 : 1;
+                })
+                .map(function(d) {
+                    return d.key;
                 });
-            }).entries(filtered_data.filter(function (d) {
-                return !isNaN(parseFloat(d[_this.config.stdy_col])) && isFinite(d[_this.config.stdy_col]);
-            })).sort(function (a, b) {
-                return a.values > b.values ? -2 : a.values < b.values ? 2 : a.key > b.key ? -1 : 1;
-            }).map(function (d) {
-                return d.key;
-            });
 
             //Capture all participant IDs with adverse events without a start day.
-            var withoutStartDay = d3.set(filtered_data.filter(function (d) {
-                return +d[_this.config.seq_col] > 0 && (isNaN(parseFloat(d[_this.config.stdy_col])) || !isFinite(d[_this.config.stdy_col])) && withStartDay.indexOf(d[_this.config.id_col]) === -1;
-            }).map(function (d) {
-                return d[_this.config.id_col];
-            })).values();
+            var withoutStartDay = d3
+                .set(
+                    filtered_data
+                        .filter(function(d) {
+                            return (
+                                +d[_this.config.seq_col] > 0 &&
+                                (isNaN(parseFloat(d[_this.config.stdy_col])) ||
+                                    !isFinite(d[_this.config.stdy_col])) &&
+                                withStartDay.indexOf(d[_this.config.id_col]) === -1
+                            );
+                        })
+                        .map(function(d) {
+                            return d[_this.config.id_col];
+                        })
+                )
+                .values();
             this.y_dom = withStartDay.concat(withoutStartDay);
         } else this.y_dom = this.y_dom.sort(d3.descending);
     }
@@ -752,37 +925,66 @@
 
     function addHighlightLegendItem(chart) {
         chart.wrap.select('.legend li.highlight').remove();
-        var highlightLegendItem = chart.wrap.select('.legend').append('li').attr('class', 'highlight').style({
-            'list-style-type': 'none',
-            'margin-right': '1em',
-            display: 'inline-block'
-        });
-        var highlightLegendColorBlock = highlightLegendItem.append('svg').attr({
-            width: '1.75em',
-            height: '1.5em'
-        }).style({
-            position: 'relative',
-            top: '0.35em'
-        });
-        highlightLegendColorBlock.append('circle').attr({
-            cx: 10,
-            cy: 10,
-            r: 4
-        }).style(chart.config.highlight.attributes);
-        highlightLegendColorBlock.append('line').attr({
-            x1: 2 * 3.14 * 4 - 10,
-            y1: 10,
-            x2: 2 * 3.14 * 4 - 5,
-            y2: 10
-        }).style(chart.config.highlight.attributes).style('shape-rendering', 'crispEdges');
-        highlightLegendItem.append('text').style('margin-left', '.35em').text(chart.config.highlight.label);
+        var highlightLegendItem = chart.wrap
+            .select('.legend')
+            .append('li')
+            .attr('class', 'highlight')
+            .style({
+                'list-style-type': 'none',
+                'margin-right': '1em',
+                display: 'inline-block'
+            });
+        var highlightLegendColorBlock = highlightLegendItem
+            .append('svg')
+            .attr({
+                width: '1.75em',
+                height: '1.5em'
+            })
+            .style({
+                position: 'relative',
+                top: '0.35em'
+            });
+        highlightLegendColorBlock
+            .append('circle')
+            .attr({
+                cx: 10,
+                cy: 10,
+                r: 4
+            })
+            .style(chart.config.highlight.attributes);
+        highlightLegendColorBlock
+            .append('line')
+            .attr({
+                x1: 2 * 3.14 * 4 - 10,
+                y1: 10,
+                x2: 2 * 3.14 * 4 - 5,
+                y2: 10
+            })
+            .style(chart.config.highlight.attributes)
+            .style('shape-rendering', 'crispEdges');
+        highlightLegendItem
+            .append('text')
+            .style('margin-left', '.35em')
+            .text(chart.config.highlight.label);
     }
 
     function drawTopXaxis() {
-        var x2Axis = d3.svg.axis().scale(this.x).orient('top').tickFormat(this.xAxis.tickFormat()).innerTickSize(this.xAxis.innerTickSize()).outerTickSize(this.xAxis.outerTickSize()).ticks(this.xAxis.ticks()[0]);
+        var x2Axis = d3.svg
+            .axis()
+            .scale(this.x)
+            .orient('top')
+            .tickFormat(this.xAxis.tickFormat())
+            .innerTickSize(this.xAxis.innerTickSize())
+            .outerTickSize(this.xAxis.outerTickSize())
+            .ticks(this.xAxis.ticks()[0]);
         var g_x2_axis = this.svg.select('g.x2.axis').attr('class', 'x2 axis linear');
         g_x2_axis.call(x2Axis);
-        g_x2_axis.select('text.axis-title.top').attr('transform', 'translate(' + this.raw_width / 2 + ',-' + this.config.margin.top + ')');
+        g_x2_axis
+            .select('text.axis-title.top')
+            .attr(
+                'transform',
+                'translate(' + this.raw_width / 2 + ',-' + this.config.margin.top + ')'
+            );
         g_x2_axis.select('.domain').attr({
             fill: 'none',
             stroke: '#ccc',
@@ -795,40 +997,59 @@
         var _this = this;
 
         var context = this;
-        this.svg.select('.y.axis').selectAll('.tick').style('cursor', 'pointer').on('click', function (d) {
-            var csv2 = _this.raw_data.filter(function (di) {
-                return di[_this.config.id_col] === d;
-            });
-            _this.chart2.wrap.style('display', 'block');
-            _this.chart2.draw(csv2);
-            _this.chart2.wrap.select('#backButton').append('strong').attr('class', 'id-title').style('margin-left', '1%').text('Participant: ' + d);
+        this.svg
+            .select('.y.axis')
+            .selectAll('.tick')
+            .style('cursor', 'pointer')
+            .on('click', function(d) {
+                var csv2 = _this.raw_data.filter(function(di) {
+                    return di[_this.config.id_col] === d;
+                });
+                _this.chart2.wrap.style('display', 'block');
+                _this.chart2.draw(csv2);
+                _this.chart2.wrap
+                    .select('#backButton')
+                    .append('strong')
+                    .attr('class', 'id-title')
+                    .style('margin-left', '1%')
+                    .text('Participant: ' + d);
 
-            //Sort listing by sequence.
-            var seq_col = context.config.seq_col;
-            var tableData = _this.superRaw.filter(function (di) {
-                return di[_this.config.id_col] === d;
-            }).sort(function (a, b) {
-                return +a[seq_col] < b[seq_col] ? -1 : 1;
-            });
+                //Sort listing by sequence.
+                var seq_col = context.config.seq_col;
+                var tableData = _this.superRaw
+                    .filter(function(di) {
+                        return di[_this.config.id_col] === d;
+                    })
+                    .sort(function(a, b) {
+                        return +a[seq_col] < b[seq_col] ? -1 : 1;
+                    });
 
-            //Define listing columns.
-            _this.table.config.cols = d3.set(_this.config.details.map(function (detail) {
-                return detail.value_col;
-            })).values();
-            _this.table.config.headers = d3.set(_this.config.details.map(function (detail) {
-                return detail.label;
-            })).values();
-            _this.table.wrap.style('display', 'block');
-            _this.table.draw(tableData);
-            _this.table.wrap.selectAll('th,td').style({
-                'text-align': 'left',
-                'padding-right': '10px'
-            });
+                //Define listing columns.
+                _this.table.config.cols = d3
+                    .set(
+                        _this.config.details.map(function(detail) {
+                            return detail.value_col;
+                        })
+                    )
+                    .values();
+                _this.table.config.headers = d3
+                    .set(
+                        _this.config.details.map(function(detail) {
+                            return detail.label;
+                        })
+                    )
+                    .values();
+                _this.table.wrap.style('display', 'block');
+                _this.table.draw(tableData);
+                _this.table.wrap.selectAll('th,td').style({
+                    'text-align': 'left',
+                    'padding-right': '10px'
+                });
 
-            //Hide timelines.
-            _this.wrap.style('display', 'none');
-            _this.controls.wrap.style('display', 'none');
-        });
+                //Hide timelines.
+                _this.wrap.style('display', 'none');
+                _this.controls.wrap.style('display', 'none');
+            });
     }
 
     function onResize() {
@@ -847,17 +1068,17 @@
           Second chart callbacks.
         \-------------------------------------------------------------------------------------------**/
 
-        this.chart2.on('preprocess', function () {
+        this.chart2.on('preprocess', function() {
             //Define color scale.
             this.config.color_dom = context.colorScale.domain();
         });
 
-        this.chart2.on('draw', function () {
+        this.chart2.on('draw', function() {
             //Sync x-axis domain of second chart with that of the original chart.
             this.x_dom = context.x_dom;
         });
 
-        this.chart2.on('resize', function () {
+        this.chart2.on('resize', function() {
             //Add highlight adverse event legend item.
             if (this.config.highlight) addHighlightLegendItem(this);
         });
@@ -886,7 +1107,10 @@
         var syncedSecondSettings = syncSecondSettings(syncedSettings);
 
         //Create controls.
-        var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+        var controls = webcharts.createControls(element, {
+            location: 'top',
+            inputs: syncedControlInputs
+        });
 
         //Create chart.
         var chart = webcharts.createChart(element, syncedSettings, controls);
@@ -913,5 +1137,4 @@
     }
 
     return aeTimelines;
-
-})));
+});
