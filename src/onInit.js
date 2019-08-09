@@ -4,6 +4,7 @@ import checkFilters from './onInit/checkFilters';
 import checkColorBy from './onInit/checkColorBy';
 import defineColorDomain from './onInit/defineColorDomain';
 import lengthenRaw from './onInit/lengthenRaw';
+import initCustomEvents from './onInit/initCustomEvents';
 
 export default function onInit() {
     calculatePopulationSize.call(this);
@@ -12,4 +13,5 @@ export default function onInit() {
     checkColorBy.call(this);
     defineColorDomain.call(this);
     lengthenRaw.call(this);
+    initCustomEvents.call(this);
 }

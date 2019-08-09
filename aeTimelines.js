@@ -712,6 +712,12 @@
         this.raw_data = my_data;
     }
 
+    function initCustomEvents() {
+        var chart = this;
+        chart.participantsSelected = [];
+        chart.events.participantsSelected = new CustomEvent('participantsSelected');
+    }
+
     function onInit() {
         calculatePopulationSize.call(this);
         cleanData.call(this);
@@ -719,6 +725,7 @@
         checkColorBy.call(this);
         defineColorDomain.call(this);
         lengthenRaw.call(this);
+        initCustomEvents.call(this);
     }
 
     function sortLegendFilter() {
@@ -767,6 +774,12 @@
             .html('&#8592; Back')
             .style('cursor', 'pointer')
             .on('click', function() {
+                //Trigger participantsSelected event
+                _this.participantsSelected = [];
+                _this.events.participantsSelected.data = _this.participantsSelected;
+                _this.wrap.node().dispatchEvent(_this.events.participantsSelected);
+
+                //remove the details chart
                 _this.chart2.wrap.select('.id-title').remove();
                 _this.chart2.wrap.style('display', 'none');
                 _this.table.wrap.style('display', 'none');
@@ -1013,6 +1026,11 @@
                     .attr('class', 'id-title')
                     .style('margin-left', '1%')
                     .text('Participant: ' + d);
+
+                //Trigger participantsSelected event
+                context.participantsSelected = [d];
+                context.events.participantsSelected.data = context.participantsSelected;
+                context.wrap.node().dispatchEvent(context.events.participantsSelected);
 
                 //Sort listing by sequence.
                 var seq_col = context.config.seq_col;
