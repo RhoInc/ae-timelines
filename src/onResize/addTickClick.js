@@ -17,6 +17,11 @@ export default function addTickClick() {
                 .style('margin-left', '1%')
                 .text('Participant: ' + d);
 
+            //Trigger participantsSelected event
+            context.participantsSelected = [d];
+            context.events.participantsSelected.data = context.participantsSelected;
+            context.wrap.node().dispatchEvent(context.events.participantsSelected);
+
             //Sort listing by sequence.
             const seq_col = context.config.seq_col;
             let tableData = this.superRaw

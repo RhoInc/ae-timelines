@@ -1,6 +1,6 @@
 {
   "name": "ae-timelines",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Adverse event timelines for clinical trials",
   "main": "./aeTimelines.js",
   "module": "./src/wrapper.js",
