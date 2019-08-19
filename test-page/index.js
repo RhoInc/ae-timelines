@@ -10,5 +10,8 @@ d3.csv(
             } // settings
         );
         instance.init(data);
+        instance.wrap.on("participantsSelected",function(d){
+          console.log(d3.event.data)
+        })
     }
 );
